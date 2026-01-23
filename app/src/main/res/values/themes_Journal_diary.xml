@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 1. YOUR MAIN APP THEME (This was missing or renamed) -->
+    <style name="Theme.Journal" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your primary colors here -->
+        <item name="colorPrimary">#AB47BC</item>
+    </style>
+
+    <!-- 2. YOUR CUSTOM DIALOG THEME (The one for the popup) -->
+    <style name="CustomDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
+
+</resources>
