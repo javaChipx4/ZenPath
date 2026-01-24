@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background_ie"
+    tools:context=".MainActivity">
+
+    <!-- Title and indicators -->
+    <TextView
+        android:id="@+id/title_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="32dp"
+        android:text="Breathing Bubble"
+        android:textColor="@color/text_primary"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Indicator dots -->
+    <View
+        android:id="@+id/indicator1"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/indicator_dot_ie"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/title_text" />
+
+    <View
+        android:id="@+id/indicator2"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/indicator_dot_ie"
+        app:layout_constraintStart_toEndOf="@id/indicator1"
+        app:layout_constraintTop_toTopOf="@id/indicator1" />
+
+    <View
+        android:id="@+id/indicator3"
+        android:layout_width="12dp"
+        android:layout_height="12dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/indicator_dot_ie"
+        app:layout_constraintStart_toEndOf="@id/indicator2"
+        app:layout_constraintTop_toTopOf="@id/indicator1" />
+
+    <!-- Settings gear icon -->
+    <ImageView
+        android:id="@+id/settings_button"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="32dp"
+        android:src="@drawable/ic_settings_ie"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="4dp"
+        android:contentDescription="Settings"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Cream panel with breathing bubble -->
+    <View
+        android:id="@+id/cream_panel"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:background="@drawable/cream_panel_background_ie"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Lavender breathing bubble -->
+    <View
+        android:id="@+id/breathing_bubble"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:background="@drawable/lavender_bubble_ie"
+        app:layout_constraintBottom_toBottomOf="@id/cream_panel"
+        app:layout_constraintEnd_toEndOf="@id/cream_panel"
+        app:layout_constraintStart_toStartOf="@id/cream_panel"
+        app:layout_constraintTop_toTopOf="@id/cream_panel" />
+
+    <!-- Settings overlay (initially hidden) -->
+    <View
+        android:id="@+id/settings_overlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/settings_overlay_ie"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Settings panel (initially hidden) -->
+    <LinearLayout
+        android:id="@+id/settings_panel"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:background="@drawable/settings_panel_background_ie"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Settings title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"
+            android:text="Settings"
+            android:textColor="@color/text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- Home button -->
+        <TextView
+            android:id="@+id/btn_home"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/settings_item_background_ie"
+            android:gravity="center"
+            android:text="Home"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
+
+        <!-- Instructions button -->
+        <TextView
+            android:id="@+id/btn_instructions"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/settings_item_background_ie"
+            android:gravity="center"
+            android:text="Instructions"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
+
+        <!-- Reset button -->
+        <TextView
+            android:id="@+id/btn_reset"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/settings_item_background_ie"
+            android:gravity="center"
+            android:text="Reset"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
+
+        <!-- Mood Tracker button -->
+        <TextView
+            android:id="@+id/btn_mood_tracker"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/settings_item_background_ie"
+            android:gravity="center"
+            android:text="Mood Tracker"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
+
+        <!-- Volume control -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Sound Volume"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp" />
+
+        <SeekBar
+            android:id="@+id/volume_seekbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:max="100"
+            android:progress="50" />
+
+        <!-- Close button -->
+        <TextView
+            android:id="@+id/btn_close_settings"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/settings_item_background_ie"
+            android:gravity="center"
+            android:text="Close"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
