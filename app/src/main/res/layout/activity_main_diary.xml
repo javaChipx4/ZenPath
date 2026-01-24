@@ -1,66 +1,135 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/diary_drawer"
+    android:id="@+id/main"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_blue_gradient_diary">
 
-    <!-- ================= MAIN CONTENT ================= -->
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white">
+    <!-- Top thin line -->
+    <View
+        android:id="@+id/topLine"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:alpha="0.45"
+        android:background="#1E1E1E"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="18dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"/>
 
-        <!-- TOP BAR -->
-        <RelativeLayout
+    <!-- Burger icon (top-right) -->
+    <ImageView
+        android:id="@+id/menuIcon"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:src="@drawable/ic_menu"
+        android:contentDescription="Menu"
+        android:tint="#1E1E1E"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="22dp"/>
+
+    <!-- Title: My Virtual -->
+    <TextView
+        android:id="@+id/tvMyVirtual"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="My Virtual"
+        android:textColor="#1E1E1E"
+        android:textSize="22sp"
+        android:fontFamily="serif"
+        app:layout_constraintTop_toBottomOf="@id/topLine"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="18dp"/>
+
+    <!-- Title: Diary (script-like) -->
+
+    <!-- Paper card -->
+    <TextView
+        android:id="@+id/tvDiary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:fontFamily="serif"
+        android:text="Diary"
+        android:textColor="#1E1E1E"
+        android:textSize="32sp"
+        android:textStyle="italic"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvMyVirtual" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/paperCard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="26dp"
+        android:layout_marginStart="46dp"
+        android:layout_marginEnd="46dp"
+        app:cardCornerRadius="4dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="#D7D1E7"
+        app:layout_constraintTop_toBottomOf="@id/tvDiary"
+        app:layout_constraintBottom_toTopOf="@id/btn_save"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:padding="16dp"
-            android:background="@color/white">
+            android:layout_height="match_parent">
 
-            <!-- TITLE -->
-            <TextView
-                android:id="@+id/diaryTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Journal"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:layout_centerVertical="true" />
-
-            <!-- BURGER ICON -->
+            <!-- faint paper lines -->
             <ImageView
-                android:id="@+id/menuIcon"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_menu"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true" />
+                android:id="@+id/imgLines"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                android:alpha="0.55"
+                android:src="@drawable/notebook_lines_diary"
+                android:contentDescription="Paper lines"/>
 
-        </RelativeLayout>
+            <!-- Your input (KEEP THIS ID if your Java uses it; change ONLY if needed) -->
+            <EditText
+                android:id="@+id/etJournal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:gravity="top|start"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp"
+                android:paddingTop="18dp"
+                android:paddingBottom="18dp"
+                android:hint="possible questions&#10;or none.."
+                android:textColor="#1E1E1E"
+                android:textColorHint="#F7F7F7"
+                android:textSize="14sp"
+                android:fontFamily="serif"
+                android:inputType="textMultiLine"
+                android:maxLines="999"/>
 
-        <!-- JOURNAL CONTENT -->
-        <EditText
-            android:id="@+id/etJournal"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:hint="Write your thoughts here..."
-            android:gravity="top"
-            android:padding="16dp"
-            android:background="@android:color/transparent" />
+        </FrameLayout>
+    </androidx.cardview.widget.CardView>
 
-        <!-- SAVE BUTTON -->
-        <Button
-            android:id="@+id/btn_save"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save Entry"
-            android:layout_margin="16dp" />
+    <!-- Save button (KEEP ID: btn_save) -->
+    <Button
+        android:id="@+id/btn_save"
+        android:layout_width="140dp"
+        android:layout_height="38dp"
+        android:text="Save"
+        android:textAllCaps="false"
+        android:textStyle="bold"
+        android:textColor="#1E1E1E"
+        android:background="@drawable/bg_save_pill"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="34dp"/>
 
-    </LinearLayout>
-
-</androidx.drawerlayout.widget.DrawerLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

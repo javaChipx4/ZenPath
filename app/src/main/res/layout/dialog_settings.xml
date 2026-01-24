@@ -50,19 +50,21 @@
                 android:contentDescription="Home"
                 android:src="@android:drawable/ic_menu_view" />
 
+            <!-- History -->
+
             <TextView
                 android:id="@+id/tvHome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/btnHome"
                 android:layout_alignStart="@id/btnHome"
-                android:layout_marginTop="6dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="4dp"
+                android:fontFamily="serif"
                 android:text="home"
                 android:textColor="#1E1E1E"
-                android:textSize="12sp"
-                android:fontFamily="serif" />
+                android:textSize="12sp" />
 
-            <!-- History -->
             <ImageButton
                 android:id="@+id/btnHistory"
                 android:layout_width="56dp"
@@ -74,19 +76,20 @@
                 android:contentDescription="History"
                 android:src="@android:drawable/ic_menu_recent_history" />
 
+            <!-- Back -->
             <TextView
                 android:id="@+id/tvHistory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/btnHistory"
                 android:layout_alignStart="@id/btnHistory"
+                android:layout_marginStart="9dp"
                 android:layout_marginTop="6dp"
+                android:fontFamily="serif"
                 android:text="history"
                 android:textColor="#1E1E1E"
-                android:textSize="12sp"
-                android:fontFamily="serif" />
+                android:textSize="12sp" />
 
-            <!-- Back -->
             <ImageButton
                 android:id="@+id/btnBack"
                 android:layout_width="56dp"
@@ -98,19 +101,21 @@
                 android:contentDescription="Back"
                 android:src="@android:drawable/ic_media_previous" />
 
+            <!-- Mood Tracker -->
+
             <TextView
                 android:id="@+id/tvBack"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/btnBack"
                 android:layout_alignStart="@id/btnBack"
-                android:layout_marginTop="6dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="1dp"
+                android:fontFamily="serif"
                 android:text="back"
                 android:textColor="#1E1E1E"
-                android:textSize="12sp"
-                android:fontFamily="serif" />
+                android:textSize="12sp" />
 
-            <!-- Mood Tracker -->
             <ImageButton
                 android:id="@+id/btnMood"
                 android:layout_width="56dp"
@@ -121,19 +126,21 @@
                 android:contentDescription="Mood Tracker"
                 android:src="@android:drawable/ic_menu_edit" />
 
+            <!-- Volume icon -->
+
             <TextView
                 android:id="@+id/tvMood"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/btnMood"
                 android:layout_alignStart="@id/btnMood"
-                android:layout_marginTop="6dp"
+                android:layout_marginStart="-11dp"
+                android:layout_marginTop="2dp"
+                android:fontFamily="serif"
                 android:text="mood tracker"
                 android:textColor="#1E1E1E"
-                android:textSize="12sp"
-                android:fontFamily="serif" />
+                android:textSize="12sp" />
 
-            <!-- Volume icon -->
             <ImageView
                 android:id="@+id/imgVolume"
                 android:layout_width="22dp"
