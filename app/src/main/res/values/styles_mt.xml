@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Week labels under month (SUN MON TUE...) -->
+    <style name="WeekLabel">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">#1B1B1B</item>
+        <item name="android:alpha">0.9</item>
+    </style>
+
+    <!-- Purple panel label row (M T W T F S S) -->
+    <style name="DotLabel">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Slot container for dot alignment -->
+    <style name="DotCircleSlot">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">44dp</item>  <!-- IMPORTANT -->
+        <item name="android:layout_weight">1</item>
+        <item name="android:foregroundGravity">center</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <!-- The dot itself -->
+    <style name="DotCircle">
+        <item name="android:layout_width">18dp</item>
+        <item name="android:layout_height">18dp</item>
+        <item name="android:background">@drawable/dot_unselected_mt</item>
+    </style>
+
+    <style name="MoodEmoji">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+</resources>

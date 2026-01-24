@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="44dp"
+    android:background="@drawable/bg_day_cell_mt"
+    android:padding="6dp">
+
+    <TextView
+        android:id="@+id/tvDay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="top|center_horizontal"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#1B1B1B"
+        android:text=""
+        android:includeFontPadding="false" />
+
+</FrameLayout>
