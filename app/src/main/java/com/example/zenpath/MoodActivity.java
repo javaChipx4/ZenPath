@@ -58,7 +58,7 @@ public class MoodActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_mood);
+        setContentView(R.layout.activity_mood_mt);
 
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
