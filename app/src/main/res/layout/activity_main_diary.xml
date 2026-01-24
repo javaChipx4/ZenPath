@@ -63,12 +63,4 @@
 
     </LinearLayout>
 
-    <!-- ================= SIDEBAR ================= -->
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/nav_view_diary"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="end"
-        app:menu="@menu/drawer_menu" />
-
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -7,7 +7,7 @@
 
     <!-- filled progress -->
     <item android:id="@android:id/progress">
-        <clip android:drawable="@drawable/stress_track_fil_mt" android:clipOrientation="horizontal"/>
+        <clip android:drawable="@drawable/stress_track_fill_mt" android:clipOrientation="horizontal"/>
     </item>
 
 </layer-list>
