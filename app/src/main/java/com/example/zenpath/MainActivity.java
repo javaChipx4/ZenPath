@@ -1,5 +1,6 @@
 package com.example.zenpath;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
@@ -62,6 +63,13 @@ public class MainActivity extends AppCompatActivity {
 
             dialog.show(getSupportFragmentManager(), "settings_popup");
         });
+
+        Button tvJournal = findViewById(R.id.tvJournal);
+
+        tvJournal.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, ActivityDiary.class));
+        });
+
 
 
 

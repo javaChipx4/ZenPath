@@ -1,96 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/diary_drawer"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/bg_blue_gradient_diary"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="32dp">
+    android:layout_height="match_parent">
 
-
-    <!-- Outer Container -->
+    <!-- ================= MAIN CONTENT ================= -->
     <LinearLayout
-        android:id="@+id/container_main"
-        android:layout_width="320dp"
-        android:layout_height="500dp"
-        android:background="@drawable/bg_blue_gradient_diary"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white">
 
-        <!-- Header: Title + Menu Dots -->
-        <LinearLayout
-            android:id="@+id/header_layout"
+        <!-- TOP BAR -->
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_height="56dp"
+            android:padding="16dp"
+            android:background="@color/white">
 
+            <!-- TITLE -->
             <TextView
-                android:id="@+id/tv_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="My Virtual Diary"
-                android:textColor="#4A148C"
-                android:textSize="28sp"
-                android:textStyle="italic" />
-
-            <TextView
-                android:id="@+id/tv_menu"
+                android:id="@+id/diaryTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:clickable="true"
-                android:focusable="true"
-                android:text="⋮⋮⋮"
-                android:textColor="#7B1FA2"
-                android:textSize="24sp" />
-        </LinearLayout>
+                android:text="Journal"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_centerVertical="true" />
 
-        <!-- Lined Paper Area -->
-        <LinearLayout
-            android:id="@+id/paper_area"
+            <!-- BURGER ICON -->
+            <ImageView
+                android:id="@+id/menuIcon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_menu"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true" />
+
+        </RelativeLayout>
+
+        <!-- JOURNAL CONTENT -->
+        <EditText
+            android:id="@+id/etJournal"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="@drawable/bg_paper_diary"
-            android:clipToPadding="false"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:hint="Write your thoughts here..."
+            android:gravity="top"
+            android:padding="16dp"
+            android:background="@android:color/transparent" />
 
-            <TextView
-                android:id="@+id/tv_note_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:text="notes/questions"
-                android:textColor="#AD1457"
-                android:textSize="16sp"
-                android:textStyle="italic" />
-
-            <TextView
-                android:id="@+id/tv_notes"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/notebook_lines_diary"
-                android:gravity="top|start"
-                android:hint="Write your notes here..."
-                android:lineSpacingExtra="24dp"
-                android:textColor="#880E4F"
-                android:textSize="16sp" />
-        </LinearLayout>
-
-        <!-- Save Button -->
+        <!-- SAVE BUTTON -->
         <Button
             android:id="@+id/btn_save"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="16dp"
-            android:backgroundTint="#AB47BC"
-            android:elevation="4dp"
-            android:text="Save"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp" />
+            android:layout_height="wrap_content"
+            android:text="Save Entry"
+            android:layout_margin="16dp" />
+
     </LinearLayout>
-</LinearLayout>
+
+    <!-- ================= SIDEBAR ================= -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view_diary"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        app:menu="@menu/drawer_menu" />
+
+</androidx.drawerlayout.widget.DrawerLayout>

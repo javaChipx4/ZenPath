@@ -2,12 +2,18 @@ package com.example.zenpath;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 public class ActivityDiary extends AppCompatActivity {
 
@@ -19,7 +25,64 @@ public class ActivityDiary extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_diary);
+
+// Get root view of the activity
+        ViewGroup rootView = findViewById(android.R.id.content);
+
+// Inflate the popup card
+        View settingsPopup = getLayoutInflater()
+                .inflate(R.layout.dialog_settings, rootView, false);
+
+// Add it to the screen (but invisible)
+        rootView.addView(settingsPopup);
+        settingsPopup.setVisibility(View.GONE);
+
+// Burger icon opens popup
+        ImageView menuIcon = findViewById(R.id.menuIcon);
+        menuIcon.setOnClickListener(v -> {
+            settingsPopup.setVisibility(View.VISIBLE);
+        });
+
+// Tap outside to close popup
+        settingsPopup.setOnClickListener(v -> {
+            settingsPopup.setVisibility(View.GONE);
+        });
+
+        // ===== POPUP BUTTONS =====
+        ImageButton btnHome = settingsPopup.findViewById(R.id.btnHome);
+        ImageButton btnBack = settingsPopup.findViewById(R.id.btnBack);
+        ImageButton btnHistory = settingsPopup.findViewById(R.id.btnHistory);
+        ImageButton btnMood = settingsPopup.findViewById(R.id.btnMood);
+
+
+        if (btnHome != null) {
+            btnHome.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(ActivityDiary.this, MainActivity.class));
+                finish();
+            });
+        }
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                finish();
+            });
+        }
+
+        if (btnHistory != null) {
+            btnHistory.setOnClickListener(v -> {
+                Toast.makeText(this, "History clicked", Toast.LENGTH_SHORT).show();
+            });
+        }
+
+        if (btnMood != null) {
+            btnMood.setOnClickListener(v -> {
+                Toast.makeText(this, "Mood Tracker clicked", Toast.LENGTH_SHORT).show();
+            });
+        }
+
 
         // FIX: Match the ID exactly to the XML (btn_save)
         btnSave = findViewById(R.id.btn_save);
