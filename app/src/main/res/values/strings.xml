@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">ZenPath</string>
+
+    <string name="level_format">LEVEL %1$d</string>
+    <string name="volume">Volume</string>
+
+
 </resources>

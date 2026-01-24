@@ -13,9 +13,9 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-public class MainActivity extends AppCompatActivity {
+public class ConnectDotsActivity extends AppCompatActivity {
 
-    private GameBoardView gameBoard;
+    private GameBoardViewActivity gameBoard;
     private TextView levelLabel;
     private SharedPreferences preferences;
     private int currentLevel = 1;
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                     setCurrentLevel(currentLevel);
 
                     // Show level complete message
-                    android.widget.Toast.makeText(MainActivity.this,
+                    android.widget.Toast.makeText(ConnectDotsActivity.this,
                             "Level " + (currentLevel - 1) + " Complete! Starting Level " + currentLevel,
                             android.widget.Toast.LENGTH_SHORT).show();
                 }

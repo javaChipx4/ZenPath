@@ -2,6 +2,8 @@ package com.example.zenpath;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.ImageButton;
@@ -31,28 +33,57 @@ public class MainActivity extends AppCompatActivity {
 
         selectedCalendar = Calendar.getInstance();
 
-        btnMenu.setOnClickListener(v -> {
-            SettingsDialogFragment dialog = new SettingsDialogFragment(new SettingsDialogFragment.Listener() {
-                @Override public void onHome() {
-                    Toast.makeText(MainActivity.this, "Home", Toast.LENGTH_SHORT).show();
-                }
+        // ===== Settings Popup Overlay (same as Journal) =====
+        ViewGroup rootView = findViewById(android.R.id.content);
+        View settingsPopup = getLayoutInflater().inflate(R.layout.dialog_settings, rootView, false);
+        rootView.addView(settingsPopup);
+        settingsPopup.setVisibility(android.view.View.GONE);
 
-                @Override public void onHistory() {
-                    Toast.makeText(MainActivity.this, "History", Toast.LENGTH_SHORT).show();
-                }
+// Burger icon opens popup
+        btnMenu.setOnClickListener(v -> settingsPopup.setVisibility(android.view.View.VISIBLE));
 
-                @Override public void onBack() {
-                    // example: just close popup, or go back
-                    Toast.makeText(MainActivity.this, "Back", Toast.LENGTH_SHORT).show();
-                }
+// Tap outside closes popup
+        settingsPopup.setOnClickListener(v -> settingsPopup.setVisibility(android.view.View.GONE));
 
-                @Override public void onMood() {
-                    Toast.makeText(MainActivity.this, "Mood Tracker", Toast.LENGTH_SHORT).show();
-                }
+// Prevent closing when tapping card itself (optional but recommended)
+        View settingsCard = settingsPopup.findViewById(R.id.settingsCard);
+        if (settingsCard != null) {
+            settingsCard.setOnClickListener(v -> {});
+        }
+
+// Buttons inside popup
+        ImageButton btnHome = settingsPopup.findViewById(R.id.btnHome);
+        ImageButton btnBack = settingsPopup.findViewById(R.id.btnBack);
+        ImageButton btnHistory = settingsPopup.findViewById(R.id.btnHistory);
+        ImageButton btnMood = settingsPopup.findViewById(R.id.btnMood);
+
+        if (btnHome != null) {
+            btnHome.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                Toast.makeText(MainActivity.this, "Home", Toast.LENGTH_SHORT).show();
+                // you're already on Home, so just close
             });
+        }
 
-            dialog.show(getSupportFragmentManager(), "settings_popup");
-        });
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
+        }
+
+        if (btnHistory != null) {
+            btnHistory.setOnClickListener(v -> {
+                Toast.makeText(MainActivity.this, "History clicked", Toast.LENGTH_SHORT).show();
+                // startActivity(new Intent(MainActivity.this, HistoryActivity.class));
+                // settingsPopup.setVisibility(View.GONE);
+            });
+        }
+
+        if (btnMood != null) {
+            btnMood.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(MainActivity.this, MoodActivity.class));
+            });
+        }
+
 
         Button tvJournal = findViewById(R.id.tvJournal);
 

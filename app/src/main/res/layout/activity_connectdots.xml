@@ -25,10 +25,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/game_title"
+            android:text="Connect the Dots"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/black"
             android:gravity="center" />
 
         <ImageView
@@ -38,12 +38,12 @@
             android:src="@android:drawable/ic_menu_preferences"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:padding="4dp"
-            android:contentDescription="@string/settings" />
+            android:contentDescription="Settings" />
 
     </LinearLayout>
 
     <!-- Game Board -->
-    <com.example.zenpath.GameBoardView
+    <com.example.zenpath.GameBoardViewActivity
         android:id="@+id/game_board"
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -61,7 +61,7 @@
         android:layout_marginBottom="24dp"
         android:text="Level 1"
         android:textSize="18sp"
-        android:textColor="@color/text_primary"
+        android:textColor="@color/black"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

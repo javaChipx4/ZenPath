@@ -13,7 +13,7 @@
         android:layout_margin="32dp"
         app:cardCornerRadius="20dp"
         app:cardElevation="8dp"
-        app:cardBackgroundColor="@color/settings_card_bg"
+        app:cardBackgroundColor="@color/white"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -29,10 +29,10 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/settings"
+                android:text="Settings"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/black"
                 android:gravity="center"
                 android:layout_marginBottom="24dp" />
 
@@ -43,7 +43,7 @@
                 android:layout_height="wrap_content"
                 android:text="Volume: 50%"
                 android:textSize="16sp"
-                android:textColor="@color/text_primary"
+                android:textColor="@color/black"
                 android:layout_marginBottom="8dp" />
 
             <SeekBar
@@ -66,7 +66,7 @@
                 android:id="@+id/home_button"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:text="@string/home"
+                android:text="Home"
                 android:textColor="@color/white"
                 android:background="@drawable/button_background_cd"
                 android:layout_marginBottom="8dp" />
@@ -75,8 +75,8 @@
                 android:id="@+id/privacy_button"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:text="@string/privacy"
-                android:textColor="@color/text_primary"
+                android:text="Privacy"
+                android:textColor="@color/black"
                 android:background="@drawable/button_outline_background_cd"
                 android:layout_marginBottom="8dp" />
 
@@ -84,8 +84,8 @@
                 android:id="@+id/back_button"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:text="@string/back"
-                android:textColor="@color/text_primary"
+                android:text="Back"
+                android:textColor="@color/black"
                 android:background="@drawable/button_outline_background_cd"
                 android:layout_marginBottom="8dp" />
 
@@ -93,8 +93,8 @@
                 android:id="@+id/reset_button"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:text="@string/reset_game"
-                android:textColor="@color/text_primary"
+                android:text="Reset Game"
+                android:textColor="@color/black"
                 android:background="@drawable/button_outline_background_cd" />
 
         </LinearLayout>

@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class GameBoardView extends View {
+public class GameBoardViewActivity extends View {
     private static final int MAX_GRID_SIZE = 8;
     private static final int MIN_GRID_SIZE = 4;
     private static final int BASE_CELL_SIZE = 80;
@@ -46,17 +46,17 @@ public class GameBoardView extends View {
             R.color.pastel_yellow
     };
 
-    public GameBoardView(Context context) {
+    public GameBoardViewActivity(Context context) {
         super(context);
         init();
     }
 
-    public GameBoardView(Context context, AttributeSet attrs) {
+    public GameBoardViewActivity(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public GameBoardView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public GameBoardViewActivity(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }

@@ -76,9 +76,11 @@ public class ActivityDiary extends AppCompatActivity {
 
         if (btnMood != null) {
             btnMood.setOnClickListener(v -> {
-                Toast.makeText(this, "Mood Tracker clicked", Toast.LENGTH_SHORT).show();
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(ActivityDiary.this, MoodActivity.class));
             });
         }
+
 
 
         // FIX: Match the ID exactly to the XML (btn_save)

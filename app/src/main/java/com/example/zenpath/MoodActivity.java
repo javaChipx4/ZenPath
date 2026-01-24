@@ -1,11 +1,14 @@
 package com.example.zenpath;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -56,6 +59,47 @@ public class MoodActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mood_mt);
+
+        // ===== Settings Popup Overlay (reuse) =====
+        ViewGroup rootView = findViewById(android.R.id.content);
+
+// Inflate the popup overlay layout (same one used in Home/Journal)
+        View settingsPopup = getLayoutInflater().inflate(R.layout.dialog_settings, rootView, false);
+
+// Add overlay to the activity
+        rootView.addView(settingsPopup);
+        settingsPopup.setVisibility(View.GONE);
+
+// Open popup when burger/menu icon is clicked
+        ImageView menuIcon = findViewById(R.id.menuIcon);
+        menuIcon.setOnClickListener(v -> settingsPopup.setVisibility(View.VISIBLE));
+
+// Close popup when tapping outside
+        settingsPopup.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
+
+// Prevent closing when clicking inside the card itself
+        View settingsCard = settingsPopup.findViewById(R.id.settingsCard);
+        if (settingsCard != null) {
+            settingsCard.setOnClickListener(v -> {});
+        }
+
+// OPTIONAL: Hook popup buttons (edit if your IDs differ)
+        View btnHome = settingsPopup.findViewById(R.id.btnHome);
+        if (btnHome != null) {
+            btnHome.setOnClickListener(v -> {
+                startActivity(new Intent(MoodActivity.this, MainActivity.class));
+                settingsPopup.setVisibility(View.GONE);
+            });
+        }
+
+        View btnBack = settingsPopup.findViewById(R.id.btnBack);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                finish();
+            });
+        }
+
 
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
