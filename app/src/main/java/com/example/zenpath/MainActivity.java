@@ -71,11 +71,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (btnHistory != null) {
             btnHistory.setOnClickListener(v -> {
-                Toast.makeText(MainActivity.this, "History clicked", Toast.LENGTH_SHORT).show();
-                // startActivity(new Intent(MainActivity.this, HistoryActivity.class));
-                // settingsPopup.setVisibility(View.GONE);
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(MainActivity.this, DiaryHistoryActivity.class));
             });
         }
+
 
         if (btnMood != null) {
             btnMood.setOnClickListener(v -> {

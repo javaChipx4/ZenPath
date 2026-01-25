@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- for MoodTracker -->
 
     <!-- Week labels under month (SUN MON TUE...) -->
     <style name="WeekLabel">
@@ -49,5 +50,38 @@
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>
+
+
+    <!-- mood history -->
+    <style name="WeekDot">
+        <item name="android:layout_width">18dp</item>
+        <item name="android:layout_height">18dp</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:background">@drawable/bg_week_dot_mh</item>
+    </style>
+
+    <style name="WeekDotSelected">
+        <item name="android:layout_width">18dp</item>
+        <item name="android:layout_height">18dp</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:background">@drawable/bg_week_dot_selected_mh</item>
+    </style>
+
+    <style name="EmojiItem">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:textSize">26sp</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="HistoryRect">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:layout_marginBottom">14dp</item>
+        <item name="android:background">@drawable/bg_history_rect</item>
+    </style>
+
+
 
 </resources>

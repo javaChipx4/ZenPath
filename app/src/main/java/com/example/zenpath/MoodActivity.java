@@ -8,6 +8,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -91,6 +92,15 @@ public class MoodActivity extends AppCompatActivity {
                 settingsPopup.setVisibility(View.GONE);
             });
         }
+
+        ImageButton btnHistory = settingsPopup.findViewById(R.id.btnHistory);
+        if (btnHistory != null) {
+            btnHistory.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(MoodActivity.this, DiaryHistoryActivity.class));
+            });
+        }
+
 
         View btnBack = settingsPopup.findViewById(R.id.btnBack);
         if (btnBack != null) {

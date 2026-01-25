@@ -15,8 +15,22 @@
             android:exported="false" />
 
         <activity
+            android:name=".DiaryHistoryActivity"
+            android:exported="false" />
+
+
+        <activity
             android:name=".MoodActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".MoodHistoryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".StressHistoryActivity"
+            android:exported="false" />
+
 
         <activity
             android:name=".SelectionGamesActivity"

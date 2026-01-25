@@ -57,10 +57,12 @@ public class SelectionGamesActivity extends AppCompatActivity {
         }
 
         if (btnHistory != null) {
-            btnHistory.setOnClickListener(v ->
-                    Toast.makeText(this, "History clicked", Toast.LENGTH_SHORT).show()
-            );
+            btnHistory.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(SelectionGamesActivity.this, DiaryHistoryActivity.class));
+            });
         }
+
 
         if (btnMood != null) {
             btnMood.setOnClickListener(v -> {

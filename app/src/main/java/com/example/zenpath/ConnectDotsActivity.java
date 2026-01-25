@@ -73,6 +73,8 @@ public class ConnectDotsActivity extends AppCompatActivity {
         ImageButton btnHome = settingsPopup.findViewById(R.id.btnHome);
         ImageButton btnBack = settingsPopup.findViewById(R.id.btnBack);
         ImageButton btnMood = settingsPopup.findViewById(R.id.btnMood);
+        ImageButton btnHistory = settingsPopup.findViewById(R.id.btnHistory);
+
 
         if (btnHome != null) {
             btnHome.setOnClickListener(v -> {
@@ -90,6 +92,14 @@ public class ConnectDotsActivity extends AppCompatActivity {
                 finish();
             });
         }
+
+        if (btnHistory != null) {
+            btnHistory.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(ConnectDotsActivity.this, DiaryHistoryActivity.class));
+            });
+        }
+
 
         if (btnMood != null) {
             btnMood.setOnClickListener(v -> {

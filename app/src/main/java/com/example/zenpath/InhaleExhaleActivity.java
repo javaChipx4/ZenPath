@@ -89,6 +89,8 @@ public class InhaleExhaleActivity extends AppCompatActivity {
         ImageButton btnHomePopup = settingsPopup.findViewById(R.id.btnHome);
         ImageButton btnBackPopup = settingsPopup.findViewById(R.id.btnBack);
         ImageButton btnMoodPopup = settingsPopup.findViewById(R.id.btnMood);
+        ImageButton btnHistoryPopup = settingsPopup.findViewById(R.id.btnHistory);
+
 
         if (btnHomePopup != null) {
             btnHomePopup.setOnClickListener(v -> {
@@ -106,6 +108,14 @@ public class InhaleExhaleActivity extends AppCompatActivity {
                 finish();
             });
         }
+
+        if (btnHistoryPopup != null) {
+            btnHistoryPopup.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(InhaleExhaleActivity.this, DiaryHistoryActivity.class));
+            });
+        }
+
 
         if (btnMoodPopup != null) {
             btnMoodPopup.setOnClickListener(v -> {
