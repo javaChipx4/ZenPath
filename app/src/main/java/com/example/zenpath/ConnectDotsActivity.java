@@ -4,14 +4,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 public class ConnectDotsActivity extends AppCompatActivity {
 
@@ -23,25 +22,17 @@ public class ConnectDotsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        setContentView(R.layout.activity_connectdots);
 
         initViews();
         loadGameData();
-        setupClickListeners();
+        setupPopupMenu(); // ✅ add popup
+        checkLevelCompletion();
     }
 
     private void initViews() {
         gameBoard = findViewById(R.id.game_board);
         levelLabel = findViewById(R.id.level_label);
-        ImageView settingsIcon = findViewById(R.id.settings_icon);
-
         preferences = getSharedPreferences("GamePreferences", MODE_PRIVATE);
     }
 
@@ -51,31 +42,73 @@ public class ConnectDotsActivity extends AppCompatActivity {
         gameBoard.setCurrentLevel(currentLevel);
     }
 
-    private void setupClickListeners() {
-        ImageView settingsIcon = findViewById(R.id.settings_icon);
-        settingsIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openSettings();
-            }
-        });
-    }
-
-    private void openSettings() {
-        Intent intent = new Intent(this, SettingsActivity.class);
-        startActivity(intent);
-    }
-
     private void updateLevelDisplay() {
         int gridSize = gameBoard.getCurrentGridSize();
-        int dotCount = getCurrentLevel() == 1 ? 6 : 8;
+        int dotCount = (currentLevel == 1) ? 6 : 8;
         int pairCount = dotCount / 2;
-        levelLabel.setText(String.format(getString(R.string.level_format), currentLevel) +
-                " (" + gridSize + "x" + gridSize + ", " + dotCount + " dots, " + pairCount + " pairs)");
+
+        levelLabel.setText("Level " + currentLevel +
+                " (" + gridSize + "x" + gridSize + ", " +
+                dotCount + " dots, " + pairCount + " pairs)");
     }
 
-    private int getCurrentLevel() {
-        return currentLevel;
+    private void setupPopupMenu() {
+        // ===== SAME POPUP LOGIC AS OTHER SCREENS =====
+        ViewGroup rootView = findViewById(android.R.id.content);
+
+        View settingsPopup = getLayoutInflater().inflate(R.layout.dialog_settings, rootView, false);
+        rootView.addView(settingsPopup);
+        settingsPopup.setVisibility(View.GONE);
+
+        ImageView menuIcon = findViewById(R.id.menuIcon);
+        if (menuIcon != null) {
+            menuIcon.setOnClickListener(v -> settingsPopup.setVisibility(View.VISIBLE));
+        }
+
+        settingsPopup.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
+
+        View settingsCard = settingsPopup.findViewById(R.id.settingsCard);
+        if (settingsCard != null) settingsCard.setOnClickListener(v -> {});
+
+        ImageButton btnHome = settingsPopup.findViewById(R.id.btnHome);
+        ImageButton btnBack = settingsPopup.findViewById(R.id.btnBack);
+        ImageButton btnMood = settingsPopup.findViewById(R.id.btnMood);
+
+        if (btnHome != null) {
+            btnHome.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                Intent i = new Intent(ConnectDotsActivity.this, MainActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(i);
+                finish();
+            });
+        }
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                finish();
+            });
+        }
+
+        if (btnMood != null) {
+            btnMood.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(ConnectDotsActivity.this, MoodActivity.class));
+            });
+        }
+    }
+
+    private void checkLevelCompletion() {
+        if (gameBoard.isLevelComplete()) {
+            new android.os.Handler().postDelayed(() -> {
+                currentLevel++;
+                setCurrentLevel(currentLevel);
+                Toast.makeText(ConnectDotsActivity.this,
+                        "Level " + (currentLevel - 1) + " Complete! Starting Level " + currentLevel,
+                        Toast.LENGTH_SHORT).show();
+            }, 1000);
+        }
     }
 
     public void setCurrentLevel(int level) {
@@ -83,7 +116,6 @@ public class ConnectDotsActivity extends AppCompatActivity {
         updateLevelDisplay();
         gameBoard.setCurrentLevel(currentLevel);
 
-        // Save level to preferences
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("current_level", currentLevel);
         editor.apply();
@@ -92,28 +124,6 @@ public class ConnectDotsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh game data when returning from settings
         loadGameData();
-
-        // Check for level completion and auto-advance
-        checkLevelCompletion();
-    }
-
-    private void checkLevelCompletion() {
-        if (gameBoard.isLevelComplete()) {
-            // Auto-advance to next level after a short delay
-            new android.os.Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    currentLevel++;
-                    setCurrentLevel(currentLevel);
-
-                    // Show level complete message
-                    android.widget.Toast.makeText(ConnectDotsActivity.this,
-                            "Level " + (currentLevel - 1) + " Complete! Starting Level " + currentLevel,
-                            android.widget.Toast.LENGTH_SHORT).show();
-                }
-            }, 1000); // 1 second delay
-        }
     }
 }

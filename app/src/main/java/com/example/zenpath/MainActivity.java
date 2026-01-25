@@ -102,15 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Play button
         btnPlay.setOnClickListener(v -> {
-            int y = selectedCalendar.get(Calendar.YEAR);
-            int m = selectedCalendar.get(Calendar.MONTH) + 1;
-            int d = selectedCalendar.get(Calendar.DAY_OF_MONTH);
-
-            Toast.makeText(
-                    this,
-                    "Play clicked • " + d + "/" + m + "/" + y,
-                    Toast.LENGTH_SHORT
-            ).show();
+            startActivity(new Intent(MainActivity.this, SelectionGamesActivity.class));
         });
     }
 }

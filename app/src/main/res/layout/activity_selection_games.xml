@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_blue_gradient_diary">
+
+    <!-- Top thin line -->
+    <View
+        android:id="@+id/topLine"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:alpha="0.45"
+        android:background="#1E1E1E"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="18dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"/>
+
+    <!-- Burger icon -->
+    <ImageView
+        android:id="@+id/menuIcon"
+        android:layout_width="26dp"
+        android:layout_height="26dp"
+        android:src="@drawable/ic_menu"
+        android:tint="#000000"
+        android:contentDescription="Menu"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="22dp"/>
+
+    <!-- Big purple panel -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/panelCard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="46dp"
+        android:layout_marginEnd="46dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginBottom="70dp"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="#CFC8E6"
+        app:layout_constraintTop_toBottomOf="@id/topLine"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!-- GAME 1 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardGame1"
+                android:layout_width="0dp"
+                android:layout_height="110dp"
+                android:layout_marginStart="28dp"
+                android:layout_marginTop="120dp"
+                android:layout_marginEnd="10dp"
+                app:cardCornerRadius="2dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#F7F0E6"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/cardGame2">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GAME 1"
+                        android:textSize="10sp"
+                        android:textColor="#1E1E1E"
+                        android:alpha="0.7"
+                        android:fontFamily="serif"/>
+
+                    <TextView
+                        android:id="@+id/btnGame1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="Tap the Calm\nGame"
+                        android:textColor="#1E1E1E"
+                        android:textSize="15sp"
+                        android:fontFamily="serif"
+                        android:clickable="true"
+                        android:focusable="true"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- GAME 2 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardGame2"
+                android:layout_width="0dp"
+                android:layout_height="110dp"
+                android:layout_marginEnd="28dp"
+                android:layout_marginTop="120dp"
+                android:layout_marginStart="10dp"
+                app:cardCornerRadius="2dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#F7F0E6"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@id/cardGame1"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GAME 2"
+                        android:textSize="10sp"
+                        android:textColor="#1E1E1E"
+                        android:alpha="0.7"
+                        android:fontFamily="serif"/>
+
+                    <TextView
+                        android:id="@+id/btnGame2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="Color Match\nRelax"
+                        android:textColor="#1E1E1E"
+                        android:textSize="15sp"
+                        android:fontFamily="serif"
+                        android:clickable="true"
+                        android:focusable="true"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- GAME 3 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardGame3"
+                android:layout_width="0dp"
+                android:layout_height="110dp"
+                android:layout_marginTop="34dp"
+                android:layout_marginStart="70dp"
+                android:layout_marginEnd="70dp"
+                app:cardCornerRadius="2dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#F7F0E6"
+                app:layout_constraintTop_toBottomOf="@id/cardGame1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GAME 3"
+                        android:textSize="10sp"
+                        android:textColor="#1E1E1E"
+                        android:alpha="0.7"
+                        android:fontFamily="serif"/>
+
+                    <TextView
+                        android:id="@+id/btnGame3"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="Breathing\nBubble"
+                        android:textColor="#1E1E1E"
+                        android:textSize="15sp"
+                        android:fontFamily="serif"
+                        android:clickable="true"
+                        android:focusable="true"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

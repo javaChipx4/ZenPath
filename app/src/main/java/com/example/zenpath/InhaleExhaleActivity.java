@@ -1,9 +1,12 @@
 package com.example.zenpath;
 
 import android.animation.ValueAnimator;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -64,70 +67,58 @@ public class InhaleExhaleActivity extends AppCompatActivity {
     }
 
     private void setupSettingsPanel() {
-        settingsButton.setOnClickListener(v -> toggleSettingsPanel());
 
-        btnCloseSettings.setOnClickListener(v -> hideSettingsPanel());
+        // We will reuse the SAME popup layout used in other screens (dialog_settings)
+        ViewGroup rootView = findViewById(android.R.id.content);
 
-        btnHome.setOnClickListener(v -> {
-            hideSettingsPanel();
-            Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
-        });
+        View settingsPopup = getLayoutInflater().inflate(R.layout.dialog_settings, rootView, false);
+        rootView.addView(settingsPopup);
+        settingsPopup.setVisibility(View.GONE);
 
-        btnInstructions.setOnClickListener(v -> {
-            hideSettingsPanel();
-            showInstructions();
-        });
+        // Tap outside closes popup
+        settingsPopup.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
 
-        btnReset.setOnClickListener(v -> {
-            hideSettingsPanel();
-            resetBreathingAnimation();
-        });
+        // Prevent close when touching card
+        View settingsCard = settingsPopup.findViewById(R.id.settingsCard);
+        if (settingsCard != null) settingsCard.setOnClickListener(v -> {});
 
-        btnMoodTracker.setOnClickListener(v -> {
-            hideSettingsPanel();
-            Toast.makeText(this, "Mood Tracker - Coming Soon!", Toast.LENGTH_SHORT).show();
-        });
+        // Open popup when cog icon clicked (your existing icon)
+        settingsButton.setOnClickListener(v -> settingsPopup.setVisibility(View.VISIBLE));
 
-        settingsOverlay.setOnClickListener(v -> hideSettingsPanel());
-    }
+        // Wire only the buttons you requested
+        ImageButton btnHomePopup = settingsPopup.findViewById(R.id.btnHome);
+        ImageButton btnBackPopup = settingsPopup.findViewById(R.id.btnBack);
+        ImageButton btnMoodPopup = settingsPopup.findViewById(R.id.btnMood);
 
-    private void toggleSettingsPanel() {
-        if (settingsPanel.getVisibility() == View.VISIBLE) {
-            hideSettingsPanel();
-        } else {
-            showSettingsPanel();
+        if (btnHomePopup != null) {
+            btnHomePopup.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                Intent i = new Intent(InhaleExhaleActivity.this, MainActivity.class);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(i);
+                finish();
+            });
         }
+
+        if (btnBackPopup != null) {
+            btnBackPopup.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                finish();
+            });
+        }
+
+        if (btnMoodPopup != null) {
+            btnMoodPopup.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(InhaleExhaleActivity.this, MoodActivity.class));
+            });
+        }
+
+        // OPTIONAL: If you want to hide your old panel completely so it never shows:
+        if (settingsOverlay != null) settingsOverlay.setVisibility(View.GONE);
+        if (settingsPanel != null) settingsPanel.setVisibility(View.GONE);
     }
 
-    private void showSettingsPanel() {
-        settingsOverlay.setVisibility(View.VISIBLE);
-        settingsPanel.setVisibility(View.VISIBLE);
-        settingsPanel.setScaleX(0.8f);
-        settingsPanel.setScaleY(0.8f);
-        settingsPanel.setAlpha(0f);
-
-        settingsPanel.animate()
-                .scaleX(1f)
-                .scaleY(1f)
-                .alpha(1f)
-                .setDuration(300)
-                .setInterpolator(new AccelerateDecelerateInterpolator())
-                .start();
-    }
-
-    private void hideSettingsPanel() {
-        settingsPanel.animate()
-                .scaleX(0.8f)
-                .scaleY(0.8f)
-                .alpha(0f)
-                .setDuration(300)
-                .setInterpolator(new AccelerateDecelerateInterpolator())
-                .withEndAction(() -> {
-                    settingsOverlay.setVisibility(View.GONE);
-                    settingsPanel.setVisibility(View.GONE);
-                })
-                .start();
-    }
 
     private void showInstructions() {
         Toast.makeText(this, "Follow the bubble: Inhale as it grows, Exhale as it shrinks", Toast.LENGTH_LONG).show();

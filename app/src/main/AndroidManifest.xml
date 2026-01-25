@@ -19,6 +19,18 @@
             android:exported="false" />
 
         <activity
+            android:name=".SelectionGamesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".InhaleExhaleActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ConnectDotsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
