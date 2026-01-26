@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#F5F5FF">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome 🌿"
+        android:textSize="28sp"
+        android:textColor="#1E1B3A"
+        android:layout_marginBottom="10dp"/>
+
+    <TextView
+        android:id="@+id/tvStreakHome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Daily streak: 0 🔥"
+        android:textSize="16sp"
+        android:textColor="#3A3566"
+        android:layout_marginBottom="26dp"/>
+
+    <Button
+        android:id="@+id/btnOpenGame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play Star Sweep 🌙✨"
+        android:backgroundTint="#C6B7E2"
+        android:textColor="#1E1B3A"
+        android:paddingLeft="18dp"
+        android:paddingRight="18dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"/>
+</LinearLayout>

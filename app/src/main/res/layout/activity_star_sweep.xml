@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- GAME VIEW -->
+    <com.example.zenpath.StarSweepView
+        android:id="@+id/starSweepView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- TOP HUD -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvBreath"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Inhale…"
+                android:textSize="18sp"
+                android:textColor="#FFFFFF" />
+
+            <Button
+                android:id="@+id/btnPause"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pause"
+                android:backgroundTint="#C6B7E2"
+                android:textColor="#1E1B3A" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvStarsLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stars left: 0"
+            android:textSize="16sp"
+            android:textColor="#EDE7FF"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:id="@+id/tvStreakGame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Daily streak: 0 🔥"
+            android:textSize="16sp"
+            android:textColor="#EDE7FF"
+            android:layout_marginTop="4dp" />
+
+        <ProgressBar
+            android:id="@+id/progressStars"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:layout_marginTop="8dp"
+            android:max="100"
+            android:progress="0" />
+    </LinearLayout>
+
+    <!-- PAUSE OVERLAY -->
+    <LinearLayout
+        android:id="@+id/pauseOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:background="#88000000"
+        android:visibility="gone"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Paused 🌙"
+            android:textSize="26sp"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="18dp"/>
+
+        <Button
+            android:id="@+id/btnResume"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Resume"
+            android:backgroundTint="#C6B7E2"
+            android:textColor="#1E1B3A"
+            android:padding="14dp"/>
+
+        <Button
+            android:id="@+id/btnReset"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Reset"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="#FFFFFF"
+            android:textColor="#1E1B3A"
+            android:padding="14dp"/>
+    </LinearLayout>
+
+    <!-- PLAY AGAIN -->
+    <Button
+        android:id="@+id/btnPlayAgain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Play Again ✨"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="24dp"
+        android:visibility="gone"
+        android:backgroundTint="#C6B7E2"
+        android:textColor="#1E1B3A"
+        android:padding="14dp"/>
+</FrameLayout>

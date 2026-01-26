@@ -91,10 +91,13 @@ public class SelectionGamesActivity extends AppCompatActivity {
             startActivity(new Intent(SelectionGamesActivity.this, ConnectDotsActivity.class));
         });
 
+        findViewById(R.id.btnGame2).setOnClickListener(v -> {
+                    startActivity(new Intent(SelectionGamesActivity.this, StarSweepActivity.class));
+                });
+
         // GAME 3 - Breathing Bubble
         findViewById(R.id.btnGame3).setOnClickListener(v -> {
             startActivity(new Intent(SelectionGamesActivity.this, InhaleExhaleActivity.class));
         });
-
     }
 }

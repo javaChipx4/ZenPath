@@ -15,11 +15,6 @@
 
         <!-- OPTIONAL AURA BACKGROUND -->
         <!-- Comment this out if you don't have the class -->
-        <com.example.zenpath.InteractiveGradientView
-            android:id="@+id/auraView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
         <!-- UI CONTENT -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"

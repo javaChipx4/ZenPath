@@ -4,5 +4,7 @@
     <string name="level_format">LEVEL %1$d</string>
     <string name="volume">Volume</string>
 
+    <string name="name_app">StarSweepActivity</string>
+
 
 </resources>

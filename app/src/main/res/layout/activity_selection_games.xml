@@ -134,7 +134,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center"
-                        android:text="Color Match\nRelax"
+                        android:text="Star Sweep Game"
                         android:textColor="#1E1E1E"
                         android:textSize="15sp"
                         android:fontFamily="serif"
