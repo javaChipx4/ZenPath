@@ -32,13 +32,15 @@
                 android:textSize="18sp"
                 android:textColor="#FFFFFF" />
 
-            <Button
-                android:id="@+id/btnPause"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Pause"
-                android:backgroundTint="#C6B7E2"
-                android:textColor="#1E1B3A" />
+            <ImageButton
+                android:id="@+id/menuIcon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@android:color/transparent"
+                android:contentDescription="Menu"
+                android:src="@drawable/ic_settings_ie"
+                android:tint="#FFFFFF" />
+
         </LinearLayout>
 
         <TextView

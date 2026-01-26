@@ -1,8 +1,11 @@
 package com.example.zenpath;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -11,8 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 public class StarSweepActivity extends AppCompatActivity {
 
     private StarSweepView starSweepView;
-    private Button btnPlayAgain, btnPause, btnResume, btnReset;
-    private View pauseOverlay;
+    private View btnPlayAgain;
     private TextView tvBreath, tvStarsLeft, tvStreakGame;
     private ProgressBar progressStars;
 
@@ -24,11 +26,6 @@ public class StarSweepActivity extends AppCompatActivity {
         starSweepView = findViewById(R.id.starSweepView);
 
         btnPlayAgain = findViewById(R.id.btnPlayAgain);
-        btnPause = findViewById(R.id.btnPause);
-        btnResume = findViewById(R.id.btnResume);
-        btnReset = findViewById(R.id.btnReset);
-
-        pauseOverlay = findViewById(R.id.pauseOverlay);
 
         tvBreath = findViewById(R.id.tvBreath);
         tvStarsLeft = findViewById(R.id.tvStarsLeft);
@@ -38,9 +35,66 @@ public class StarSweepActivity extends AppCompatActivity {
         // Show current streak
         tvStreakGame.setText("Daily streak: " + StreakManager.getStreak(this) + " 🔥");
 
-        // IMPORTANT: Hide Play Again until flash animation finishes
+        // Hide Play Again until flash animation finishes
         btnPlayAgain.setVisibility(View.GONE);
 
+        // ===== Settings Popup Overlay (reuse dialog_settings) =====
+        ViewGroup rootView = findViewById(android.R.id.content);
+        View settingsPopup = getLayoutInflater().inflate(R.layout.dialog_settings, rootView, false);
+        rootView.addView(settingsPopup);
+        settingsPopup.setVisibility(View.GONE);
+
+        // Open popup via burger icon (menuIcon in your HUD)
+        ImageView menuIcon = findViewById(R.id.menuIcon);
+        if (menuIcon != null) {
+            menuIcon.setOnClickListener(v -> settingsPopup.setVisibility(View.VISIBLE));
+        }
+
+        // Close popup when tapping outside
+        settingsPopup.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
+
+        // Prevent closing when tapping inside the card
+        View settingsCard = settingsPopup.findViewById(R.id.settingsCard);
+        if (settingsCard != null) settingsCard.setOnClickListener(v -> {});
+
+        // Popup buttons
+        ImageButton btnHome = settingsPopup.findViewById(R.id.btnHome);
+        ImageButton btnBack = settingsPopup.findViewById(R.id.btnBack);
+        ImageButton btnHistory = settingsPopup.findViewById(R.id.btnHistory);
+        ImageButton btnMood = settingsPopup.findViewById(R.id.btnMood);
+
+        if (btnHome != null) {
+            btnHome.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(StarSweepActivity.this, MainActivity.class));
+                finish();
+            });
+        }
+
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                finish();
+            });
+        }
+
+        if (btnHistory != null) {
+            btnHistory.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(StarSweepActivity.this, DiaryHistoryActivity.class));
+            });
+        }
+
+        if (btnMood != null) {
+            btnMood.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(StarSweepActivity.this, MoodActivity.class));
+            });
+        }
+
+        // (Switch Profile is GONE by default in dialog_settings, so no need to hide it here)
+
+        // ===== Game HUD callbacks =====
         starSweepView.setHudListener(new StarSweepView.HudListener() {
             @Override
             public void onBreathText(String text) {
@@ -56,16 +110,13 @@ public class StarSweepActivity extends AppCompatActivity {
 
             @Override
             public void onFinishFlashStarted() {
-                // Optional: you can show a message here if you want
-                // tvBreath.setText("Nice ✨");
+                // optional
             }
 
             @Override
             public void onFinishedReady() {
-                // Streak counts ONLY when the 2s flash is done
                 int newStreak = StreakManager.recordCompletion(StarSweepActivity.this);
                 tvStreakGame.setText("Daily streak: " + newStreak + " 🔥");
-
                 btnPlayAgain.setVisibility(View.VISIBLE);
             }
         });
@@ -73,23 +124,6 @@ public class StarSweepActivity extends AppCompatActivity {
         btnPlayAgain.setOnClickListener(v -> {
             btnPlayAgain.setVisibility(View.GONE);
             starSweepView.resetGame();
-        });
-
-        btnPause.setOnClickListener(v -> {
-            starSweepView.setPaused(true);
-            pauseOverlay.setVisibility(View.VISIBLE);
-        });
-
-        btnResume.setOnClickListener(v -> {
-            pauseOverlay.setVisibility(View.GONE);
-            starSweepView.setPaused(false);
-        });
-
-        btnReset.setOnClickListener(v -> {
-            pauseOverlay.setVisibility(View.GONE);
-            btnPlayAgain.setVisibility(View.GONE);
-            starSweepView.resetGame();
-            starSweepView.setPaused(false);
         });
     }
 }

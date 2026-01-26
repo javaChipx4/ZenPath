@@ -9,11 +9,10 @@
     android:focusable="true"
     android:padding="22dp">
 
-    <!-- YOUR CARD (same layout you sent) -->
     <androidx.cardview.widget.CardView
         android:id="@+id/settingsCard"
         android:layout_width="320dp"
-        android:layout_height="360dp"
+        android:layout_height="420dp"
         android:layout_gravity="center"
         app:cardCornerRadius="14dp"
         app:cardUseCompatPadding="true"
@@ -37,34 +36,36 @@
                 android:textStyle="bold"
                 android:fontFamily="serif" />
 
+            <!-- ===== Row 1 ===== -->
+
             <!-- Home -->
             <ImageButton
                 android:id="@+id/btnHome"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_below="@id/tvSettingsTitle"
-                android:layout_marginTop="28dp"
+                android:layout_marginTop="26dp"
                 android:layout_alignParentStart="true"
                 android:layout_marginStart="44dp"
                 android:background="@android:color/transparent"
                 android:contentDescription="Home"
                 android:src="@android:drawable/ic_menu_view" />
 
-            <!-- History -->
-
             <TextView
                 android:id="@+id/tvHome"
-                android:layout_width="wrap_content"
+                android:layout_width="56dp"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/btnHome"
                 android:layout_alignStart="@id/btnHome"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="3dp"
+                android:gravity="center"
                 android:fontFamily="serif"
                 android:text="home"
                 android:textColor="#1E1E1E"
-                android:textSize="12sp" />
+                android:textSize="11sp" />
 
+
+            <!-- History -->
             <ImageButton
                 android:id="@+id/btnHistory"
                 android:layout_width="56dp"
@@ -76,46 +77,47 @@
                 android:contentDescription="History"
                 android:src="@android:drawable/ic_menu_recent_history" />
 
-            <!-- Back -->
             <TextView
                 android:id="@+id/tvHistory"
-                android:layout_width="wrap_content"
+                android:layout_width="56dp"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/btnHistory"
                 android:layout_alignStart="@id/btnHistory"
-                android:layout_marginStart="9dp"
                 android:layout_marginTop="6dp"
+                android:gravity="center"
                 android:fontFamily="serif"
                 android:text="history"
                 android:textColor="#1E1E1E"
                 android:textSize="12sp" />
 
+            <!-- ===== Row 2 ===== -->
+
+            <!-- Back -->
             <ImageButton
                 android:id="@+id/btnBack"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
-                android:layout_below="@id/btnHome"
-                android:layout_marginTop="26dp"
+                android:layout_below="@id/tvHome"
+                android:layout_marginTop="18dp"
                 android:layout_alignStart="@id/btnHome"
                 android:background="@android:color/transparent"
                 android:contentDescription="Back"
                 android:src="@android:drawable/ic_media_previous" />
 
-            <!-- Mood Tracker -->
-
             <TextView
                 android:id="@+id/tvBack"
-                android:layout_width="wrap_content"
+                android:layout_width="56dp"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/btnBack"
                 android:layout_alignStart="@id/btnBack"
-                android:layout_marginStart="15dp"
-                android:layout_marginTop="1dp"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
                 android:fontFamily="serif"
                 android:text="back"
                 android:textColor="#1E1E1E"
                 android:textSize="12sp" />
 
+            <!-- Mood Tracker -->
             <ImageButton
                 android:id="@+id/btnMood"
                 android:layout_width="56dp"
@@ -126,43 +128,73 @@
                 android:contentDescription="Mood Tracker"
                 android:src="@android:drawable/ic_menu_edit" />
 
-            <!-- Volume icon -->
-
             <TextView
                 android:id="@+id/tvMood"
-                android:layout_width="wrap_content"
+                android:layout_width="76dp"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/btnMood"
                 android:layout_alignStart="@id/btnMood"
-                android:layout_marginStart="-11dp"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="6dp"
+                android:gravity="center"
                 android:fontFamily="serif"
                 android:text="mood tracker"
                 android:textColor="#1E1E1E"
                 android:textSize="12sp" />
 
+            <!-- ===== NEW Row 3 (Switch Profile) ===== -->
+            <!-- (We will show this ONLY on Home via code; default is GONE) -->
+
+            <ImageButton
+                android:id="@+id/btnSwitchProfile"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_below="@id/tvBack"
+                android:layout_marginTop="15dp"
+                android:layout_centerHorizontal="true"
+                android:background="@android:color/transparent"
+                android:contentDescription="Switch Profile"
+                android:src="@android:drawable/ic_menu_manage"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tvSwitchProfile"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/btnSwitchProfile"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="1dp"
+                android:gravity="center"
+                android:fontFamily="serif"
+                android:text="switch profile"
+                android:textColor="#1E1E1E"
+                android:textSize="12sp"
+                android:visibility="gone" />
+
+            <!-- Volume icon -->
+            <!-- Volume icon -->
             <ImageView
                 android:id="@+id/imgVolume"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                android:layout_below="@id/btnBack"
-                android:layout_marginTop="44dp"
                 android:layout_alignParentStart="true"
+                android:layout_alignParentBottom="true"
                 android:layout_marginStart="28dp"
+                android:layout_marginBottom="34dp"
                 android:src="@android:drawable/ic_lock_silent_mode_off"
                 android:contentDescription="Volume" />
 
-            <!-- Slider line (visual) -->
+            <!-- Slider line (visual placeholder) -->
             <View
                 android:id="@+id/volumeLine"
-                android:layout_width="180dp"
-                android:layout_height="2dp"
-                android:layout_alignBaseline="@id/imgVolume"
+                android:layout_width="160dp"
+                android:layout_height="3dp"
                 android:layout_toEndOf="@id/imgVolume"
-                android:layout_marginStart="12dp"
+                android:layout_centerVertical="true"
+                android:layout_alignTop="@id/imgVolume"
+                android:layout_alignBottom="@id/imgVolume"
+                android:layout_marginStart="10dp"
                 android:background="#1E1E1E"
-                android:alpha="0.55" />
-
+                android:alpha="0.45" />
         </RelativeLayout>
 
     </androidx.cardview.widget.CardView>
