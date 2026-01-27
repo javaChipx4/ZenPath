@@ -20,41 +20,52 @@ public class MoodHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mood_history);
 
+        View tabRow = findViewById(R.id.tabRow);
+        HistorySwipeHelper.attach(
+                this,
+                tabRow,
+                DiaryHistoryActivity.class,
+                StressHistoryActivity.class
+        );
+
         tvMoodNote = findViewById(R.id.tvMoodNote);
 
         setupTabs();
         setupPopupWithRename();
 
-        // Placeholder text (DB later)
         tvMoodNote.setText(
                 "Mood History UI is ready.\n\n" +
                         "Data will appear here once database is connected."
         );
+
+        // ✅ Swipe: Mood (RIGHT -> Diary) (LEFT -> Stress)
+        View root = findViewById(R.id.main);
+        HistorySwipeHelper.attach(this, root,
+                DiaryHistoryActivity.class,
+                StressHistoryActivity.class
+        );
     }
 
-    // ================= TABS =================
     private void setupTabs() {
         Button btnDiary = findViewById(R.id.btnDiaryTab);
         Button btnMood  = findViewById(R.id.btnMoodTab);
         Button btnStress = findViewById(R.id.btnStressTab);
 
-        // Diary History
         btnDiary.setOnClickListener(v -> {
             startActivity(new Intent(this, DiaryHistoryActivity.class));
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
             finish();
         });
 
-        // Mood History (current screen – do nothing)
         btnMood.setEnabled(false);
 
-        // Stress History
         btnStress.setOnClickListener(v -> {
             startActivity(new Intent(this, StressHistoryActivity.class));
+            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             finish();
         });
     }
 
-    // ================= POPUP =================
     private void setupPopupWithRename() {
         ViewGroup rootView = findViewById(android.R.id.content);
 
@@ -92,12 +103,10 @@ public class MoodHistoryActivity extends AppCompatActivity {
             });
         }
 
-        // Already on history
         if (btnHistory != null) {
             btnHistory.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
         }
 
-        // Go back to Mood Tracker
         if (btnMood != null) {
             btnMood.setOnClickListener(v -> {
                 settingsPopup.setVisibility(View.GONE);
