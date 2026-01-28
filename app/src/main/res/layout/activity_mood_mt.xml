@@ -1,145 +1,224 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootCoordinator"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:background="@drawable/bg_blue_gradient_diary">
 
+    <!-- MAIN CONTENT (Calendar only) -->
     <LinearLayout
+        android:id="@+id/mainContent"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:background="@drawable/bg_blue_gradient_diary"
         android:padding="16dp">
 
-
-    <!-- Top line -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:background="#2A2A2A"
-        android:alpha="0.35" />
-
-    <!-- Top-right hamburger -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="end"
-        android:paddingTop="8dp">
-
-        <ImageView
-            android:id="@+id/menuIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_menu"
-            android:contentDescription="Menu" />
-    </LinearLayout>
-
-    <!-- ✅ REPLACED: CalendarView (same as MainActivity style) -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:cardCornerRadius="10dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="#FFFFFF">
-
-        <CalendarView
-            android:id="@+id/calendarView"
+        <View
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:showWeekNumber="false"
-            android:weekDayTextAppearance="@style/HomeCalendarWeekText"
-            android:dateTextAppearance="@style/HomeCalendarDateText"
+            android:layout_height="2dp"
+            android:alpha="0.35"
+            android:background="#2A2A2A" />
 
-            android:focusedMonthDateColor="#1E1E1E"
-            android:unfocusedMonthDateColor="#8A8A8A"
-            android:selectedWeekBackgroundColor="#D6C9F2"
-            android:weekSeparatorLineColor="#E0E0E0"
-            android:firstDayOfWeek="1"
-            android:padding="6dp"/>
-    </androidx.cardview.widget.CardView>
-
-    <!-- Purple panel (keep your existing UI) -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:background="@drawable/bg_panel_purple_mt"
-        android:padding="16dp"
-        android:orientation="vertical">
-
-        <!-- Week dots row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:gravity="end"
+            android:paddingTop="8dp">
 
-            <!-- Labels row -->
-            <LinearLayout
-                android:layout_width="match_parent"
+            <ImageView
+                android:id="@+id/menuIcon"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="7">
-
-                <TextView style="@style/DotLabel" android:text="M"/>
-                <TextView style="@style/DotLabel" android:text="T"/>
-                <TextView style="@style/DotLabel" android:text="W"/>
-                <TextView style="@style/DotLabel" android:text="T"/>
-                <TextView style="@style/DotLabel" android:text="F"/>
-                <TextView style="@style/DotLabel" android:text="S"/>
-                <TextView style="@style/DotLabel" android:text="S"/>
-            </LinearLayout>
-
-            <!-- Dots row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:orientation="horizontal"
-                android:weightSum="7"
-                android:gravity="center_vertical"
-                android:layout_marginTop="4dp">
-
-                <FrameLayout style="@style/DotCircleSlot">
-                    <View android:id="@+id/circleMon" style="@style/DotCircle" android:layout_gravity="center"/>
-                </FrameLayout>
-
-                <FrameLayout style="@style/DotCircleSlot">
-                    <View android:id="@+id/circleTue" style="@style/DotCircle" android:layout_gravity="center"/>
-                </FrameLayout>
-
-                <FrameLayout style="@style/DotCircleSlot">
-                    <View android:id="@+id/circleWed" style="@style/DotCircle" android:layout_gravity="center"/>
-                </FrameLayout>
-
-                <FrameLayout style="@style/DotCircleSlot">
-                    <View android:id="@+id/circleThu" style="@style/DotCircle" android:layout_gravity="center"/>
-                </FrameLayout>
-
-                <FrameLayout style="@style/DotCircleSlot">
-                    <View android:id="@+id/circleFri" style="@style/DotCircle" android:layout_gravity="center"/>
-                </FrameLayout>
-
-                <FrameLayout style="@style/DotCircleSlot">
-                    <View android:id="@+id/circleSat" style="@style/DotCircle" android:layout_gravity="center"/>
-                </FrameLayout>
-
-                <FrameLayout style="@style/DotCircleSlot">
-                    <View android:id="@+id/circleSun" style="@style/DotCircle" android:layout_gravity="center"/>
-                </FrameLayout>
-
-            </LinearLayout>
+                android:src="@drawable/ic_menu"
+                android:contentDescription="Menu" />
         </LinearLayout>
 
-        <!-- Mood row -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:cardCornerRadius="10dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#FFFFFF">
+
+            <CalendarView
+                android:id="@+id/calendarView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:showWeekNumber="false"
+                android:firstDayOfWeek="1"
+                android:weekDayTextAppearance="@style/HomeCalendarWeekText"
+                android:dateTextAppearance="@style/HomeCalendarDateText"
+                android:focusedMonthDateColor="#1E1E1E"
+                android:unfocusedMonthDateColor="#8A8A8A"
+                android:selectedWeekBackgroundColor="#D6C9F2"
+                android:weekSeparatorLineColor="#E0E0E0"
+                android:padding="6dp"/>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
+    <!-- DIM OVERLAY -->
+    <View
+        android:id="@+id/sheetScrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:visibility="gone"/>
+
+    <!-- BOTTOM SHEET -->
+    <LinearLayout
+        android:id="@+id/moodBottomSheet"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/bg_panel_purple_mt"
+        android:padding="16dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        app:behavior_hideable="true"
+        app:behavior_fitToContents="true"
+        app:behavior_halfExpandedRatio="0.55"
+        app:behavior_skipCollapsed="false">
+
+        <View
+            android:layout_width="44dp"
+            android:layout_height="5dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/bg_sheet_handle"/>
+
+        <!-- optional label (hidden) -->
+        <TextView
+            android:id="@+id/tvSelectedDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginBottom="10dp"/>
+
+        <!-- Week header: SUN - SAT -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="7">
+
+            <TextView style="@style/DotLabel" android:text="SUN"/>
+            <TextView style="@style/DotLabel" android:text="MON"/>
+            <TextView style="@style/DotLabel" android:text="TUE"/>
+            <TextView style="@style/DotLabel" android:text="WED"/>
+            <TextView style="@style/DotLabel" android:text="THU"/>
+            <TextView style="@style/DotLabel" android:text="FRI"/>
+            <TextView style="@style/DotLabel" android:text="SAT"/>
+        </LinearLayout>
+
+        <!-- Circles row (NOW TextViews so they can show date numbers) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:orientation="horizontal"
+            android:weightSum="7"
+            android:gravity="center_vertical"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="10dp">
+
+            <FrameLayout style="@style/DotCircleSlot">
+                <TextView
+                    android:id="@+id/circleSun"
+                    style="@style/DotCircle"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#1E1E1E"/>
+            </FrameLayout>
+
+            <FrameLayout style="@style/DotCircleSlot">
+                <TextView
+                    android:id="@+id/circleMon"
+                    style="@style/DotCircle"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#1E1E1E"/>
+            </FrameLayout>
+
+            <FrameLayout style="@style/DotCircleSlot">
+                <TextView
+                    android:id="@+id/circleTue"
+                    style="@style/DotCircle"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#1E1E1E"/>
+            </FrameLayout>
+
+            <FrameLayout style="@style/DotCircleSlot">
+                <TextView
+                    android:id="@+id/circleWed"
+                    style="@style/DotCircle"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#1E1E1E"/>
+            </FrameLayout>
+
+            <FrameLayout style="@style/DotCircleSlot">
+                <TextView
+                    android:id="@+id/circleThu"
+                    style="@style/DotCircle"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#1E1E1E"/>
+            </FrameLayout>
+
+            <FrameLayout style="@style/DotCircleSlot">
+                <TextView
+                    android:id="@+id/circleFri"
+                    style="@style/DotCircle"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#1E1E1E"/>
+            </FrameLayout>
+
+            <FrameLayout style="@style/DotCircleSlot">
+                <TextView
+                    android:id="@+id/circleSat"
+                    style="@style/DotCircle"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text=""
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#1E1E1E"/>
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- Mood -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="MOOD:"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:layout_marginTop="14dp"/>
+            android:layout_marginTop="4dp"/>
 
         <LinearLayout
             android:id="@+id/moodRow"
@@ -218,63 +297,63 @@
             android:id="@+id/etReflection"
             android:layout_width="match_parent"
             android:layout_height="110dp"
+            android:layout_marginTop="6dp"
             android:background="@drawable/bg_reflection_box_mt"
-            android:hint=""
             android:padding="10dp"
             android:gravity="top"
             android:inputType="textMultiLine"/>
+
+        <!-- Stress labels -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:paddingLeft="2dp"
+            android:paddingRight="2dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="0%"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:gravity="start"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="50%"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:gravity="center"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="100%"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                android:gravity="end"/>
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatSeekBar
+            android:id="@+id/seekStress"
+            android:layout_width="match_parent"
+            android:layout_height="26dp"
+            android:layout_marginTop="6dp"
+            android:max="100"
+            android:progress="50"
+            android:progressDrawable="@drawable/stress_seekbar_progress_mt"
+            android:thumb="@drawable/stress_thumb_mt"
+            android:splitTrack="false"
+            android:paddingLeft="2dp"
+            android:paddingRight="2dp"/>
+
     </LinearLayout>
 
-    <!-- Stress bar area -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal"
-        android:weightSum="3"
-        android:paddingLeft="2dp"
-        android:paddingRight="2dp">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="0%"
-            android:textColor="#2A2A2A"
-            android:textSize="12sp"
-            android:gravity="start"/>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="50%"
-            android:textColor="#2A2A2A"
-            android:textSize="12sp"
-            android:gravity="center"/>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="100%"
-            android:textColor="#2A2A2A"
-            android:textSize="12sp"
-            android:gravity="end"/>
-    </LinearLayout>
-
-    <!-- Stress SeekBar -->
-    <androidx.appcompat.widget.AppCompatSeekBar
-        android:id="@+id/seekStress"
-        android:layout_width="match_parent"
-        android:layout_height="26dp"
-        android:layout_marginTop="6dp"
-        android:max="100"
-        android:progress="50"
-        android:progressDrawable="@drawable/stress_seekbar_progress_mt"
-        android:thumb="@drawable/stress_thumb_mt"
-        android:splitTrack="false"
-        android:paddingLeft="2dp"
-        android:paddingRight="2dp"/>
-    </LinearLayout>
-</ScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
