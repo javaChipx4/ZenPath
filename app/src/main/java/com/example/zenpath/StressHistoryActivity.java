@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,8 +17,21 @@ public class StressHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stress_history);
 
+        View tabRow = findViewById(R.id.tabRow);
+        HistorySwipeHelper.attach(
+                this,
+                tabRow,
+                MoodHistoryActivity.class,
+                null                 // no next (Stress is last)
+        );
+
+
         setupTabs();
         setupPopup("Stress History");
+
+        // ✅ Swipe: Stress (RIGHT -> Mood)
+        View root = findViewById(R.id.main);
+        HistorySwipeHelper.attach(this, root, MoodHistoryActivity.class, null);
     }
 
     private void setupTabs() {
@@ -31,15 +43,16 @@ public class StressHistoryActivity extends AppCompatActivity {
 
         btnDiary.setOnClickListener(v -> {
             startActivity(new Intent(this, DiaryHistoryActivity.class));
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
             finish();
         });
 
         btnMood.setOnClickListener(v -> {
             startActivity(new Intent(this, MoodHistoryActivity.class));
+            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
             finish();
         });
     }
-
 
     private void setupPopup(String historyTitle) {
         ViewGroup rootView = findViewById(android.R.id.content);

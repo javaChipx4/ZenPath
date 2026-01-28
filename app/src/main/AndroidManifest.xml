@@ -11,6 +11,10 @@
         android:theme="@style/Theme.ZenPath">
 
         <activity
+            android:name=".HistoryActivity"
+            android:exported="false"/>
+
+        <activity
             android:name=".ActivityDiary"
             android:exported="false" />
 

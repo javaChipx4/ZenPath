@@ -9,52 +9,56 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.widget.ViewPager2;
 
-public class DiaryHistoryActivity extends AppCompatActivity {
+public class HistoryActivity extends AppCompatActivity {
+
+    private ViewPager2 pager;
+    private Button btnDiary, btnMood, btnStress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_diary_history);
+        setContentView(R.layout.activity_history);
 
-        View tabRow = findViewById(R.id.tabRow);
-        HistorySwipeHelper.attach(
-                this,
-                tabRow,
-                null,                 // no previous (Diary is first)
-                MoodHistoryActivity.class
-        );
+        btnDiary = findViewById(R.id.btnDiaryTab);
+        btnMood = findViewById(R.id.btnMoodTab);
+        btnStress = findViewById(R.id.btnStressTab);
 
-        setupTabs();
-        setupPopup("Diary History");
+        pager = findViewById(R.id.historyPager);
 
-        // ✅ Swipe: Diary (LEFT -> Mood)
-        View root = findViewById(R.id.main);
-        HistorySwipeHelper.attach(this, root, null, MoodHistoryActivity.class);
-    }
+        // If this crashes / null -> you're not using activity_history.xml
+        pager.setAdapter(new HistoryPagerAdapter(this));
+        pager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
 
-    private void setupTabs() {
-        Button btnDiary = findViewById(R.id.btnDiaryTab);
-        Button btnMood  = findViewById(R.id.btnMoodTab);
-        Button btnStress = findViewById(R.id.btnStressTab);
+        // smoother startup (don’t preload all 3 heavy pages)
+        pager.setOffscreenPageLimit(1);
 
-        // You are here
-        btnDiary.setEnabled(false);
+        btnDiary.setOnClickListener(v -> pager.setCurrentItem(0, true));
+        btnMood.setOnClickListener(v -> pager.setCurrentItem(1, true));
+        btnStress.setOnClickListener(v -> pager.setCurrentItem(2, true));
 
-        btnMood.setOnClickListener(v -> {
-            startActivity(new Intent(this, MoodHistoryActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            finish();
+        pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override public void onPageSelected(int position) {
+                updateTabUI(position);
+            }
         });
 
-        btnStress.setOnClickListener(v -> {
-            startActivity(new Intent(this, StressHistoryActivity.class));
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-            finish();
-        });
+        updateTabUI(0);
+        setupPopup();
     }
 
-    private void setupPopup(String historyTitle) {
+    private void updateTabUI(int position) {
+        btnDiary.setBackgroundResource(position == 0 ? R.drawable.bg_tab_pill_selected_mh : R.drawable.bg_tab_pill_unselected_mh);
+        btnMood.setBackgroundResource(position == 1 ? R.drawable.bg_tab_pill_selected_mh : R.drawable.bg_tab_pill_unselected_mh);
+        btnStress.setBackgroundResource(position == 2 ? R.drawable.bg_tab_pill_selected_mh : R.drawable.bg_tab_pill_unselected_mh);
+
+        btnDiary.setEnabled(position != 0);
+        btnMood.setEnabled(position != 1);
+        btnStress.setEnabled(position != 2);
+    }
+
+    private void setupPopup() {
         ViewGroup rootView = findViewById(android.R.id.content);
         View settingsPopup = getLayoutInflater().inflate(R.layout.dialog_settings, rootView, false);
         rootView.addView(settingsPopup);
