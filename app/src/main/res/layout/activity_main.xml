@@ -332,14 +332,34 @@
                     android:layout_marginTop="16dp"/>
 
                 <!-- CALENDAR (reuse same ID so your MainActivity code still finds it) -->
-                <CalendarView
-                    android:id="@+id/calendarView"
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/calendarCardHome"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="18dp"
+                    app:cardCornerRadius="10dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#F6F6F6"
                     app:layout_constraintTop_toBottomOf="@id/tvSubQuote"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <CalendarView
+                        android:id="@+id/calendarView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+
+                        android:weekDayTextAppearance="@style/HomeCalendarWeekText"
+                        android:dateTextAppearance="@style/HomeCalendarDateText"
+
+                        android:focusedMonthDateColor="#1E1E1E"
+                        android:unfocusedMonthDateColor="#8A8A8A"
+                        android:selectedWeekBackgroundColor="#D6C9F2"
+                        android:weekSeparatorLineColor="#E0E0E0"
+                        />
+
+                </androidx.cardview.widget.CardView>
+
 
                 <!-- PLAY BUTTON (reuse same ID so your code still works) -->
                 <Button
@@ -354,7 +374,7 @@
                     android:textStyle="bold"
                     android:textColor="#1E1E1E"
                     android:fontFamily="serif"
-                    app:layout_constraintTop_toBottomOf="@id/calendarView"
+                    app:layout_constraintTop_toBottomOf="@id/calendarCardHome"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 

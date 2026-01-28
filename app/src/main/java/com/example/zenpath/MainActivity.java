@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         if (btnHistory != null) {
             btnHistory.setOnClickListener(v -> {
                 settingsPopup.setVisibility(View.GONE);
-                startActivity(new Intent(MainActivity.this, DiaryHistoryActivity.class));
+                startActivity(new Intent(MainActivity.this, HistoryActivity.class));
             });
         }
 

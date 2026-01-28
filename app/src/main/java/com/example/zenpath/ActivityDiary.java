@@ -70,7 +70,7 @@ public class ActivityDiary extends AppCompatActivity {
         if (btnHistory != null) {
             btnHistory.setOnClickListener(v -> {
                 settingsPopup.setVisibility(View.GONE);
-                startActivity(new Intent(ActivityDiary.this, DiaryHistoryActivity.class));
+                startActivity(new Intent(ActivityDiary.this, HistoryActivity.class));
             });
         }
 

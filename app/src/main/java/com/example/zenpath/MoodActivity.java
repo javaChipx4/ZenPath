@@ -7,6 +7,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -15,11 +16,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -35,13 +33,14 @@ public class MoodActivity extends AppCompatActivity {
 
     private SharedPreferences prefs;
 
-    // Views from your XML
-    private TextView tvMonthYearLeft, tvMonthYearRight;
-    private RecyclerView rvCalendar;
+    // ✅ CalendarView (MainActivity style)
+    private CalendarView calendarView;
 
+    // Mood emojis (TextViews)
     private TextView tvMood0, tvMood1, tvMood2, tvMood3, tvMood4;
     private TextView[] moodViews;
 
+    // Reflection + Stress
     private EditText etReflection;
     private SeekBar seekStress;
 
@@ -49,47 +48,40 @@ public class MoodActivity extends AppCompatActivity {
     private View[] dayCircles;
     private int selectedCircleIndex = -1;
 
-    // Calendar state
-    private Calendar currentMonth;
-    private CalendarDayAdapter adapter;
-
+    // Selected date state
     private String selectedDateKey = ""; // yyyyMMdd
     private int selectedMoodIndex = -1;
+
+    // Prevent saving while we are loading UI from prefs
+    private boolean isLoading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_mood_mt);
+
+        // IMPORTANT: use the NEW XML that has CalendarView with id calendarView
+        setContentView(R.layout.activity_mood_mt); // <-- change if your new file name is different
 
         // ===== Settings Popup Overlay (reuse) =====
         ViewGroup rootView = findViewById(android.R.id.content);
 
-// Inflate the popup overlay layout (same one used in Home/Journal)
         View settingsPopup = getLayoutInflater().inflate(R.layout.dialog_settings, rootView, false);
-
-// Add overlay to the activity
         rootView.addView(settingsPopup);
         settingsPopup.setVisibility(View.GONE);
 
-// Open popup when burger/menu icon is clicked
         ImageView menuIcon = findViewById(R.id.menuIcon);
-        menuIcon.setOnClickListener(v -> settingsPopup.setVisibility(View.VISIBLE));
+        if (menuIcon != null) menuIcon.setOnClickListener(v -> settingsPopup.setVisibility(View.VISIBLE));
 
-// Close popup when tapping outside
         settingsPopup.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
 
-// Prevent closing when clicking inside the card itself
         View settingsCard = settingsPopup.findViewById(R.id.settingsCard);
-        if (settingsCard != null) {
-            settingsCard.setOnClickListener(v -> {});
-        }
+        if (settingsCard != null) settingsCard.setOnClickListener(v -> {});
 
-// OPTIONAL: Hook popup buttons (edit if your IDs differ)
         View btnHome = settingsPopup.findViewById(R.id.btnHome);
         if (btnHome != null) {
             btnHome.setOnClickListener(v -> {
-                startActivity(new Intent(MoodActivity.this, MainActivity.class));
                 settingsPopup.setVisibility(View.GONE);
+                startActivity(new Intent(MoodActivity.this, MainActivity.class));
             });
         }
 
@@ -97,10 +89,9 @@ public class MoodActivity extends AppCompatActivity {
         if (btnHistory != null) {
             btnHistory.setOnClickListener(v -> {
                 settingsPopup.setVisibility(View.GONE);
-                startActivity(new Intent(MoodActivity.this, DiaryHistoryActivity.class));
+                startActivity(new Intent(MoodActivity.this, HistoryActivity.class)); // use your new history hub if you have it
             });
         }
-
 
         View btnBack = settingsPopup.findViewById(R.id.btnBack);
         if (btnBack != null) {
@@ -110,37 +101,26 @@ public class MoodActivity extends AppCompatActivity {
             });
         }
 
-
+        // ===== Prefs =====
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
-        // Header
-        tvMonthYearLeft = findViewById(R.id.tvMonthYearLeft);
-        tvMonthYearRight = findViewById(R.id.tvMonthYearRight);
+        // ===== Bind views =====
+        calendarView = findViewById(R.id.calendarView);
 
-        // Calendar
-        rvCalendar = findViewById(R.id.rvCalendar);
-        rvCalendar.setLayoutManager(new GridLayoutManager(this, 7));
-
-        // Mood emojis (TextViews)
         tvMood0 = findViewById(R.id.tvMood0);
         tvMood1 = findViewById(R.id.tvMood1);
         tvMood2 = findViewById(R.id.tvMood2);
         tvMood3 = findViewById(R.id.tvMood3);
         tvMood4 = findViewById(R.id.tvMood4);
-
         moodViews = new TextView[]{ tvMood0, tvMood1, tvMood2, tvMood3, tvMood4 };
 
-        // Reflection + Stress
         etReflection = findViewById(R.id.etReflection);
         seekStress = findViewById(R.id.seekStress);
 
-        // Set month = today
-        currentMonth = Calendar.getInstance();
-
-        setHeaderMonthYear();
-        setupCalendarGrid();
+        // Setup logic
+        setupCalendarView();
         setupMoodClicks();
-        setupCircleClicks();     // ✅ circles clickable
+        setupCircleClicks();
         setupStressSaver();
         setupReflectionSaver();
 
@@ -148,69 +128,30 @@ public class MoodActivity extends AppCompatActivity {
         selectToday();
     }
 
-    private void setHeaderMonthYear() {
-        SimpleDateFormat monthFmt = new SimpleDateFormat("MMMM", Locale.getDefault());
-        SimpleDateFormat yearFmt  = new SimpleDateFormat("yyyy", Locale.getDefault());
+    // ✅ CalendarView behavior: click date -> load/saves per date
+    private void setupCalendarView() {
+        if (calendarView == null) return;
 
-        tvMonthYearLeft.setText(monthFmt.format(currentMonth.getTime()).toUpperCase(Locale.getDefault()));
-        tvMonthYearRight.setText(yearFmt.format(currentMonth.getTime()));
-    }
+        calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.YEAR, year);
+            cal.set(Calendar.MONTH, month); // month is 0-based
+            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-    private void setupCalendarGrid() {
-        ArrayList<String> dateKeys = new ArrayList<>();
-        ArrayList<Integer> dayNums = new ArrayList<>();
-
-        Calendar cal = (Calendar) currentMonth.clone();
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-
-        // Sunday-based calendar
-        int firstDayOfWeek = cal.get(Calendar.DAY_OF_WEEK); // 1=Sunday
-        int blanks = firstDayOfWeek - Calendar.SUNDAY;      // 0..6
-
-        for (int i = 0; i < blanks; i++) {
-            dateKeys.add("");
-            dayNums.add(0);
-        }
-
-        int maxDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-        for (int day = 1; day <= maxDay; day++) {
-            cal.set(Calendar.DAY_OF_MONTH, day);
-            dateKeys.add(formatDateKey(cal)); // yyyyMMdd
-            dayNums.add(day);
-        }
-
-        // Fill remaining cells to make a full grid (42)
-        while (dayNums.size() % 7 != 0) {
-            dateKeys.add("");
-            dayNums.add(0);
-        }
-        while (dayNums.size() < 42) {
-            dateKeys.add("");
-            dayNums.add(0);
-        }
-
-        adapter = new CalendarDayAdapter(dateKeys, dayNums, (position, dateKey, dayNumber) -> {
-            adapter.setSelectedPos(position);
+            String dateKey = formatDateKey(cal);
             onDateSelected(dateKey);
         });
-
-        rvCalendar.setAdapter(adapter);
     }
 
     private void selectToday() {
         Calendar today = Calendar.getInstance();
-
-        // If month changed, update month grid
-        if (today.get(Calendar.MONTH) != currentMonth.get(Calendar.MONTH) ||
-                today.get(Calendar.YEAR) != currentMonth.get(Calendar.YEAR)) {
-            currentMonth = (Calendar) today.clone();
-            setHeaderMonthYear();
-            setupCalendarGrid();
-        }
-
         selectedDateKey = formatDateKey(today);
 
-        // Load data for today
+        // Ensure CalendarView highlights today (it does by default, but safe)
+        if (calendarView != null) {
+            calendarView.setDate(today.getTimeInMillis(), false, true);
+        }
+
         onDateSelected(selectedDateKey);
     }
 
@@ -224,9 +165,11 @@ public class MoodActivity extends AppCompatActivity {
         int stress = prefs.getInt(stressKey(dateKey), 50);
         String note = prefs.getString(noteKey(dateKey), "");
 
-        // Apply to UI
+        // Apply to UI (guard to avoid re-saving while setting text)
+        isLoading = true;
         seekStress.setProgress(stress);
         etReflection.setText(note);
+        isLoading = false;
 
         updateMoodUI();
     }
@@ -245,14 +188,13 @@ public class MoodActivity extends AppCompatActivity {
     private void updateMoodUI() {
         for (int i = 0; i < moodViews.length; i++) {
             boolean selected = (i == selectedMoodIndex);
-
             moodViews[i].setScaleX(selected ? 1.18f : 1.0f);
             moodViews[i].setScaleY(selected ? 1.18f : 1.0f);
             moodViews[i].setAlpha(selected ? 1.0f : 0.55f);
         }
     }
 
-    // ✅ Make the top circles clickable (Mon-Sun)
+    // Week circles (unchanged)
     private void setupCircleClicks() {
         dayCircles = new View[]{
                 findViewById(R.id.circleMon),
@@ -266,20 +208,26 @@ public class MoodActivity extends AppCompatActivity {
 
         for (int i = 0; i < dayCircles.length; i++) {
             final int idx = i;
+
+            if (dayCircles[i] == null) continue;
+
             dayCircles[i].setOnClickListener(v -> {
                 selectedCircleIndex = idx;
                 updateCircleUI();
 
-                // ✅ test message so you know it works (remove later if you want)
+                // test message (remove later if you want)
                 Toast.makeText(this, "Circle tapped: " + idx, Toast.LENGTH_SHORT).show();
             });
         }
     }
 
     private void updateCircleUI() {
-        for (int i = 0; i < dayCircles.length; i++) {
-            boolean selected = (i == selectedCircleIndex);
+        if (dayCircles == null) return;
 
+        for (int i = 0; i < dayCircles.length; i++) {
+            if (dayCircles[i] == null) continue;
+
+            boolean selected = (i == selectedCircleIndex);
             dayCircles[i].setScaleX(selected ? 1.25f : 1.0f);
             dayCircles[i].setScaleY(selected ? 1.25f : 1.0f);
             dayCircles[i].setAlpha(selected ? 1.0f : 0.55f);
@@ -289,7 +237,7 @@ public class MoodActivity extends AppCompatActivity {
     private void setupStressSaver() {
         seekStress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) saveStressForSelectedDate(progress);
+                if (fromUser && !isLoading) saveStressForSelectedDate(progress);
             }
             @Override public void onStartTrackingTouch(SeekBar seekBar) {}
             @Override public void onStopTrackingTouch(SeekBar seekBar) {}
@@ -301,7 +249,7 @@ public class MoodActivity extends AppCompatActivity {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override public void afterTextChanged(Editable s) {
-                saveNoteForSelectedDate(s.toString());
+                if (!isLoading) saveNoteForSelectedDate(s.toString());
             }
         });
     }

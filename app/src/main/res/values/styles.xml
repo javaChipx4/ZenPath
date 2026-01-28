@@ -84,4 +84,15 @@
 
     <style name="Base.Theme.StarSweepActivity" parent="Theme.Material3.DayNight.NoActionBar" />
 
+    <style name="HomeCalendarWeekText">
+        <item name="android:textColor">#6A6A6A</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+
+    <style name="HomeCalendarDateText">
+        <item name="android:textColor">#1E1E1E</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+
 </resources>
