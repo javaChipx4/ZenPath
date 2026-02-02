@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <View
+            android:id="@+id/colorPreview"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/preview_circle" />
+
+        <TextView
+            android:id="@+id/tvHex"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="#BFD6FF"
+            android:textSize="16sp"
+            android:textColor="#FFFFFF"/>
+    </LinearLayout>
+
+    <!-- Quick palette -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:orientation="horizontal">
+
+        <View android:id="@+id/sw1" style="@style/Swatch"/>
+        <View android:id="@+id/sw2" style="@style/Swatch"/>
+        <View android:id="@+id/sw3" style="@style/Swatch"/>
+        <View android:id="@+id/sw4" style="@style/Swatch"/>
+        <View android:id="@+id/sw5" style="@style/Swatch"/>
+        <View android:id="@+id/sw6" style="@style/Swatch"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="Red"
+        android:textColor="#FFFFFF"/>
+
+    <SeekBar
+        android:id="@+id/sbR"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Green"
+        android:textColor="#FFFFFF"/>
+
+    <SeekBar
+        android:id="@+id/sbG"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="Blue"
+        android:textColor="#FFFFFF"/>
+
+    <SeekBar
+        android:id="@+id/sbB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>

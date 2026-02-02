@@ -35,7 +35,7 @@ public class SelectionGamesActivity extends AppCompatActivity {
             settingsCard.setOnClickListener(v -> {});
         }
 
-// Buttons inside popup
+        // Buttons inside popup
         ImageButton btnHome = settingsPopup.findViewById(R.id.btnHome);
         ImageButton btnBack = settingsPopup.findViewById(R.id.btnBack);
         ImageButton btnHistory = settingsPopup.findViewById(R.id.btnHistory);
@@ -62,7 +62,6 @@ public class SelectionGamesActivity extends AppCompatActivity {
                 startActivity(new Intent(SelectionGamesActivity.this, DiaryHistoryActivity.class));
             });
         }
-
 
         if (btnMood != null) {
             btnMood.setOnClickListener(v -> {
@@ -92,12 +91,25 @@ public class SelectionGamesActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.btnGame2).setOnClickListener(v -> {
-                    startActivity(new Intent(SelectionGamesActivity.this, StarSweepActivity.class));
-                });
+            startActivity(new Intent(SelectionGamesActivity.this, StarSweepActivity.class));
+        });
 
-        // GAME 3 - Breathing Bubble
+        // ✅ GAME 3 - Planet Game (TextView click)
         findViewById(R.id.btnGame3).setOnClickListener(v -> {
-            startActivity(new Intent(SelectionGamesActivity.this, InhaleExhaleActivity.class));
+            startActivity(new Intent(SelectionGamesActivity.this, PlanetActivity.class));
+        });
+
+        // ✅ NEW: Also make the whole cards clickable (so taps anywhere work)
+        findViewById(R.id.cardGame1).setOnClickListener(v -> {
+            startActivity(new Intent(SelectionGamesActivity.this, ConnectDotsActivity.class));
+        });
+
+        findViewById(R.id.cardGame2).setOnClickListener(v -> {
+            startActivity(new Intent(SelectionGamesActivity.this, StarSweepActivity.class));
+        });
+
+        findViewById(R.id.cardGame3).setOnClickListener(v -> {
+            startActivity(new Intent(SelectionGamesActivity.this, PlanetActivity.class));
         });
     }
 }

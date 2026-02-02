@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="22dp"
+    android:background="#1E1A2E">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Asthera — Instructions"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:text="Create your own galaxy design by placing stars, connecting constellations, and drawing glowing Milky Way paths."
+        android:textColor="#D9D6FF"
+        android:textSize="14sp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:text="How to play:\n\n• Move: drag to pan the sky safely\n\n• Stars: tap to place stars\n  Tap 2 stars to connect them\n\n• Moon / Sun: tap to place them\n\n• Tools → Marker: swipe to draw glowing Milky Way dust\n\n• Tools → Eraser: swipe to erase marker dust\n\nControls:\n\n• Undo: removes your last action\n\n• Clear Object: removes ONLY Sun/Moon/Stars/Lines (keeps marker)\n\n• Clear All: removes everything (marker + objects)\n\n• Save (top-right): saves your design to Gallery"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"/>
+
+</LinearLayout>
