@@ -26,12 +26,12 @@
         android:layout_width="26dp"
         android:layout_height="26dp"
         android:src="@drawable/ic_menu"
-        android:tint="#1E1E1E"
         android:contentDescription="Menu"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="14dp"
-        android:layout_marginEnd="6dp"/>
+        android:layout_marginEnd="6dp"
+        app:tint="#1E1E1E" />
 
     <!-- Title -->
     <TextView
@@ -187,6 +187,7 @@
             </LinearLayout>
 
             <!-- Dots row (visual only for now) -->
+            <!-- Dots row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -194,13 +195,13 @@
                 android:gravity="center"
                 android:layout_marginTop="10dp">
 
-                <View style="@style/WeekDot"/>
-                <View style="@style/WeekDotSelected"/>
-                <View style="@style/WeekDot"/>
-                <View style="@style/WeekDot"/>
-                <View style="@style/WeekDot"/>
-                <View style="@style/WeekDot"/>
-                <View style="@style/WeekDot"/>
+                <View android:id="@+id/dotMon" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
+                <View android:id="@+id/dotTue" style="@style/WeekDotSelected" android:clickable="true" android:focusable="true"/>
+                <View android:id="@+id/dotWed" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
+                <View android:id="@+id/dotThu" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
+                <View android:id="@+id/dotFri" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
+                <View android:id="@+id/dotSat" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
+                <View android:id="@+id/dotSun" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
             </LinearLayout>
 
             <!-- Mood label -->
@@ -222,11 +223,11 @@
                 android:gravity="center"
                 android:layout_marginTop="10dp">
 
-                <TextView style="@style/EmojiItem" android:text="😁"/>
-                <TextView style="@style/EmojiItem" android:text="😌"/>
-                <TextView style="@style/EmojiItem" android:text="😐"/>
-                <TextView style="@style/EmojiItem" android:text="🥰"/>
-                <TextView style="@style/EmojiItem" android:text="😅"/>
+                <TextView android:id="@+id/tvEmoji1" style="@style/EmojiItem" android:text="😁"/>
+                <TextView android:id="@+id/tvEmoji2" style="@style/EmojiItem" android:text="😌"/>
+                <TextView android:id="@+id/tvEmoji3" style="@style/EmojiItem" android:text="😐"/>
+                <TextView android:id="@+id/tvEmoji4" style="@style/EmojiItem" android:text="🥰"/>
+                <TextView android:id="@+id/tvEmoji5" style="@style/EmojiItem" android:text="😅"/>
             </LinearLayout>
 
             <!-- Notes box -->

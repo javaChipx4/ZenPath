@@ -17,6 +17,12 @@ import androidx.viewpager2.widget.ViewPager2;
 
 public class HistoryActivity extends AppCompatActivity {
 
+    private static final String PREFS = "zen_path_prefs";
+    private static String moodKey(String dateKey)   { return "mood_" + dateKey; }
+    private static String stressKey(String dateKey) { return "stress_" + dateKey; }
+    private static String noteKey(String dateKey)   { return "note_" + dateKey; }
+
+
     private ViewPager2 pager;
     private Button btnDiary, btnMood, btnStress;
 
@@ -152,5 +158,7 @@ public class HistoryActivity extends AppCompatActivity {
             settingsPopup.setVisibility(View.GONE);
             startActivity(new Intent(this, MoodActivity.class));
         });
+
+
     }
 }
