@@ -30,6 +30,7 @@ public class MoodActivity extends AppCompatActivity {
     private static String noteKey(String dateKey)   { return "note_" + dateKey; }
 
     private SharedPreferences prefs;
+    private ZenPathRepository repository;
 
     private CalendarView calendarView;
 
@@ -90,6 +91,9 @@ public class MoodActivity extends AppCompatActivity {
 
         // ===== Prefs =====
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        
+        // ===== Repository =====
+        repository = new ZenPathRepository(this);
 
         // ===== Bind =====
         calendarView = findViewById(R.id.calendarView);
@@ -349,17 +353,22 @@ public class MoodActivity extends AppCompatActivity {
     // ===================== SAVE HELPERS =====================
     private void saveMoodForSelectedDate() {
         if (selectedDateKey.isEmpty()) return;
-        prefs.edit().putInt(moodKey(selectedDateKey), selectedMoodIndex).apply();
+        String date = prettyDate(selectedDateKey);
+        repository.addMood(date, selectedMoodIndex, "");
     }
 
     private void saveStressForSelectedDate(int stress) {
         if (selectedDateKey.isEmpty()) return;
-        prefs.edit().putInt(stressKey(selectedDateKey), stress).apply();
+        String date = prettyDate(selectedDateKey);
+        repository.addStress(date, stress, "");
     }
 
     private void saveNoteForSelectedDate(String note) {
         if (selectedDateKey.isEmpty()) return;
-        prefs.edit().putString(noteKey(selectedDateKey), note).apply();
+        String date = prettyDate(selectedDateKey);
+        // For notes, we need to update existing mood entry or create new one
+        // For simplicity, we'll add a new mood entry with the note
+        repository.addMood(date, selectedMoodIndex, note);
     }
 
     // ===================== DATE HELPERS =====================

@@ -71,4 +71,60 @@ public class ZenPathRepository {
 
         return db.insert(ZenPathDbHelper.T_STRESS, null, cv);
     }
+
+    public ArrayList<String> getMoodEntries() {
+        ArrayList<String> list = new ArrayList<>();
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_MOOD,
+                new String[]{ZenPathDbHelper.M_DATE, ZenPathDbHelper.M_VALUE, ZenPathDbHelper.M_NOTE},
+                null, null, null, null,
+                ZenPathDbHelper.M_DATE + " DESC"
+        );
+
+        while (c.moveToNext()) {
+            String date = c.getString(0);
+            int value = c.getInt(1);
+            String note = c.getString(2);
+            String moodText = getMoodText(value);
+            list.add(date + " - Mood: " + moodText + (note != null && !note.isEmpty() ? " (" + note + ")" : ""));
+        }
+
+        c.close();
+        return list;
+    }
+
+    public ArrayList<String> getStressEntries() {
+        ArrayList<String> list = new ArrayList<>();
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_STRESS,
+                new String[]{ZenPathDbHelper.S_DATE, ZenPathDbHelper.S_LEVEL, ZenPathDbHelper.S_SUGGESTION},
+                null, null, null, null,
+                ZenPathDbHelper.S_DATE + " DESC"
+        );
+
+        while (c.moveToNext()) {
+            String date = c.getString(0);
+            int level = c.getInt(1);
+            String suggestion = c.getString(2);
+            list.add(date + " - Stress Level: " + level + "/10" + (suggestion != null && !suggestion.isEmpty() ? " (" + suggestion + ")" : ""));
+        }
+
+        c.close();
+        return list;
+    }
+
+    private String getMoodText(int value) {
+        switch (value) {
+            case 1: return "Very Sad";
+            case 2: return "Sad";
+            case 3: return "Neutral";
+            case 4: return "Happy";
+            case 5: return "Very Happy";
+            default: return "Unknown";
+        }
+    }
 }

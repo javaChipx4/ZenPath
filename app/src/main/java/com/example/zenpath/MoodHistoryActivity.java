@@ -7,13 +7,19 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.util.ArrayList;
+
 public class MoodHistoryActivity extends AppCompatActivity {
 
     private TextView tvMoodNote;
+    private LinearLayout entriesContainer;
+    private TextView tvEmptyMessage;
+    private ZenPathRepository repository;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,14 +35,15 @@ public class MoodHistoryActivity extends AppCompatActivity {
         );
 
         tvMoodNote = findViewById(R.id.tvMoodNote);
+        entriesContainer = findViewById(R.id.entriesContainer);
+        tvEmptyMessage = findViewById(R.id.tvEmptyMessage);
+        
+        repository = new ZenPathRepository(this);
 
         setupTabs();
         setupPopupWithRename();
-
-        tvMoodNote.setText(
-                "Mood History UI is ready.\n\n" +
-                        "Data will appear here once database is connected."
-        );
+        
+        loadMoodEntries();
 
         // ✅ Swipe: Mood (RIGHT -> Diary) (LEFT -> Stress)
         View root = findViewById(R.id.main);
@@ -44,6 +51,44 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 DiaryHistoryActivity.class,
                 StressHistoryActivity.class
         );
+    }
+
+    private void loadMoodEntries() {
+        ArrayList<String> entries = repository.getMoodEntries();
+        
+        if (entries.isEmpty()) {
+            tvEmptyMessage.setVisibility(View.VISIBLE);
+            entriesContainer.setVisibility(View.GONE);
+            tvEmptyMessage.setText("No mood entries yet. Track your mood to see your history here!");
+        } else {
+            tvEmptyMessage.setVisibility(View.GONE);
+            entriesContainer.setVisibility(View.VISIBLE);
+            
+            entriesContainer.removeAllViews();
+            for (String entry : entries) {
+                TextView entryView = new TextView(this);
+                entryView.setText(entry);
+                entryView.setPadding(16, 16, 16, 16);
+                entryView.setTextSize(14);
+                entryView.setBackgroundResource(R.drawable.bg_entry_card);
+                entryView.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ));
+                
+                LinearLayout.MarginLayoutParams params = (LinearLayout.MarginLayoutParams) entryView.getLayoutParams();
+                params.setMargins(0, 0, 0, 8);
+                entryView.setLayoutParams(params);
+                
+                entriesContainer.addView(entryView);
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadMoodEntries();
     }
 
     private void setupTabs() {

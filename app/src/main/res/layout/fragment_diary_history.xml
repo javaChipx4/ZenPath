@@ -6,11 +6,28 @@
     android:paddingStart="24dp"
     android:paddingEnd="24dp">
 
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
+    <TextView
+        android:id="@+id/tvEmptyMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:gravity="center"
+        android:text="No diary entries yet. Start writing to see your history here!"
+        android:textColor="#666666"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/entriesContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp" />
+
+    </ScrollView>
+
 </LinearLayout>
