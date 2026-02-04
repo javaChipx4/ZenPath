@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:cardCornerRadius="6dp"
+    app:cardElevation="10dp"
+    app:cardUseCompatPadding="true"
+    app:cardBackgroundColor="#D7D1E7">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Page edge shadow -->
+        <View
+            android:layout_width="10dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:background="@drawable/bg_page_edge_shadow"/>
+
+        <!-- faint paper lines -->
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:alpha="0.55"
+            android:src="@drawable/notebook_lines_diary"
+            android:contentDescription="Paper lines"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/tvPageMeta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Page 1 • 2026-02-04"
+                android:textSize="12sp"
+                android:textColor="#1E1E1E"
+                android:alpha="0.7"
+                android:gravity="end"
+                android:fontFamily="serif"/>
+
+            <EditText
+                android:id="@+id/etJournal"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:gravity="top|start"
+                android:hint="possible questions&#10;or none.."
+                android:textColor="#1E1E1E"
+                android:textColorHint="#F7F7F7"
+                android:textSize="14sp"
+                android:fontFamily="serif"
+                android:inputType="textMultiLine"
+                android:maxLines="999" />
+        </LinearLayout>
+
+    </FrameLayout>
+
+</androidx.cardview.widget.CardView>

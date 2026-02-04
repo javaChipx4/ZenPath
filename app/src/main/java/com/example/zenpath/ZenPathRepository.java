@@ -16,6 +16,7 @@ public class ZenPathRepository {
     }
 
     // ===== JOURNAL =====
+
     public long addJournalEntry(String date, String text) {
         SQLiteDatabase db = helper.getWritableDatabase();
 
@@ -27,6 +28,72 @@ public class ZenPathRepository {
         return db.insert(ZenPathDbHelper.T_JOURNAL, null, cv);
     }
 
+    public boolean hasJournalEntry(String date) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_JOURNAL,
+                new String[]{ ZenPathDbHelper.J_DATE },
+                ZenPathDbHelper.J_DATE + "=?",
+                new String[]{ date },
+                null, null, null,
+                "1"
+        );
+
+        boolean exists = c.moveToFirst();
+        c.close();
+        return exists;
+    }
+
+    public int updateJournalEntry(String date, String text) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put(ZenPathDbHelper.J_TEXT, text);
+        cv.put(ZenPathDbHelper.J_CREATED_AT, System.currentTimeMillis());
+
+        return db.update(
+                ZenPathDbHelper.T_JOURNAL,
+                cv,
+                ZenPathDbHelper.J_DATE + "=?",
+                new String[]{ date }
+        );
+    }
+
+    // ✅ FIXED UPSERT — no redline, no ambiguity
+    public long upsertJournalEntry(String date, String text) {
+        if (hasJournalEntry(date)) {
+            updateJournalEntry(date, text);
+            return 1L;
+        } else {
+            return addJournalEntry(date, text);
+        }
+    }
+
+    // Get the journal text for a specific date (yyyy-MM-dd)
+// Returns "" if none found.
+    public String getJournalTextByDate(String date) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_JOURNAL,
+                new String[]{ ZenPathDbHelper.J_TEXT },
+                ZenPathDbHelper.J_DATE + "=?",
+                new String[]{ date },
+                null, null,
+                ZenPathDbHelper.J_CREATED_AT + " DESC",
+                "1"
+        );
+
+        String text = "";
+        if (c.moveToFirst()) {
+            text = c.getString(0);
+        }
+        c.close();
+        return text;
+    }
+
+    // ===== READ ALL (optional) =====
     public ArrayList<String> getJournalEntries() {
         ArrayList<String> list = new ArrayList<>();
         SQLiteDatabase db = helper.getReadableDatabase();
@@ -39,36 +106,10 @@ public class ZenPathRepository {
         );
 
         while (c.moveToNext()) {
-            String date = c.getString(0);
-            String text = c.getString(1);
-            list.add(date + " - " + text);
+            list.add(c.getString(0) + " - " + c.getString(1));
         }
 
         c.close();
         return list;
-    }
-
-    // ===== MOOD =====
-    public long addMood(String date, int moodValue, String note) {
-        SQLiteDatabase db = helper.getWritableDatabase();
-
-        ContentValues cv = new ContentValues();
-        cv.put(ZenPathDbHelper.M_DATE, date);
-        cv.put(ZenPathDbHelper.M_VALUE, moodValue);
-        cv.put(ZenPathDbHelper.M_NOTE, note);
-
-        return db.insert(ZenPathDbHelper.T_MOOD, null, cv);
-    }
-
-    // ===== STRESS =====
-    public long addStress(String date, int level, String suggestion) {
-        SQLiteDatabase db = helper.getWritableDatabase();
-
-        ContentValues cv = new ContentValues();
-        cv.put(ZenPathDbHelper.S_DATE, date);
-        cv.put(ZenPathDbHelper.S_LEVEL, level);
-        cv.put(ZenPathDbHelper.S_SUGGESTION, suggestion);
-
-        return db.insert(ZenPathDbHelper.T_STRESS, null, cv);
     }
 }

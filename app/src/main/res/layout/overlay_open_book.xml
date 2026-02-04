@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/openBookOverlay"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clickable="true"
+    android:focusable="true"
+    android:visibility="gone"
+    android:background="#66000000">
+
+    <!-- Book container centered -->
+    <FrameLayout
+        android:id="@+id/bookContainer"
+        android:layout_width="300dp"
+        android:layout_height="380dp"
+        android:layout_gravity="center">
+
+        <!-- LEFT PAGE -->
+        <FrameLayout
+            android:id="@+id/pageLeft"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:background="#F7F2E8">
+
+            <!-- optional subtle inner shadow -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#11000000" />
+        </FrameLayout>
+
+        <!-- RIGHT PAGE -->
+        <FrameLayout
+            android:id="@+id/pageRight"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:background="#F7F2E8">
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#11000000" />
+        </FrameLayout>
+
+        <!-- SPINE -->
+        <View
+            android:id="@+id/bookSpine"
+            android:layout_width="10dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:background="#D9D1C6" />
+
+        <!-- OVERALL SHADOW -->
+        <View
+            android:id="@+id/bookShadow"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#33000000"
+            android:alpha="0.0" />
+    </FrameLayout>
+
+</FrameLayout>

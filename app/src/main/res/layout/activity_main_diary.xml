@@ -21,7 +21,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"/>
 
-    <!-- Burger icon (top-right) -->
+    <!-- Burger icon -->
     <ImageView
         android:id="@+id/menuIcon"
         android:layout_width="26dp"
@@ -34,7 +34,6 @@
         android:layout_marginTop="28dp"
         android:layout_marginEnd="22dp"/>
 
-    <!-- Title: My Virtual -->
     <TextView
         android:id="@+id/tvMyVirtual"
         android:layout_width="wrap_content"
@@ -48,9 +47,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="18dp"/>
 
-    <!-- Title: Diary (script-like) -->
-
-    <!-- Paper card -->
     <TextView
         android:id="@+id/tvDiary"
         android:layout_width="wrap_content"
@@ -61,63 +57,25 @@
         android:textColor="#1E1E1E"
         android:textSize="32sp"
         android:textStyle="italic"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintTop_toBottomOf="@id/tvMyVirtual"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvMyVirtual" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/paperCard"
+    <!-- ✅ Book pages -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/diaryPager"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="26dp"
-        android:layout_marginStart="46dp"
-        android:layout_marginEnd="46dp"
-        app:cardCornerRadius="4dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="#D7D1E7"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:paddingStart="38dp"
+        android:paddingEnd="38dp"
+        android:layout_marginTop="18dp"
         app:layout_constraintTop_toBottomOf="@id/tvDiary"
         app:layout_constraintBottom_toTopOf="@id/btn_save"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <!-- faint paper lines -->
-            <ImageView
-                android:id="@+id/imgLines"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="fitXY"
-                android:alpha="0.55"
-                android:src="@drawable/notebook_lines_diary"
-                android:contentDescription="Paper lines"/>
-
-            <!-- Your input (KEEP THIS ID if your Java uses it; change ONLY if needed) -->
-            <EditText
-                android:id="@+id/etJournal"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@android:color/transparent"
-                android:gravity="top|start"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp"
-                android:paddingTop="18dp"
-                android:paddingBottom="18dp"
-                android:hint="possible questions&#10;or none.."
-                android:textColor="#1E1E1E"
-                android:textColorHint="#F7F7F7"
-                android:textSize="14sp"
-                android:fontFamily="serif"
-                android:inputType="textMultiLine"
-                android:maxLines="999"/>
-
-        </FrameLayout>
-    </androidx.cardview.widget.CardView>
-
-    <!-- Save button (KEEP ID: btn_save) -->
     <Button
         android:id="@+id/btn_save"
         android:layout_width="140dp"
@@ -131,5 +89,59 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="34dp"/>
+
+    <!-- ✅ Open-book intro overlay -->
+    <FrameLayout
+        android:id="@+id/bookIntroOverlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#80000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        android:elevation="20dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:id="@+id/bookIntroCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:padding="18dp"
+            android:layout_margin="24dp"
+            android:background="@drawable/bg_book_intro_card">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Open your diary"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:textColor="#1E1E1E"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Swipe pages like a book. Tap Save anytime."
+                android:textSize="14sp"
+                android:textColor="#1E1E1E"/>
+
+            <Button
+                android:id="@+id/btnOpenBook"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="14dp"
+                android:text="Open"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:textColor="#1E1E1E"
+                android:background="@drawable/bg_save_pill"/>
+        </LinearLayout>
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
