@@ -4,54 +4,62 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- GAME VIEW -->
+    <!-- ✅ GAME VIEW -->
     <com.example.zenpath.StarSweepView
         android:id="@+id/starSweepView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- TOP HUD -->
+    <!-- ✅ TOP HUD PANEL -->
     <LinearLayout
+        android:id="@+id/topHud"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="14dp">
+        android:padding="16dp"
+        android:background="#22000000">
 
+        <!-- ✅ Shape + Settings Row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
+            <!-- Shape Text -->
             <TextView
                 android:id="@+id/tvBreath"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Inhale…"
+                android:text="Shape: Star ✨"
                 android:textSize="18sp"
-                android:textColor="#FFFFFF" />
+                android:textColor="#FFFFFF"
+                android:textStyle="bold" />
 
+            <!-- ✅ Settings Cogwheel -->
             <ImageButton
-                android:id="@+id/menuIcon"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:id="@+id/btnSettings"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
                 android:background="@android:color/transparent"
-                android:contentDescription="Menu"
-                android:src="@drawable/ic_settings_ie"
-                android:tint="#FFFFFF" />
-
+                android:src="@android:drawable/ic_menu_manage"
+                android:tint="#FFFFFF"
+                android:padding="6dp"
+                android:contentDescription="Settings" />
         </LinearLayout>
 
+        <!-- ✅ Connect Counter -->
         <TextView
             android:id="@+id/tvStarsLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Stars left: 0"
+            android:text="Connect: 0 / 10"
             android:textSize="16sp"
             android:textColor="#EDE7FF"
             android:layout_marginTop="8dp" />
 
+        <!-- ✅ Daily Streak -->
         <TextView
             android:id="@+id/tvStreakGame"
             android:layout_width="wrap_content"
@@ -61,65 +69,34 @@
             android:textColor="#EDE7FF"
             android:layout_marginTop="4dp" />
 
+        <!-- ✅ Progress Bar -->
         <ProgressBar
             android:id="@+id/progressStars"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
             android:layout_height="10dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
+            android:progress="0"
             android:max="100"
-            android:progress="0" />
+            android:progressTint="#C6B7E2"
+            android:backgroundTint="#33FFFFFF" />
     </LinearLayout>
 
-    <!-- PAUSE OVERLAY -->
-    <LinearLayout
-        android:id="@+id/pauseOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:background="#88000000"
-        android:visibility="gone"
-        android:padding="24dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Paused 🌙"
-            android:textSize="26sp"
-            android:textColor="#FFFFFF"
-            android:layout_marginBottom="18dp"/>
-
-        <Button
-            android:id="@+id/btnResume"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Resume"
-            android:backgroundTint="#C6B7E2"
-            android:textColor="#1E1B3A"
-            android:padding="14dp"/>
-
-        <Button
-            android:id="@+id/btnReset"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Reset"
-            android:layout_marginTop="12dp"
-            android:backgroundTint="#FFFFFF"
-            android:textColor="#1E1B3A"
-            android:padding="14dp"/>
-    </LinearLayout>
-
-    <!-- PLAY AGAIN -->
+    <!-- ✅ PLAY AGAIN BUTTON (Hidden until Finished) -->
     <Button
         android:id="@+id/btnPlayAgain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Play Again ✨"
-        android:layout_gravity="center_horizontal|bottom"
-        android:layout_marginBottom="24dp"
-        android:visibility="gone"
+        android:textSize="18sp"
+        android:paddingLeft="26dp"
+        android:paddingRight="26dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
         android:backgroundTint="#C6B7E2"
         android:textColor="#1E1B3A"
-        android:padding="14dp"/>
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_marginBottom="30dp"
+        android:visibility="gone" />
+
 </FrameLayout>

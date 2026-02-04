@@ -2,9 +2,24 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_blue_gradient_diary">
+
+    <!-- Top thin line -->
+    <View
+        android:id="@+id/topLine"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:alpha="0.45"
+        android:background="#1E1E1E"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="18dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"/>
 
     <!-- Burger icon -->
     <ImageView
@@ -19,141 +34,214 @@
         android:layout_marginTop="28dp"
         android:layout_marginEnd="22dp"/>
 
-    <!-- TOP LINE -->
-    <View
-        android:id="@+id/topLine"
+    <!-- Big purple panel -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/panelCard"
         android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:background="#1E1E1E"
-        android:alpha="0.4"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="18dp"
-        android:layout_marginHorizontal="24dp"/>
-
-    <!-- GAME LIST (CENTERED) -->
-    <LinearLayout
-        android:id="@+id/gameContainer"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:layout_marginHorizontal="24dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="46dp"
+        android:layout_marginEnd="46dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginBottom="70dp"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="#CFC8E6"
         app:layout_constraintTop_toBottomOf="@id/topLine"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="40dp"
-        android:layout_marginBottom="40dp">
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- GAME 1 -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardConstella"
-            android:layout_width="289dp"
-            android:layout_height="150dp"
-            android:layout_marginBottom="16dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardBackgroundColor="#AC8DCE"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
-            <LinearLayout
-                android:layout_width="306dp"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
+            <!-- ✅ GAME 1 - Lantern Release -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardGame1"
+                android:layout_width="0dp"
+                android:layout_height="110dp"
+                android:layout_marginStart="28dp"
+                android:layout_marginTop="120dp"
+                android:layout_marginEnd="10dp"
+                app:cardCornerRadius="2dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#F7F0E6"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/cardGame2">
 
-                <ImageView
-                    android:layout_width="115dp"
-                    android:layout_height="115dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/bg_constella" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="14dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="25dp"
-                    android:text="Constella"
-                    android:textColor="#1E1E1E"
-                    android:textSize="25sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GAME 1"
+                        android:textSize="10sp"
+                        android:textColor="#1E1E1E"
+                        android:alpha="0.7"
+                        android:fontFamily="serif"/>
 
-        <!-- GAME 2 -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardLantelle"
-            android:layout_width="289dp"
-            android:layout_height="150dp"
-            android:layout_marginBottom="16dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardBackgroundColor="#9D80CA"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
+                    <TextView
+                        android:id="@+id/btnGame1"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="Lantern\nRelease"
+                        android:textColor="#1E1E1E"
+                        android:textSize="15sp"
+                        android:fontFamily="serif"
+                        android:clickable="true"
+                        android:focusable="true"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
-            <LinearLayout
-                android:layout_width="306dp"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
+            <!-- GAME 2 -->
+            <!-- GAME 2 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardGame2"
+                android:layout_width="0dp"
+                android:layout_height="110dp"
+                android:layout_marginEnd="28dp"
+                android:layout_marginTop="120dp"
+                android:layout_marginStart="10dp"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@android:color/transparent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toEndOf="@id/cardGame1"
+                app:layout_constraintEnd_toEndOf="parent">
 
-                <ImageView
-                    android:layout_width="115dp"
-                    android:layout_height="115dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/bg_lantelle" />
+                <!-- Background -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_star_sweep_card"
+                    android:padding="12dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="25dp"
-                    android:text="Lantelle"
-                    android:textColor="#1E1E1E"
-                    android:textSize="25sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+                    <!-- Decorative tiny stars -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✦"
+                        android:textSize="14sp"
+                        android:textColor="#AFA7FF"
+                        android:alpha="0.7"
+                        android:layout_gravity="top|end"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginEnd="2dp"/>
 
-        <!-- GAME 3 -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cardAsthera"
-            android:layout_width="289dp"
-            android:layout_height="150dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardBackgroundColor="#8D99CE"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✧"
+                        android:textSize="12sp"
+                        android:textColor="#C6B7E2"
+                        android:alpha="0.7"
+                        android:layout_gravity="bottom|start"
+                        android:layout_marginBottom="2dp"
+                        android:layout_marginStart="2dp"/>
 
-            <LinearLayout
-                android:layout_width="306dp"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="16dp">
+                    <!-- ✅ Clickable container -->
+                    <LinearLayout
+                        android:id="@+id/btnGame2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="4dp">
 
-                <ImageView
-                    android:layout_width="115dp"
-                    android:layout_height="115dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/bg_asthera" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="GAME 2"
+                            android:textSize="10sp"
+                            android:textColor="#FFFFFF"
+                            android:alpha="0.75"
+                            android:fontFamily="serif"
+                            android:layout_gravity="start"
+                            android:layout_marginBottom="6dp"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="25dp"
-                    android:text="Asthera"
-                    android:textColor="#1E1E1E"
-                    android:textSize="25sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Constellia✨"
+                            android:textColor="#FFFFFF"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            android:fontFamily="serif"
+                            android:gravity="center"/>
 
-    </LinearLayout>
+                        <!-- small hint chip -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Night mode • Calm"
+                            android:textSize="10sp"
+                            android:textColor="#1E1B3A"
+                            android:paddingLeft="10dp"
+                            android:paddingRight="10dp"
+                            android:paddingTop="4dp"
+                            android:paddingBottom="4dp"
+                            android:background="#C6B7E2"
+                            android:alpha="0.95"/>
+                    </LinearLayout>
+
+                </FrameLayout>
+            </androidx.cardview.widget.CardView>
+
+
+            <!-- GAME 3 -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardGame3"
+                android:layout_width="0dp"
+                android:layout_height="110dp"
+                android:layout_marginTop="34dp"
+                android:layout_marginStart="70dp"
+                android:layout_marginEnd="70dp"
+                app:cardCornerRadius="2dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#F7F0E6"
+                app:layout_constraintTop_toBottomOf="@id/cardGame1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="GAME 3"
+                        android:textSize="10sp"
+                        android:textColor="#1E1E1E"
+                        android:alpha="0.7"
+                        android:fontFamily="serif"/>
+
+                    <TextView
+                        android:id="@+id/btnGame3"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="Breathing\nBubble"
+                        android:textColor="#1E1E1E"
+                        android:textSize="15sp"
+                        android:fontFamily="serif"
+                        android:clickable="true"
+                        android:focusable="true"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
