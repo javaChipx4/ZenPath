@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CalendarView;
@@ -28,6 +29,7 @@ public class MoodActivity extends AppCompatActivity {
     private static String moodKey(String dateKey)   { return "mood_" + dateKey; }
     private static String stressKey(String dateKey) { return "stress_" + dateKey; }
     private static String noteKey(String dateKey)   { return "note_" + dateKey; }
+    public static final String EXTRA_DATE_KEY = "extra_date_key"; // yyyyMMdd
 
     private SharedPreferences prefs;
 
@@ -51,6 +53,10 @@ public class MoodActivity extends AppCompatActivity {
 
     private String selectedDateKey = ""; // yyyyMMdd
     private boolean isLoading = false;
+
+    // swipe-week vars
+    private float weekDownX = 0f;
+    private boolean weekDragging = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,11 +129,25 @@ public class MoodActivity extends AppCompatActivity {
         setupCalendar();
         setupMoodClicks();
         setupCircleClicks();
+        installWeekSwipe(); // ✅ swipe week on circles row
         setupStressSaver();
         setupReflectionSaver();
 
         hideSheet(false);
 
+        // ✅ If opened from History, jump to that date
+        String fromHistory = getIntent().getStringExtra(EXTRA_DATE_KEY);
+        if (fromHistory != null && !fromHistory.isEmpty()) {
+            Calendar cal = parseDateKey(fromHistory);
+            if (cal != null && calendarView != null) {
+                calendarView.setDate(cal.getTimeInMillis(), false, true);
+            }
+            onDateSelected(fromHistory);
+            showSheetHalf(); // optional: open sheet when coming from History
+            return;
+        }
+
+        // ✅ Normal open -> select today
         selectTodayWithoutOpeningSheet();
     }
 
@@ -240,7 +260,7 @@ public class MoodActivity extends AppCompatActivity {
 
         updateMoodUI();
 
-        // ✅ NEW: update week circles (numbers + auto-highlight weekday)
+        // update week circles (numbers + auto-highlight weekday)
         Calendar selected = parseDateKey(dateKey);
         if (selected != null) {
             updateWeekCircles(selected);
@@ -272,8 +292,7 @@ public class MoodActivity extends AppCompatActivity {
 
     // ===================== WEEK CIRCLES =====================
     private void setupCircleClicks() {
-        // Optional: tapping a circle just "highlights" it (does NOT change selected day)
-        // If you want circle tap to change selected date later, tell me.
+        // tapping a circle just highlights it (does NOT change selected day)
         for (int i = 0; i < dayCircles.length; i++) {
             final int idx = i;
             if (dayCircles[i] == null) continue;
@@ -316,9 +335,69 @@ public class MoodActivity extends AppCompatActivity {
             dayCircles[i].setScaleY(selected ? 1.20f : 1.0f);
             dayCircles[i].setAlpha(selected ? 1.0f : 0.55f);
 
-            // Optional: make selected number text a bit stronger
             dayCircles[i].setTextColor(selected ? 0xFF1E1E1E : 0xFF3A3A3A);
         }
+    }
+
+    // ===================== SWIPE WEEK ON CIRCLES ROW =====================
+    private void installWeekSwipe() {
+        if (dayCircles == null || dayCircles.length == 0 || dayCircles[0] == null) return;
+
+        // circleSun -> parent FrameLayout -> parent LinearLayout row
+        View parent1 = (View) dayCircles[0].getParent();
+        if (parent1 == null) return;
+        View weekRow = (View) parent1.getParent();
+        if (weekRow == null) return;
+
+        weekRow.setOnTouchListener((v, event) -> {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    weekDownX = event.getRawX();
+                    weekDragging = true;
+                    return true;
+
+                case MotionEvent.ACTION_MOVE:
+                    return true;
+
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    if (!weekDragging) return false;
+                    weekDragging = false;
+
+                    float dx = event.getRawX() - weekDownX;
+                    float threshold = dp(60);
+                    if (Math.abs(dx) < threshold) return true;
+
+                    if (dx < 0) shiftSelectedDateByDays(+7);  // swipe left -> next week
+                    else shiftSelectedDateByDays(-7);         // swipe right -> prev week
+                    return true;
+            }
+            return false;
+        });
+    }
+
+    private void shiftSelectedDateByDays(int days) {
+        if (selectedDateKey == null || selectedDateKey.isEmpty()) {
+            selectTodayWithoutOpeningSheet();
+            return;
+        }
+
+        Calendar current = parseDateKey(selectedDateKey);
+        if (current == null) return;
+
+        current.add(Calendar.DAY_OF_MONTH, days);
+        String newKey = formatDateKey(current);
+
+        if (calendarView != null) {
+            calendarView.setDate(current.getTimeInMillis(), false, true);
+        }
+
+        onDateSelected(newKey);
+    }
+
+    private int dp(int dp) {
+        float d = getResources().getDisplayMetrics().density;
+        return (int) (dp * d);
     }
 
     // ===================== STRESS + REFLECTION =====================

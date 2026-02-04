@@ -13,6 +13,9 @@ public class LanternReleaseActivity extends AppCompatActivity {
     private LanternReleaseView lanternView;
     private TextView tvTotal, tvBadge, tvMessage;
 
+    // ✅ Play time tracker
+    private GameTimeTracker playTracker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,6 +66,21 @@ public class LanternReleaseActivity extends AppCompatActivity {
         }
     }
 
+    // ✅ Start tracking when activity becomes visible/active
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (playTracker == null) playTracker = new GameTimeTracker("Lantern Release");
+        playTracker.start();
+    }
+
+    // ✅ Stop tracking when leaving / app goes background
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (playTracker != null) playTracker.stopAndSave(this);
+    }
+
     // ✅ Pause Popup Overlay
     private void showPausePopup() {
 
@@ -104,6 +122,10 @@ public class LanternReleaseActivity extends AppCompatActivity {
         if (btnBack != null) {
             btnBack.setOnClickListener(v -> {
                 rootView.removeView(overlay);
+
+                // ✅ Save play time before leaving screen
+                if (playTracker != null) playTracker.stopAndSave(this);
+
                 startActivity(new Intent(
                         LanternReleaseActivity.this,
                         SelectionGamesActivity.class

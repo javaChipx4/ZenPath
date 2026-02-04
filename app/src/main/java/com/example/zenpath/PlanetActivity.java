@@ -12,7 +12,6 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,6 +61,9 @@ public class PlanetActivity extends AppCompatActivity {
 
     // Keep animation state when pausing
     private boolean planetsPlayingBeforePause = false;
+
+    // ✅ Play time tracker
+    private GameTimeTracker playTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,6 +146,10 @@ public class PlanetActivity extends AppCompatActivity {
         });
         if (btnBackToSelection != null) btnBackToSelection.setOnClickListener(v -> {
             hidePause();
+
+            // ✅ Save play time before leaving
+            if (playTracker != null) playTracker.stopAndSave(this);
+
             // ✅ Go back to Selection screen
             startActivity(new Intent(PlanetActivity.this, SelectionGamesActivity.class)); // CHANGE if needed
             finish();
@@ -281,6 +287,14 @@ public class PlanetActivity extends AppCompatActivity {
         }
     }
 
+    // ✅ start tracking when visible
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (playTracker == null) playTracker = new GameTimeTracker("Planet");
+        playTracker.start();
+    }
+
     @Override
     public void onBackPressed() {
         // If pause overlay is open, close it first
@@ -299,7 +313,12 @@ public class PlanetActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+
+        // ✅ keep your original behavior
         saveStateToPrefs(false);
+
+        // ✅ save play time too
+        if (playTracker != null) playTracker.stopAndSave(this);
     }
 
     // ✅ Pause helpers

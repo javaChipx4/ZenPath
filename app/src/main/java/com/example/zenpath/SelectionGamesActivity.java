@@ -59,7 +59,7 @@ public class SelectionGamesActivity extends AppCompatActivity {
         if (btnHistory != null) {
             btnHistory.setOnClickListener(v -> {
                 settingsPopup.setVisibility(View.GONE);
-                startActivity(new Intent(SelectionGamesActivity.this, DiaryHistoryActivity.class));
+                startActivity(new Intent(SelectionGamesActivity.this, HistoryActivity.class));
             });
         }
 
@@ -70,22 +70,6 @@ public class SelectionGamesActivity extends AppCompatActivity {
                 startActivity(new Intent(SelectionGamesActivity.this, MoodActivity.class));
             });
         }
-
-        // Game clicks
-        findViewById(R.id.cardConstella).setOnClickListener(v ->
-                        Toast.makeText(this, "Open Tap the Calm Game", Toast.LENGTH_SHORT).show()
-                // startActivity(new Intent(this, TapCalmActivity.class));
-        );
-
-        findViewById(R.id.cardLantelle).setOnClickListener(v ->
-                        Toast.makeText(this, "Open Color Match Relax", Toast.LENGTH_SHORT).show()
-                // startActivity(new Intent(this, ColorMatchActivity.class));
-        );
-
-        findViewById(R.id.cardAsthera).setOnClickListener(v ->
-                        Toast.makeText(this, "Open Breathing Bubble", Toast.LENGTH_SHORT).show()
-                // startActivity(new Intent(this, InhaleExhaleActivity.class));
-        );
 
         findViewById(R.id.cardConstella).setOnClickListener(v -> {
             startActivity(new Intent(SelectionGamesActivity.this, StarSweepIntroActivity.class));

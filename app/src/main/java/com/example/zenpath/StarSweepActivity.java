@@ -22,6 +22,9 @@ public class StarSweepActivity extends AppCompatActivity
 
     private ImageButton btnSettings;
     private Button btnPlayAgain;
+    // ✅ Play time tracker
+    private GameTimeTracker playTracker;
+
 
     // ✅ streak prefs
     private SharedPreferences prefs;
@@ -65,6 +68,11 @@ public class StarSweepActivity extends AppCompatActivity
         });
 
         updateStreakUI();
+
+        // ✅ Start play time tracking
+        playTracker = new GameTimeTracker("Star Sweep");
+        playTracker.start();
+
     }
 
     // ================= HUD CALLBACKS =================
@@ -145,15 +153,16 @@ public class StarSweepActivity extends AppCompatActivity
     }
 
     private void goBackToSelection() {
-        // ✅ Unpause before leaving (clean)
+        // ✅ Save play time before leaving
+        if (playTracker != null) playTracker.stopAndSave(this);
+
         starSweepView.setPaused(false);
 
-        // 🔥 CHANGE THIS to your real selection activity class name if different
         Intent i = new Intent(StarSweepActivity.this, SelectionGamesActivity.class);
-
         startActivity(i);
-        finish(); // close this game screen
+        finish();
     }
+
 
     // ================= STREAK UI =================
 
@@ -166,8 +175,21 @@ public class StarSweepActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         super.onPause();
-        // keep paused (ok) — or resume automatically if you want
+
+        // ✅ Save play time when app goes background
+        if (playTracker != null) playTracker.stopAndSave(this);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (playTracker == null) {
+            playTracker = new GameTimeTracker("Star Sweep");
+        }
+        playTracker.start();
+    }
+
 
     @Override
     protected void onDestroy() {
