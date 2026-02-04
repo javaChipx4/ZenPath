@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center">
+
+    <View
+        android:id="@+id/d0"
+        style="@style/WeekDot"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:id="@+id/d1"
+        style="@style/WeekDot"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:id="@+id/d2"
+        style="@style/WeekDot"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:id="@+id/d3"
+        style="@style/WeekDot"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:id="@+id/d4"
+        style="@style/WeekDot"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:id="@+id/d5"
+        style="@style/WeekDot"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <View
+        android:id="@+id/d6"
+        style="@style/WeekDot"
+        android:clickable="true"
+        android:focusable="true" />
+</LinearLayout>

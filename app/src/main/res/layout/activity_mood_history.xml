@@ -20,7 +20,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="10dp"/>
 
-    <!-- Burger icon -->
+    <!-- Menu icon -->
     <ImageView
         android:id="@+id/menuIcon"
         android:layout_width="26dp"
@@ -31,7 +31,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="14dp"
         android:layout_marginEnd="6dp"
-        app:tint="#1E1E1E" />
+        app:tint="#1E1E1E"/>
 
     <!-- Title -->
     <TextView
@@ -69,9 +69,7 @@
             android:background="@drawable/bg_tab_pill_unselected_mh"
             android:fontFamily="serif"/>
 
-        <Space
-            android:layout_width="10dp"
-            android:layout_height="1dp"/>
+        <Space android:layout_width="10dp" android:layout_height="1dp"/>
 
         <Button
             android:id="@+id/btnMoodTab"
@@ -84,9 +82,7 @@
             android:background="@drawable/bg_tab_pill_selected_mh"
             android:fontFamily="serif"/>
 
-        <Space
-            android:layout_width="10dp"
-            android:layout_height="1dp"/>
+        <Space android:layout_width="10dp" android:layout_height="1dp"/>
 
         <Button
             android:id="@+id/btnStressTab"
@@ -100,7 +96,7 @@
             android:fontFamily="serif"/>
     </LinearLayout>
 
-    <!-- Main card like screenshot -->
+    <!-- Main card -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardHistory"
         android:layout_width="0dp"
@@ -121,88 +117,49 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Week row -->
+            <!-- Week labels -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center">
 
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="M"
-                    android:textSize="10sp"
-                    android:textColor="#4A4A4A"
-                    android:gravity="center"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="T"
-                    android:textSize="10sp"
-                    android:textColor="#4A4A4A"
-                    android:gravity="center"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="W"
-                    android:textSize="10sp"
-                    android:textColor="#4A4A4A"
-                    android:gravity="center"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="TH"
-                    android:textSize="10sp"
-                    android:textColor="#4A4A4A"
-                    android:gravity="center"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="F"
-                    android:textSize="10sp"
-                    android:textColor="#4A4A4A"
-                    android:gravity="center"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="SAT"
-                    android:textSize="10sp"
-                    android:textColor="#4A4A4A"
-                    android:gravity="center"/>
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="SUN"
-                    android:textSize="10sp"
-                    android:textColor="#4A4A4A"
-                    android:gravity="center"/>
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="M" android:textSize="10sp"
+                    android:textColor="#4A4A4A" android:gravity="center"/>
+
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="T" android:textSize="10sp"
+                    android:textColor="#4A4A4A" android:gravity="center"/>
+
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="W" android:textSize="10sp"
+                    android:textColor="#4A4A4A" android:gravity="center"/>
+
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="TH" android:textSize="10sp"
+                    android:textColor="#4A4A4A" android:gravity="center"/>
+
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="F" android:textSize="10sp"
+                    android:textColor="#4A4A4A" android:gravity="center"/>
+
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="SAT" android:textSize="10sp"
+                    android:textColor="#4A4A4A" android:gravity="center"/>
+
+                <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                    android:layout_weight="1" android:text="SUN" android:textSize="10sp"
+                    android:textColor="#4A4A4A" android:gravity="center"/>
             </LinearLayout>
 
-            <!-- Dots row (visual only for now) -->
-            <!-- Dots row -->
-            <LinearLayout
+            <!-- 🔥 Swipeable dots row -->
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/weekPager"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="10dp">
-
-                <View android:id="@+id/dotMon" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
-                <View android:id="@+id/dotTue" style="@style/WeekDotSelected" android:clickable="true" android:focusable="true"/>
-                <View android:id="@+id/dotWed" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
-                <View android:id="@+id/dotThu" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
-                <View android:id="@+id/dotFri" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
-                <View android:id="@+id/dotSat" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
-                <View android:id="@+id/dotSun" style="@style/WeekDot" android:clickable="true" android:focusable="true"/>
-            </LinearLayout>
+                android:layout_height="28dp"
+                android:layout_marginTop="10dp"
+                android:overScrollMode="never"/>
 
             <!-- Mood label -->
             <TextView
@@ -230,7 +187,7 @@
                 <TextView android:id="@+id/tvEmoji5" style="@style/EmojiItem" android:text="😅"/>
             </LinearLayout>
 
-            <!-- Notes box -->
+            <!-- Notes -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="120dp"

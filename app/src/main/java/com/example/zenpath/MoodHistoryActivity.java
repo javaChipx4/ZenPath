@@ -8,23 +8,32 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.widget.ViewPager2;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class MoodHistoryActivity extends AppCompatActivity {
 
+    private ZenPathRepository repo;
+
     private TextView tvMoodNote;
-    // Changed to TextView because your XML uses TextViews for emojis
     private TextView emoji1, emoji2, emoji3, emoji4, emoji5;
-    private String currentSelectedDate = "2026-02-03"; // Default date
+
+    // ✅ Swipeable dots pager
+    private ViewPager2 weekPager;
+    private WeekDatesPagerAdapter weekAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mood_history);
 
-        // 1. Initialize UI Views (Matching your XML IDs)
+        repo = new ZenPathRepository(this);
+
         tvMoodNote = findViewById(R.id.tvMoodNote);
         emoji1 = findViewById(R.id.tvEmoji1);
         emoji2 = findViewById(R.id.tvEmoji2);
@@ -32,21 +41,10 @@ public class MoodHistoryActivity extends AppCompatActivity {
         emoji4 = findViewById(R.id.tvEmoji4);
         emoji5 = findViewById(R.id.tvEmoji5);
 
-        // 2. Setup Weekday Click Listeners (Using the dot IDs from your XML)
-        if (findViewById(R.id.dotTue) != null) {
-            findViewById(R.id.dotTue).setOnClickListener(v -> loadMoodFromDb("2026-02-03"));
-        }
-        if (findViewById(R.id.dotWed) != null) {
-            findViewById(R.id.dotWed).setOnClickListener(v -> loadMoodFromDb("2026-02-04"));
-        }
-        // Add dotMon, dotThu, etc., here following the same pattern
-
-        // 3. Load initial data
-        loadMoodFromDb(currentSelectedDate);
-
-        // 4. Setup existing UI helpers
         setupTabs();
         setupPopupWithRename();
+
+        setupWeekPager(); // ✅ replaces setupWeekDots()
 
         View tabRow = findViewById(R.id.tabRow);
         if (tabRow != null) {
@@ -59,48 +57,104 @@ public class MoodHistoryActivity extends AppCompatActivity {
         }
     }
 
-    // ✅ FIXED: Method to fetch data from Room Database
-    private void loadMoodFromDb(String date) {
-        new Thread(() -> {
-            // Get data from database using the singleton instance
-            MoodEntry entry = MoodDatabase.getInstance(this).moodDao().getMoodByDate(date);
+    // ===================== WEEK PAGER (SWIPE LEFT/RIGHT) =====================
 
-            // Update UI on the main thread
+    private void setupWeekPager() {
+        weekPager = findViewById(R.id.weekPager);
+        if (weekPager == null) return;
+
+        weekAdapter = new WeekDatesPagerAdapter(date -> {
+            loadMoodFromSql(date);
+        });
+
+
+        weekPager.setAdapter(weekAdapter);
+        weekPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
+        weekPager.setOffscreenPageLimit(1);
+
+        int center = weekAdapter.getCenter();
+        weekPager.setCurrentItem(center, false);
+
+        // Default load: today (this week + today's weekday)
+        int todayDotIndex = getTodayIndexMonFirst();
+        weekAdapter.select(center, todayDotIndex);
+        loadMoodFromSql(getDateForWeek(center, todayDotIndex, center));
+
+        // When user swipes to another week, keep the same weekday selected (today's weekday)
+        weekPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                int dotIndex = getTodayIndexMonFirst();
+                weekAdapter.select(position, dotIndex);
+
+                String date = getDateForWeek(position, dotIndex, center);
+                loadMoodFromSql(date);
+            }
+        });
+    }
+
+    // Monday-first index: Mon=0 ... Sun=6
+    private int getTodayIndexMonFirst() {
+        Calendar c = Calendar.getInstance();
+        int dow = c.get(Calendar.DAY_OF_WEEK);
+        if (dow == Calendar.SUNDAY) return 6;
+        return dow - Calendar.MONDAY;
+    }
+
+    // Convert pager week + dot index into yyyy-MM-dd
+    private String getDateForWeek(int pagePos, int dotIndex, int center) {
+        int weekOffset = pagePos - center;
+
+        Calendar monday = Calendar.getInstance();
+        int dow = monday.get(Calendar.DAY_OF_WEEK);
+        int diff = (dow == Calendar.SUNDAY) ? 6 : (dow - Calendar.MONDAY);
+        monday.add(Calendar.DAY_OF_MONTH, -diff);          // go to Monday
+        monday.add(Calendar.DAY_OF_MONTH, weekOffset * 7); // shift weeks
+        monday.add(Calendar.DAY_OF_MONTH, dotIndex);       // shift day inside week
+
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(monday.getTime());
+    }
+
+    // ===================== LOAD FROM SQLITE =====================
+
+    private void loadMoodFromSql(String date) {
+        new Thread(() -> {
+            MoodRecord record = repo.getMoodByDate(date);
+
             runOnUiThread(() -> {
-                resetEmojiOpacity(); // Dim all emojis first
-                if (entry != null) {
-                    tvMoodNote.setText(entry.getReflection());
-                    highlightMoodEmoji(entry.getMoodType());
+                resetEmojiOpacity();
+                if (record != null) {
+                    tvMoodNote.setText(record.note);
+                    highlightMoodEmoji(record.moodValue);
                 } else {
-                    tvMoodNote.setText("Select a date to view mood note...");
+                    tvMoodNote.setText("No mood saved for this day yet.");
                 }
             });
         }).start();
     }
 
-    // ✅ Helper to highlight the correct emoji
-    private void highlightMoodEmoji(int moodType) {
-        // moodType comes from Screen 1 (1 to 5)
-        if (moodType == 1 && emoji1 != null) emoji1.setAlpha(1.0f);
-        else if (moodType == 2 && emoji2 != null) emoji2.setAlpha(1.0f);
-        else if (moodType == 3 && emoji3 != null) emoji3.setAlpha(1.0f);
-        else if (moodType == 4 && emoji4 != null) emoji4.setAlpha(1.0f);
-        else if (moodType == 5 && emoji5 != null) emoji5.setAlpha(1.0f);
+    private void highlightMoodEmoji(int moodValue) {
+        if (moodValue == 1 && emoji1 != null) emoji1.setAlpha(1.0f);
+        else if (moodValue == 2 && emoji2 != null) emoji2.setAlpha(1.0f);
+        else if (moodValue == 3 && emoji3 != null) emoji3.setAlpha(1.0f);
+        else if (moodValue == 4 && emoji4 != null) emoji4.setAlpha(1.0f);
+        else if (moodValue == 5 && emoji5 != null) emoji5.setAlpha(1.0f);
     }
 
-    // ✅ Helper to reset emoji appearance
     private void resetEmojiOpacity() {
-        float dimAlpha = 0.3f; // Make them look unselected
-        if (emoji1 != null) emoji1.setAlpha(dimAlpha);
-        if (emoji2 != null) emoji2.setAlpha(dimAlpha);
-        if (emoji3 != null) emoji3.setAlpha(dimAlpha);
-        if (emoji4 != null) emoji4.setAlpha(dimAlpha);
-        if (emoji5 != null) emoji5.setAlpha(dimAlpha);
+        float dim = 0.3f;
+        if (emoji1 != null) emoji1.setAlpha(dim);
+        if (emoji2 != null) emoji2.setAlpha(dim);
+        if (emoji3 != null) emoji3.setAlpha(dim);
+        if (emoji4 != null) emoji4.setAlpha(dim);
+        if (emoji5 != null) emoji5.setAlpha(dim);
     }
+
+    // ===================== TABS =====================
 
     private void setupTabs() {
         Button btnDiary = findViewById(R.id.btnDiaryTab);
-        Button btnMood  = findViewById(R.id.btnMoodTab);
+        Button btnMood = findViewById(R.id.btnMoodTab);
         Button btnStress = findViewById(R.id.btnStressTab);
 
         if (btnDiary != null) {
@@ -122,6 +176,8 @@ public class MoodHistoryActivity extends AppCompatActivity {
         }
     }
 
+    // ===================== POPUP =====================
+
     private void setupPopupWithRename() {
         ViewGroup rootView = findViewById(android.R.id.content);
         View settingsPopup = getLayoutInflater().inflate(R.layout.dialog_settings, rootView, false);
@@ -130,6 +186,7 @@ public class MoodHistoryActivity extends AppCompatActivity {
 
         ImageView menuIcon = findViewById(R.id.menuIcon);
         if (menuIcon != null) menuIcon.setOnClickListener(v -> settingsPopup.setVisibility(View.VISIBLE));
+
         settingsPopup.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
 
         View card = settingsPopup.findViewById(R.id.settingsCard);
@@ -145,9 +202,9 @@ public class MoodHistoryActivity extends AppCompatActivity {
                 finish();
             });
         }
-        if (btnBack != null) {
-            btnBack.setOnClickListener(v -> finish());
-        }
+
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
+
         if (btnMood != null) {
             btnMood.setOnClickListener(v -> {
                 settingsPopup.setVisibility(View.GONE);
