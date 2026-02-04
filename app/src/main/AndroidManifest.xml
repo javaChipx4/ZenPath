@@ -45,18 +45,12 @@
             android:exported="false" />
 
         <activity
+            android:name=".ConnectDotsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".StarSweepActivity"
             android:exported="false" />
-
-        <activity android:name=".StarSweepIntroActivity"
-            android:exported="false" />
-
-
-        <activity
-            android:name=".LanternReleaseActivity"/>
-        <activity
-            android:name=".LanternRelease" />
-
 
         <activity
             android:name=".MainActivity"
