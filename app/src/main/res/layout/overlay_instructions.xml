@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#CC000000"
+    android:padding="0dp">
+
+    <!-- ✅ Center Popup Card -->
+    <LinearLayout
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="#1A1626"
+        android:padding="18dp"
+        android:orientation="vertical"
+        android:elevation="12dp">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Instructions"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="20sp" />
+
+        <!-- ✅ Important Instructions -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Welcome to Planet Designer.\n\n• Drag the screen to explore space, and pinch to zoom.\n\n• Stars Mode: Tap to place stars. Tap two stars to connect them.\n\n• Planets: Press Planets to select the Sun, Moon, or a planet, then tap to place it.\n\n• Tools: Use Marker to draw glowing trails and Eraser to remove them.\n\n• Undo: Restores your most recent action.\n\n• Clear Object: Removes planets and stars only.\n• Clear All: Clears the entire canvas.\n\n• Tap Play to enable slow planet motion, and Save to export your design."
+            android:textColor="#EDE7FF"
+            android:textSize="14sp"
+            android:lineSpacingExtra="4dp" />
+
+        <!-- ✅ Play Button -->
+        <Button
+            android:id="@+id/btnStartPlay"
+            android:layout_width="160dp"
+            android:layout_height="44dp"
+            android:layout_marginTop="18dp"
+            android:layout_gravity="center"
+            android:text="Play"
+            android:textAllCaps="false"
+            android:textStyle="bold"
+            android:textColor="#0E0E18"
+            android:background="@drawable/btn_soft_selector" />
+
+    </LinearLayout>
+
+</FrameLayout>

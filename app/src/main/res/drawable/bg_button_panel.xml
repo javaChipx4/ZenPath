@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Panel fill -->
+    <solid android:color="#2A233A"/>
+
+    <!-- Rounded corners -->
+    <corners android:radius="14dp"/>
+
+    <!-- Soft border -->
+    <stroke
+        android:width="1dp"
+        android:color="#5A4A74"/>
+
+    <!-- Inner padding feel -->
+    <padding
+        android:left="10dp"
+        android:top="10dp"
+        android:right="10dp"
+        android:bottom="10dp"/>
+</shape>

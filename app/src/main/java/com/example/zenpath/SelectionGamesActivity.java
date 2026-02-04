@@ -72,32 +72,31 @@ public class SelectionGamesActivity extends AppCompatActivity {
         }
 
         // Game clicks
-        findViewById(R.id.btnGame1).setOnClickListener(v ->
+        findViewById(R.id.cardConstella).setOnClickListener(v ->
                         Toast.makeText(this, "Open Tap the Calm Game", Toast.LENGTH_SHORT).show()
                 // startActivity(new Intent(this, TapCalmActivity.class));
         );
 
-        findViewById(R.id.btnGame2).setOnClickListener(v ->
+        findViewById(R.id.cardLantelle).setOnClickListener(v ->
                         Toast.makeText(this, "Open Color Match Relax", Toast.LENGTH_SHORT).show()
                 // startActivity(new Intent(this, ColorMatchActivity.class));
         );
 
-        findViewById(R.id.btnGame3).setOnClickListener(v ->
+        findViewById(R.id.cardAsthera).setOnClickListener(v ->
                         Toast.makeText(this, "Open Breathing Bubble", Toast.LENGTH_SHORT).show()
                 // startActivity(new Intent(this, InhaleExhaleActivity.class));
         );
 
-        findViewById(R.id.btnGame1).setOnClickListener(v -> {
-            startActivity(new Intent(SelectionGamesActivity.this, ConnectDotsActivity.class));
+        findViewById(R.id.cardConstella).setOnClickListener(v -> {
+            startActivity(new Intent(SelectionGamesActivity.this, StarSweepIntroActivity.class));
         });
 
-        findViewById(R.id.btnGame2).setOnClickListener(v -> {
-                    startActivity(new Intent(SelectionGamesActivity.this, StarSweepActivity.class));
+        findViewById(R.id.cardLantelle).setOnClickListener(v -> {
+                    startActivity(new Intent(SelectionGamesActivity.this, LanternReleaseActivity.class));
                 });
 
-        // GAME 3 - Breathing Bubble
-        findViewById(R.id.btnGame3).setOnClickListener(v -> {
-            startActivity(new Intent(SelectionGamesActivity.this, InhaleExhaleActivity.class));
+        findViewById(R.id.cardAsthera).setOnClickListener(v -> {
+            startActivity(new Intent(SelectionGamesActivity.this, PlanetActivity.class));
         });
     }
 }

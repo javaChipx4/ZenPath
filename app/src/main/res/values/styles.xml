@@ -94,5 +94,11 @@
         <item name="android:textSize">12sp</item>
     </style>
 
+    <style name="Swatch">
+        <item name="android:layout_width">36dp</item>
+        <item name="android:layout_height">36dp</item>
+        <item name="android:background">@drawable/bg_swatch</item>
+    </style>
+
 
 </resources>

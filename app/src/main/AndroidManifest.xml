@@ -41,11 +41,16 @@
             android:exported="false" />
 
         <activity
-            android:name=".InhaleExhaleActivity"
+            android:name=".PlanetActivity"
+            android:exported="false" />
+
+
+        <activity
+            android:name=".LanternReleaseActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ConnectDotsActivity"
+            android:name=".StarSweepIntroActivity"
             android:exported="false" />
 
         <activity
