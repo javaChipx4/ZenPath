@@ -1,6 +1,7 @@
 package com.example.zenpath;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -11,7 +12,9 @@ import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
@@ -41,6 +44,10 @@ public class PlanetActivity extends AppCompatActivity {
     private View instructionsOverlay;
     private Button btnStartPlay;
 
+    // ✅ Pause overlay
+    private View pauseOverlay;
+    private TextView btnResume, btnRestart, btnBackToSelection;
+
     private final int[] swatchColors = new int[]{
             Color.parseColor("#BFD6FF"),
             Color.parseColor("#C6B7E2"),
@@ -53,6 +60,9 @@ public class PlanetActivity extends AppCompatActivity {
     private View[] swatches;
     private int selectedSwatchIndex = 0;
 
+    // Keep animation state when pausing
+    private boolean planetsPlayingBeforePause = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +72,9 @@ public class PlanetActivity extends AppCompatActivity {
 
         ImageButton btnInfo = findViewById(R.id.btnInfo);
         ImageButton btnSave = findViewById(R.id.btnSave);
+
+        // ✅ settings/pause icon
+        ImageButton menuIcon = findViewById(R.id.menuIcon);
 
         btnMove = findViewById(R.id.btnMove);
         btnStars = findViewById(R.id.btnStars);
@@ -102,6 +115,39 @@ public class PlanetActivity extends AppCompatActivity {
         if (btnStartPlay != null) {
             btnStartPlay.setOnClickListener(v -> hideInstructionsOverlay());
         }
+
+        // ✅ pause overlay bindings (overlay_pause.xml ids)
+        pauseOverlay = findViewById(R.id.pauseOverlay);
+        if (pauseOverlay != null) {
+            View pauseCard = pauseOverlay.findViewById(R.id.pauseCard);
+            btnResume = pauseOverlay.findViewById(R.id.btnResume);
+            btnRestart = pauseOverlay.findViewById(R.id.btnRestart);
+            btnBackToSelection = pauseOverlay.findViewById(R.id.btnBackToSelection);
+
+            // tap outside -> close
+            pauseOverlay.setOnClickListener(v -> hidePause());
+
+            // tap inside card -> do nothing
+            if (pauseCard != null) pauseCard.setOnClickListener(v -> {});
+        }
+
+        // open pause
+        if (menuIcon != null) {
+            menuIcon.setOnClickListener(v -> showPause());
+        }
+
+        // pause buttons
+        if (btnResume != null) btnResume.setOnClickListener(v -> hidePause());
+        if (btnRestart != null) btnRestart.setOnClickListener(v -> {
+            hidePause();
+            recreate();
+        });
+        if (btnBackToSelection != null) btnBackToSelection.setOnClickListener(v -> {
+            hidePause();
+            // ✅ Go back to Selection screen
+            startActivity(new Intent(PlanetActivity.this, SelectionGamesActivity.class)); // CHANGE if needed
+            finish();
+        });
 
         refreshSwatchViews();
         selectSwatch(0);
@@ -236,9 +282,48 @@ public class PlanetActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        // If pause overlay is open, close it first
+        if (pauseOverlay != null && pauseOverlay.getVisibility() == View.VISIBLE) {
+            hidePause();
+            return;
+        }
+        // If instructions overlay is open, close it
+        if (instructionsOverlay != null && instructionsOverlay.getVisibility() == View.VISIBLE) {
+            hideInstructionsOverlay();
+            return;
+        }
+        super.onBackPressed();
+    }
+
+    @Override
     protected void onPause() {
         super.onPause();
         saveStateToPrefs(false);
+    }
+
+    // ✅ Pause helpers
+    private void showPause() {
+        if (pauseOverlay == null) return;
+
+        // remember animation state then stop
+        planetsPlayingBeforePause = planetsPlaying;
+        planetsPlaying = false;
+        if (spaceView != null) spaceView.setPlanetAnimationEnabled(false);
+        if (btnPlayPlanets != null) btnPlayPlanets.setText(R.string.play);
+
+        pauseOverlay.setVisibility(View.VISIBLE);
+    }
+
+    private void hidePause() {
+        if (pauseOverlay == null) return;
+
+        pauseOverlay.setVisibility(View.GONE);
+
+        // restore animation state
+        planetsPlaying = planetsPlayingBeforePause;
+        if (spaceView != null) spaceView.setPlanetAnimationEnabled(planetsPlaying);
+        if (btnPlayPlanets != null) btnPlayPlanets.setText(planetsPlaying ? R.string.stop : R.string.play);
     }
 
     private void showPlanetPickerDialog() {
