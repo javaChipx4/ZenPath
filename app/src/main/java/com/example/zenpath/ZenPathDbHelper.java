@@ -7,28 +7,35 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class ZenPathDbHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "zenpath.db";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2; // 🔴 INCREASE VERSION
 
-    // Table: journal
+    // ===================== JOURNAL =====================
     public static final String T_JOURNAL = "journal";
     public static final String J_ID = "_id";
-    public static final String J_DATE = "entry_date";     // "2026-01-25"
+    public static final String J_DATE = "entry_date";
     public static final String J_TEXT = "entry_text";
-    public static final String J_CREATED_AT = "created_at"; // millis
+    public static final String J_CREATED_AT = "created_at";
 
-    // Table: mood
+    // ===================== MOOD =====================
     public static final String T_MOOD = "mood";
     public static final String M_ID = "_id";
     public static final String M_DATE = "mood_date";
-    public static final String M_VALUE = "mood_value";   // 1..5 or emoji index
+    public static final String M_VALUE = "mood_value";
     public static final String M_NOTE = "note";
 
-    // Table: stress
+    // ===================== STRESS =====================
     public static final String T_STRESS = "stress";
     public static final String S_ID = "_id";
     public static final String S_DATE = "stress_date";
-    public static final String S_LEVEL = "stress_level"; // 1..10
+    public static final String S_LEVEL = "stress_level";
     public static final String S_SUGGESTION = "suggestion";
+
+    // ===================== GAMES PLAYED =====================
+    public static final String T_GAMES = "games_played";
+    public static final String G_ID = "_id";
+    public static final String G_DATE = "play_date";       // yyyy-MM-dd
+    public static final String G_NAME = "game_name";       // game title
+    public static final String G_CREATED_AT = "created_at"; // millis
 
     public ZenPathDbHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -61,18 +68,26 @@ public class ZenPathDbHelper extends SQLiteOpenHelper {
                         S_SUGGESTION + " TEXT" +
                         ");";
 
+        String createGames =
+                "CREATE TABLE " + T_GAMES + " (" +
+                        G_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        G_DATE + " TEXT NOT NULL, " +
+                        G_NAME + " TEXT NOT NULL, " +
+                        G_CREATED_AT + " INTEGER NOT NULL" +
+                        ");";
+
         db.execSQL(createJournal);
         db.execSQL(createMood);
         db.execSQL(createStress);
+        db.execSQL(createGames);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // For now just drop and recreate (fine for school projects)
         db.execSQL("DROP TABLE IF EXISTS " + T_JOURNAL);
         db.execSQL("DROP TABLE IF EXISTS " + T_MOOD);
         db.execSQL("DROP TABLE IF EXISTS " + T_STRESS);
+        db.execSQL("DROP TABLE IF EXISTS " + T_GAMES);
         onCreate(db);
     }
 }
-

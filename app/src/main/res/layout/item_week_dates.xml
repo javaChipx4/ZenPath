@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="46dp"
+    android:orientation="horizontal"
+    android:gravity="center">
+
+    <TextView
+        android:id="@+id/d1"
+        style="@style/WeekDate" />
+
+    <TextView
+        android:id="@+id/d2"
+        style="@style/WeekDate" />
+
+    <TextView
+        android:id="@+id/d3"
+        style="@style/WeekDate" />
+
+    <TextView
+        android:id="@+id/d4"
+        style="@style/WeekDate" />
+
+    <TextView
+        android:id="@+id/d5"
+        style="@style/WeekDate" />
+
+    <TextView
+        android:id="@+id/d6"
+        style="@style/WeekDate" />
+
+    <TextView
+        android:id="@+id/d7"
+        style="@style/WeekDate" />
+</LinearLayout>

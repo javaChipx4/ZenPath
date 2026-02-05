@@ -15,7 +15,8 @@ public class ZenPathRepository {
         helper = new ZenPathDbHelper(context);
     }
 
-    // ===== JOURNAL =====
+    // ===================== JOURNAL =====================
+
     public long addJournalEntry(String date, String text) {
         SQLiteDatabase db = helper.getWritableDatabase();
 
@@ -38,21 +39,26 @@ public class ZenPathRepository {
                 ZenPathDbHelper.J_CREATED_AT + " DESC"
         );
 
-        while (c.moveToNext()) {
-            String date = c.getString(0);
-            String text = c.getString(1);
-            list.add(date + " - " + text);
+        try {
+            while (c.moveToNext()) {
+                String date = c.getString(0);
+                String text = c.getString(1);
+                list.add(date + " - " + text);
+            }
+        } finally {
+            c.close();
         }
 
-        c.close();
         return list;
     }
 
-    // ===== MOOD =====
+    // ===================== MOOD =====================
 
     // ✅ UPSERT: One mood per day (update if exists, insert if not)
     public void saveMood(String date, int moodValue, String note) {
         SQLiteDatabase db = helper.getWritableDatabase();
+
+        if (note == null) note = "";
 
         ContentValues cv = new ContentValues();
         cv.put(ZenPathDbHelper.M_DATE, date);
@@ -101,7 +107,38 @@ public class ZenPathRepository {
         return record;
     }
 
-    // ===== STRESS =====
+    // ===================== STRESS =====================
+
+    /**
+     * ✅ IMPORTANT:
+     * Your UI shows 0..100% (progress bar max=100).
+     * So store stress_level as 0..100 for consistency.
+     */
+
+    // ✅ UPSERT: One stress per day (update if exists, insert if not)
+    public void saveStress(String date, int level, String suggestion) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+
+        if (suggestion == null) suggestion = "";
+
+        ContentValues cv = new ContentValues();
+        cv.put(ZenPathDbHelper.S_DATE, date);
+        cv.put(ZenPathDbHelper.S_LEVEL, level);
+        cv.put(ZenPathDbHelper.S_SUGGESTION, suggestion);
+
+        int rows = db.update(
+                ZenPathDbHelper.T_STRESS,
+                cv,
+                ZenPathDbHelper.S_DATE + "=?",
+                new String[]{date}
+        );
+
+        if (rows == 0) {
+            db.insert(ZenPathDbHelper.T_STRESS, null, cv);
+        }
+    }
+
+    // Optional: keep your old insert method (but avoid using it in the app)
     public long addStress(String date, int level, String suggestion) {
         SQLiteDatabase db = helper.getWritableDatabase();
 
@@ -112,4 +149,100 @@ public class ZenPathRepository {
 
         return db.insert(ZenPathDbHelper.T_STRESS, null, cv);
     }
+
+    // ✅ Container class for reading stress row
+    public static class StressRecord {
+        public final String date;
+        public final int level; // 0..100
+        public final String suggestion;
+
+        public StressRecord(String date, int level, String suggestion) {
+            this.date = date;
+            this.level = level;
+            this.suggestion = suggestion;
+        }
+    }
+
+    // ✅ READ: Get stress for a specific date (yyyy-MM-dd)
+    public StressRecord getStressByDate(String date) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_STRESS,
+                new String[]{ZenPathDbHelper.S_LEVEL, ZenPathDbHelper.S_SUGGESTION},
+                ZenPathDbHelper.S_DATE + "=?",
+                new String[]{date},
+                null, null,
+                ZenPathDbHelper.S_ID + " DESC",
+                "1"
+        );
+
+        StressRecord record = null;
+
+        try {
+            if (c.moveToFirst()) {
+                int level = c.getInt(0);
+                String suggestion = c.getString(1);
+                if (suggestion == null) suggestion = "";
+                record = new StressRecord(date, level, suggestion);
+            }
+        } finally {
+            c.close();
+        }
+
+        return record;
+    }
+
+    // ===================== GAMES PLAYED =====================
+
+    public static class GamePlayRecord {
+        public final String date;
+        public final String gameName;
+
+        public GamePlayRecord(String date, String gameName) {
+            this.date = date;
+            this.gameName = gameName;
+        }
+    }
+
+    // ✅ Save when a game is played/opened
+    public void addGamePlayed(String date, String gameName) {
+        SQLiteDatabase db = helper.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put(ZenPathDbHelper.G_DATE, date);
+        cv.put(ZenPathDbHelper.G_NAME, gameName);
+        cv.put(ZenPathDbHelper.G_CREATED_AT, System.currentTimeMillis());
+
+        db.insert(ZenPathDbHelper.T_GAMES, null, cv);
+    }
+
+    // ✅ Read last 3 games for a specific date (yyyy-MM-dd)
+    public ArrayList<GamePlayRecord> getLast3GamesByDate(String date) {
+        ArrayList<GamePlayRecord> list = new ArrayList<>();
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_GAMES,
+                new String[]{ZenPathDbHelper.G_DATE, ZenPathDbHelper.G_NAME},
+                ZenPathDbHelper.G_DATE + "=?",
+                new String[]{date},
+                null, null,
+                ZenPathDbHelper.G_CREATED_AT + " DESC",
+                "3"
+        );
+
+        try {
+            while (c.moveToNext()) {
+                String d = c.getString(0);
+                String g = c.getString(1);
+                list.add(new GamePlayRecord(d, g));
+            }
+        } finally {
+            c.close();
+        }
+
+        return list;
+    }
+
 }

@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
@@ -15,10 +16,12 @@ import java.util.Locale;
 public class WeekDatesPagerAdapter extends RecyclerView.Adapter<WeekDatesPagerAdapter.VH> {
 
     public interface OnDateSelected {
-        void onSelected(String date);
+        void onSelected(String date); // yyyy-MM-dd
     }
 
     private static final int CENTER = 500;
+    private static final int ITEM_COUNT = 1000;
+
     private final OnDateSelected callback;
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
@@ -39,10 +42,7 @@ public class WeekDatesPagerAdapter extends RecyclerView.Adapter<WeekDatesPagerAd
 
     @Override
     public void onBindViewHolder(@NonNull VH h, int position) {
-        int weekOffset = position - CENTER;
-
-        Calendar monday = getStartOfWeekMonday();
-        monday.add(Calendar.DAY_OF_MONTH, weekOffset * 7);
+        Calendar monday = getStartOfWeekMonday(position);
 
         for (int i = 0; i < 7; i++) {
             Calendar day = (Calendar) monday.clone();
@@ -51,53 +51,109 @@ public class WeekDatesPagerAdapter extends RecyclerView.Adapter<WeekDatesPagerAd
             String dateStr = sdf.format(day.getTime());
             int dayNum = day.get(Calendar.DAY_OF_MONTH);
 
-            h.days[i].setText(String.valueOf(dayNum));
+            TextView tv = h.days[i];
+            tv.setText(String.valueOf(dayNum));
 
-            boolean selected = position == selectedPage && i == selectedIndex;
+            boolean selected = (position == selectedPage && i == selectedIndex);
 
-            h.days[i].setBackground(selected ?
-                    h.days[i].getContext().getDrawable(R.drawable.bg_week_date_selected_mh)
-                    : null);
-
-            h.days[i].setTextColor(selected ? 0xFFFFFFFF : 0xFF1E1E1E);
+            if (selected) {
+                tv.setBackgroundResource(R.drawable.bg_week_date_selected_mh);
+                tv.setTextColor(0xFFFFFFFF);
+            } else {
+                tv.setBackground(null);
+                tv.setTextColor(0xFF1E1E1E);
+            }
 
             final int idx = i;
-            h.days[i].setOnClickListener(v -> {
+            tv.setOnClickListener(v -> {
                 selectedPage = position;
                 selectedIndex = idx;
                 notifyDataSetChanged();
-                callback.onSelected(dateStr);
+
+                if (callback != null) callback.onSelected(dateStr);
             });
         }
     }
 
     @Override
     public int getItemCount() {
-        return 1000;
+        return ITEM_COUNT;
     }
 
     public int getCenter() {
         return CENTER;
     }
 
-    public void select(int page, int index) {
-        selectedPage = page;
-        selectedIndex = index;
+    /**
+     * Call this after you set the ViewPager current item (center),
+     * so your page highlights today AND triggers loading data.
+     */
+    public void triggerTodaySelection() {
+        Calendar monday = getStartOfWeekMonday(selectedPage);
+        Calendar day = (Calendar) monday.clone();
+        day.add(Calendar.DAY_OF_MONTH, selectedIndex);
+
+        if (callback != null) callback.onSelected(sdf.format(day.getTime()));
         notifyDataSetChanged();
     }
+
+    /**
+     * Use this when ViewPager page changes (swipe).
+     * It keeps same selectedIndex, moves selectedPage, and triggers callback.
+     */
+    public void onPageChanged(int newPage) {
+        selectedPage = newPage;
+
+        // keep index 0..6 safe
+        if (selectedIndex < 0) selectedIndex = 0;
+        if (selectedIndex > 6) selectedIndex = 6;
+
+        Calendar monday = getStartOfWeekMonday(selectedPage);
+        Calendar day = (Calendar) monday.clone();
+        day.add(Calendar.DAY_OF_MONTH, selectedIndex);
+
+        if (callback != null) callback.onSelected(sdf.format(day.getTime()));
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Optional: manually set selection (page + index 0..6).
+     */
+    public void select(int page, int index) {
+        selectedPage = page;
+        selectedIndex = Math.max(0, Math.min(6, index));
+        notifyDataSetChanged();
+
+        Calendar monday = getStartOfWeekMonday(selectedPage);
+        Calendar day = (Calendar) monday.clone();
+        day.add(Calendar.DAY_OF_MONTH, selectedIndex);
+
+        if (callback != null) callback.onSelected(sdf.format(day.getTime()));
+    }
+
+    // ===================== HELPERS =====================
 
     private static int getTodayIndexMonFirst() {
         Calendar c = Calendar.getInstance();
         int dow = c.get(Calendar.DAY_OF_WEEK);
+
+        // Mon-first: Mon=0 ... Sat=5, Sun=6
         if (dow == Calendar.SUNDAY) return 6;
         return dow - Calendar.MONDAY;
     }
 
-    private Calendar getStartOfWeekMonday() {
+    /**
+     * Returns Monday of the week for a given adapter position.
+     */
+    private Calendar getStartOfWeekMonday(int position) {
+        int weekOffset = position - CENTER;
+
         Calendar cal = Calendar.getInstance();
         int dow = cal.get(Calendar.DAY_OF_WEEK);
         int diff = (dow == Calendar.SUNDAY) ? 6 : (dow - Calendar.MONDAY);
-        cal.add(Calendar.DAY_OF_MONTH, -diff);
+
+        cal.add(Calendar.DAY_OF_MONTH, -diff);          // go to Monday of this week
+        cal.add(Calendar.DAY_OF_MONTH, weekOffset * 7); // shift by weeks
         return cal;
     }
 
