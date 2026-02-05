@@ -20,16 +20,19 @@ public class DiaryPagerAdapter extends RecyclerView.Adapter<DiaryPagerAdapter.Pa
     }
 
     private final Context ctx;
-    private final ArrayList<String> dates;
+    private final String date;                 // ✅ one date
+    private final ArrayList<String> pages;     // ✅ multiple pages
     private final ZenPathRepository repo;
     private final Listener listener;
 
-    // Keep last bound holder to read text from current page reliably
+    // Keep last bound holder (for current visible page typing)
     private PageVH lastBound;
 
-    public DiaryPagerAdapter(Context ctx, ArrayList<String> dates, ZenPathRepository repo, Listener listener) {
+    public DiaryPagerAdapter(Context ctx, String date, ArrayList<String> pages,
+                             ZenPathRepository repo, Listener listener) {
         this.ctx = ctx;
-        this.dates = dates;
+        this.date = date;
+        this.pages = pages;
         this.repo = repo;
         this.listener = listener;
     }
@@ -43,35 +46,60 @@ public class DiaryPagerAdapter extends RecyclerView.Adapter<DiaryPagerAdapter.Pa
 
     @Override
     public void onBindViewHolder(@NonNull PageVH holder, int position) {
-        String date = dates.get(position);
-
-        String text = repo.getJournalTextByDate(date);
-
-        holder.bind(position + 1, date, text);
+        String text = pages.get(position);
+        holder.bind(position + 1, text);
         lastBound = holder;
     }
 
     @Override
     public int getItemCount() {
-        return dates.size();
+        return pages.size();
     }
 
-    public boolean saveCurrentPage(int position) {
-        if (position < 0 || position >= dates.size()) return false;
-        String date = dates.get(position);
+    // ✅ Add a new blank page
+    public void addNewPage() {
+        // save current page text into list before adding, so nothing is lost
+        syncVisibleToList();
 
-        // Try to read from the currently visible holder
-        String text = "";
-        if (lastBound != null && lastBound.getAdapterPosition() == position) {
-            text = lastBound.etJournal.getText().toString().trim();
+        pages.add("");
+        notifyItemInserted(pages.size() - 1);
+    }
+
+    // ✅ Save ALL pages as one entry for the date
+    public boolean saveAllPages() {
+        syncVisibleToList();
+
+        // Remove empty pages at the end (but keep at least 1)
+        while (pages.size() > 1) {
+            String last = pages.get(pages.size() - 1);
+            if (!TextUtils.isEmpty(safeTrim(last))) break;
+            pages.remove(pages.size() - 1);
         }
 
-        if (TextUtils.isEmpty(text)) return false;
+        // Check if there's any real content
+        boolean hasAny = false;
+        for (String p : pages) {
+            if (!TextUtils.isEmpty(safeTrim(p))) { hasAny = true; break; }
+        }
+        if (!hasAny) return false;
 
-        repo.upsertJournalEntry(date, text);
+        repo.upsertDiaryPages(date, pages);
 
         if (listener != null) listener.onSaved(date);
         return true;
+    }
+
+    private void syncVisibleToList() {
+        if (lastBound == null) return;
+        int pos = lastBound.getAdapterPosition();
+        if (pos == RecyclerView.NO_POSITION) return;
+        if (pos < 0 || pos >= pages.size()) return;
+
+        pages.set(pos, lastBound.etJournal.getText().toString());
+    }
+
+    private String safeTrim(String s) {
+        return s == null ? "" : s.trim();
     }
 
     static class PageVH extends RecyclerView.ViewHolder {
@@ -84,8 +112,9 @@ public class DiaryPagerAdapter extends RecyclerView.Adapter<DiaryPagerAdapter.Pa
             etJournal = itemView.findViewById(R.id.etJournal);
         }
 
-        void bind(int pageNumber, String date, String text) {
-            tvPageMeta.setText("Page " + pageNumber + " • " + date);
+        void bind(int pageNumber, String text) {
+            // ✅ no date here (history already has date)
+            tvPageMeta.setText("Page " + pageNumber);
             etJournal.setText(text);
         }
     }

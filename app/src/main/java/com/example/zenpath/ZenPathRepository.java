@@ -15,6 +15,37 @@ public class ZenPathRepository {
         helper = new ZenPathDbHelper(context);
     }
 
+    public ArrayList<String> getDiaryPagesByDate(String date) {
+        String raw = getJournalTextByDate(date); // reuse your existing method
+        ArrayList<String> pages = new ArrayList<>();
+
+        if (raw == null || raw.trim().isEmpty()) {
+            pages.add("");
+            return pages;
+        }
+
+        String[] parts = raw.split("\n<<PAGE_BREAK>>\n", -1);
+        for (String p : parts) pages.add(p);
+
+        if (pages.isEmpty()) pages.add("");
+        return pages;
+    }
+
+    public void upsertDiaryPages(String date, ArrayList<String> pages) {
+        if (pages == null || pages.isEmpty()) {
+            upsertJournalEntry(date, "");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < pages.size(); i++) {
+            if (i > 0) sb.append("\n<<PAGE_BREAK>>\n");
+            sb.append(pages.get(i) == null ? "" : pages.get(i));
+        }
+
+        upsertJournalEntry(date, sb.toString()); // reuse existing DB save
+    }
+
     // ===== JOURNAL =====
 
     public long addJournalEntry(String date, String text) {
@@ -112,4 +143,58 @@ public class ZenPathRepository {
         c.close();
         return list;
     }
+
+    // ===== DIARY HISTORY META =====
+
+    public static class DiaryEntryMeta {
+        public final String date;
+        public final String preview;
+        public final long createdAt;
+
+        public DiaryEntryMeta(String date, String preview, long createdAt) {
+            this.date = date;
+            this.preview = preview;
+            this.createdAt = createdAt;
+        }
+    }
+
+    // Latest first, only entries that are saved (non-empty text)
+    public ArrayList<DiaryEntryMeta> getSavedDiaryHistory() {
+        ArrayList<DiaryEntryMeta> list = new ArrayList<>();
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        // Only non-empty text
+        String where = ZenPathDbHelper.J_TEXT + " IS NOT NULL AND length(trim(" + ZenPathDbHelper.J_TEXT + ")) > 0";
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_JOURNAL,
+                new String[]{ ZenPathDbHelper.J_DATE, ZenPathDbHelper.J_TEXT, ZenPathDbHelper.J_CREATED_AT },
+                where,
+                null,
+                null, null,
+                ZenPathDbHelper.J_CREATED_AT + " DESC"
+        );
+
+        while (c.moveToNext()) {
+            String date = c.getString(0);
+            String text = c.getString(1);
+            long createdAt = c.getLong(2);
+
+            String preview = makePreview(text);
+            list.add(new DiaryEntryMeta(date, preview, createdAt));
+        }
+
+        c.close();
+        return list;
+    }
+
+    private String makePreview(String raw) {
+        if (raw == null) return "";
+        // Remove page breaks so preview is clean
+        String clean = raw.replace("\n<<PAGE_BREAK>>\n", "\n").trim();
+        // Take first ~120 chars
+        if (clean.length() > 120) clean = clean.substring(0, 120).trim() + "…";
+        return clean;
+    }
+
 }

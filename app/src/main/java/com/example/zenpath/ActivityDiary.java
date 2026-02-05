@@ -27,12 +27,18 @@ public class ActivityDiary extends AppCompatActivity implements DiaryPagerAdapte
 
     private ZenPathRepository repo;
 
-    private ArrayList<String> dates = new ArrayList<>();
+    // ✅ NEW: only one date (today), multiple pages
     private String currentDate;
+    private ArrayList<String> pages = new ArrayList<>();
+    private DiaryPagerAdapter adapter;
 
+    // intro overlay
     private View bookIntroOverlay;
     private View bookIntroCard;
     private Button btnOpenBook;
+
+    // ✅ NEW: add page button (optional but recommended)
+    private View btnAddPage;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -84,35 +90,41 @@ public class ActivityDiary extends AppCompatActivity implements DiaryPagerAdapte
         // ===== Bind =====
         diaryPager = findViewById(R.id.diaryPager);
         btnSave = findViewById(R.id.btn_save);
+        btnAddPage = findViewById(R.id.btnAddPage); // ✅ add in XML (below)
 
-        // ===== Build dates (like a diary book: last 60 days -> today) =====
-        buildDates(60);
+        // ✅ Today key
+        currentDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                .format(Calendar.getInstance().getTime());
 
-        DiaryPagerAdapter adapter = new DiaryPagerAdapter(this, dates, repo, this);
+        // ✅ Load pages for today (at least 1 page)
+        pages = repo.getDiaryPagesByDate(currentDate);
+        if (pages == null) pages = new ArrayList<>();
+        if (pages.isEmpty()) pages.add("");
+
+        adapter = new DiaryPagerAdapter(this, currentDate, pages, repo, this);
         diaryPager.setAdapter(adapter);
         diaryPager.setOffscreenPageLimit(1);
 
-        // ===== Page flip animation =====
+        // ✅ Keep page flip animation (still feels like book)
         diaryPager.setPageTransformer(new PageFlipTransformer());
 
-        // ===== Keep currentDate updated =====
-        diaryPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
-            @Override public void onPageSelected(int position) {
-                currentDate = dates.get(position);
-            }
-        });
+        // Start at last page (most recent writing)
+        diaryPager.setCurrentItem(pages.size() - 1, false);
 
-        // Start on "today" page (last page)
-        int startPos = dates.size() - 1;
-        diaryPager.setCurrentItem(startPos, false);
-        currentDate = dates.get(startPos);
-
-        // ===== Save button =====
+        // ✅ Save all pages
         if (btnSave != null) {
             btnSave.setOnClickListener(v -> showSaveDialog());
         }
 
-        // ===== Open-book intro overlay =====
+        // ✅ Add page (manual, safe)
+        if (btnAddPage != null) {
+            btnAddPage.setOnClickListener(v -> {
+                adapter.addNewPage();
+                diaryPager.setCurrentItem(adapter.getItemCount() - 1, true);
+            });
+        }
+
+        // ===== Open-book intro overlay (UNCHANGED) =====
         bookIntroOverlay = findViewById(R.id.bookIntroOverlay);
         bookIntroCard = findViewById(R.id.bookIntroCard);
         btnOpenBook = findViewById(R.id.btnOpenBook);
@@ -136,7 +148,6 @@ public class ActivityDiary extends AppCompatActivity implements DiaryPagerAdapte
                 btnOpenBook.setOnClickListener(v -> hideIntro());
             }
 
-            // Tap outside closes too
             bookIntroOverlay.setOnClickListener(v -> hideIntro());
             if (bookIntroCard != null) bookIntroCard.setOnClickListener(v -> {});
         }
@@ -147,19 +158,6 @@ public class ActivityDiary extends AppCompatActivity implements DiaryPagerAdapte
         bookIntroOverlay.animate().alpha(0f).setDuration(180).withEndAction(() -> {
             bookIntroOverlay.setVisibility(View.GONE);
         }).start();
-    }
-
-    private void buildDates(int daysBackIncludingToday) {
-        dates.clear();
-        Calendar cal = Calendar.getInstance();
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-
-        // go back (daysBackIncludingToday-1) then add forward to today
-        cal.add(Calendar.DAY_OF_YEAR, -(daysBackIncludingToday - 1));
-        for (int i = 0; i < daysBackIncludingToday; i++) {
-            dates.add(df.format(cal.getTime()));
-            cal.add(Calendar.DAY_OF_YEAR, 1);
-        }
     }
 
     private void showSaveDialog() {
@@ -173,10 +171,10 @@ public class ActivityDiary extends AppCompatActivity implements DiaryPagerAdapte
         Button btnNo = customView.findViewById(R.id.btn_dialog_no);
 
         btnYes.setOnClickListener(v -> {
-            // Ask adapter to save current page content
             if (diaryPager != null && diaryPager.getAdapter() instanceof DiaryPagerAdapter) {
                 DiaryPagerAdapter ad = (DiaryPagerAdapter) diaryPager.getAdapter();
-                boolean ok = ad.saveCurrentPage(diaryPager.getCurrentItem());
+                boolean ok = ad.saveAllPages();
+
                 if (ok) Toast.makeText(ActivityDiary.this, "Saved!", Toast.LENGTH_SHORT).show();
                 else Toast.makeText(ActivityDiary.this, "Write something first.", Toast.LENGTH_SHORT).show();
             }
@@ -187,7 +185,6 @@ public class ActivityDiary extends AppCompatActivity implements DiaryPagerAdapte
         dialog.show();
     }
 
-    // Listener from adapter: used if you want extra hooks later
     @Override public void onSaved(String date) {
         // optional
     }

@@ -3,45 +3,58 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:cardCornerRadius="6dp"
+    app:cardCornerRadius="14dp"
     app:cardElevation="10dp"
     app:cardUseCompatPadding="true"
-    app:cardBackgroundColor="#D7D1E7">
+    app:cardBackgroundColor="#F4EEDD">
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- Page edge shadow -->
+        <!-- Soft page edge shadow (right) -->
         <View
             android:layout_width="10dp"
             android:layout_height="match_parent"
             android:layout_gravity="end"
-            android:background="@drawable/bg_page_edge_shadow"/>
+            android:background="@drawable/bg_page_edge_shadow"
+            android:alpha="0.6"/>
 
-        <!-- faint paper lines -->
+        <!-- Paper lines -->
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="fitXY"
-            android:alpha="0.55"
+            android:alpha="0.35"
             android:src="@drawable/notebook_lines_diary"
             android:contentDescription="Paper lines"/>
+
+        <!-- Left margin line (red-ish) -->
+        <View
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:layout_marginStart="22dp"
+            android:layout_gravity="start"
+            android:background="#D88A8A"
+            android:alpha="0.55"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingStart="28dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="18dp"
+            android:paddingBottom="18dp">
 
             <TextView
                 android:id="@+id/tvPageMeta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Page 1 • 2026-02-04"
+                android:text="Page 1"
                 android:textSize="12sp"
                 android:textColor="#1E1E1E"
-                android:alpha="0.7"
+                android:alpha="0.65"
                 android:gravity="end"
                 android:fontFamily="serif"/>
 
@@ -52,10 +65,11 @@
                 android:layout_weight="1"
                 android:background="@android:color/transparent"
                 android:gravity="top|start"
-                android:hint="possible questions&#10;or none.."
+                android:hint="Write here..."
                 android:textColor="#1E1E1E"
-                android:textColorHint="#F7F7F7"
-                android:textSize="14sp"
+                android:textColorHint="#7A7A7A"
+                android:textSize="16sp"
+                android:lineSpacingExtra="6dp"
                 android:fontFamily="serif"
                 android:inputType="textMultiLine"
                 android:maxLines="999" />

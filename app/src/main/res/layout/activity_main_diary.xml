@@ -61,20 +61,100 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- ✅ Book pages -->
+    <!-- ✅ Sticky header chips -->
+    <LinearLayout
+        android:id="@+id/diaryStickyHeader"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:paddingStart="18dp"
+        android:paddingEnd="18dp"
+        app:layout_constraintTop_toBottomOf="@id/tvDiary"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/chipToday"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="Today"
+            android:textSize="12sp"
+            android:textColor="#1E1E1E"
+            android:fontFamily="serif"
+            android:background="@drawable/bg_chip"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/chipDraft"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginStart="10dp"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="Draft"
+            android:textSize="12sp"
+            android:textColor="#1E1E1E"
+            android:fontFamily="serif"
+            android:background="@drawable/bg_chip"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/chipSaved"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:layout_marginStart="10dp"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:text="Saved ✓"
+            android:textSize="12sp"
+            android:textColor="#1E1E1E"
+            android:fontFamily="serif"
+            android:background="@drawable/bg_chip"
+            android:visibility="gone"/>
+    </LinearLayout>
+
+    <!-- ✅ Book spreads -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/diaryPager"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:clipChildren="false"
-        android:paddingStart="38dp"
-        android:paddingEnd="38dp"
-        android:layout_marginTop="18dp"
-        app:layout_constraintTop_toBottomOf="@id/tvDiary"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:layout_marginTop="6dp"
+        app:layout_constraintTop_toBottomOf="@id/diaryStickyHeader"
         app:layout_constraintBottom_toTopOf="@id/btn_save"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        android:id="@+id/btnAddPage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+ Page"
+        android:textSize="13sp"
+        android:textColor="#1E1E1E"
+        android:fontFamily="serif"
+        android:paddingLeft="14dp"
+        android:paddingRight="14dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@drawable/box_rounded"
+        android:alpha="0.9"
+        app:layout_constraintBottom_toTopOf="@id/btn_save"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="26dp"
+        android:layout_marginBottom="10dp"/>
+
 
     <Button
         android:id="@+id/btn_save"

@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rvDiaryHistory"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
+    android:layout_height="match_parent"
     android:paddingStart="24dp"
-    android:paddingEnd="24dp">
-
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
-    <View style="@style/HistoryRect"/>
-</LinearLayout>
+    android:paddingEnd="24dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:clipToPadding="false"/>

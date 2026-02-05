@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- paper base -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#F7F4EF"/>
+            <corners android:radius="14dp"/>
+        </shape>
+    </item>
+
+    <!-- soft inner tint -->
+    <item android:left="2dp" android:top="2dp" android:right="2dp" android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp"/>
+            <gradient
+                android:angle="90"
+                android:startColor="#FFF8F3"
+                android:centerColor="#F7F4EF"
+                android:endColor="#EFE8FA"/>
+            <alpha android:alpha="0.55"/>
+        </shape>
+    </item>
+
+    <!-- thin border -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="14dp"/>
+            <stroke android:width="2dp" android:color="#E9B2B2"/>
+            <solid android:color="@android:color/transparent"/>
+        </shape>
+    </item>
+
+    <!-- "petal" dots (top-right) -->
+    <item android:gravity="top|end" android:right="16dp" android:top="16dp">
+        <shape android:shape="oval">
+            <size android:width="10dp" android:height="10dp"/>
+            <solid android:color="#E9B2B2"/>
+            <alpha android:alpha="0.75"/>
+        </shape>
+    </item>
+
+    <item android:gravity="top|end" android:right="30dp" android:top="26dp">
+        <shape android:shape="oval">
+            <size android:width="6dp" android:height="6dp"/>
+            <solid android:color="#E9B2B2"/>
+            <alpha android:alpha="0.45"/>
+        </shape>
+    </item>
+
+    <!-- small dot (bottom-center) -->
+    <item android:gravity="bottom|center_horizontal" android:bottom="44dp">
+        <shape android:shape="oval">
+            <size android:width="8dp" android:height="8dp"/>
+            <solid android:color="#E9B2B2"/>
+            <alpha android:alpha="0.30"/>
+        </shape>
+    </item>
+
+</layer-list>

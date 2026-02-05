@@ -22,6 +22,9 @@
             android:name=".DiaryHistoryActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".DiaryEntryReadActivity"
+            />
 
         <activity
             android:name=".MoodActivity"
