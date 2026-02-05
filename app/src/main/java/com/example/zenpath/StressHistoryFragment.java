@@ -4,21 +4,19 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
 import androidx.appcompat.widget.AppCompatSeekBar;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -39,16 +37,25 @@ public class StressHistoryFragment extends Fragment {
     private SharedPreferences prefs;
 
     private View[] dots = new View[7]; // Mon..Sun
-    private TextView tvSelectedDate, tvStressPercent, tvAppPlayed;
+    private TextView tvSelectedDate, tvStressPercent;
+
+    // ✅ Week nav
+    private TextView tvWeekLabel;
+    private View btnPrevWeek, btnNextWeek;
+
     private AppCompatSeekBar seekStressPreview;
-    private View weekRow;
+
+    // ✅ NEW: game rows UI
+    private View rowStar, rowLantern, rowPlanet;
+    private ImageView ivStar, ivLantern, ivPlanet;
+    private TextView tvStarName, tvLanternName, tvPlanetName;
+    private TextView tvStarTime, tvLanternTime, tvPlanetTime;
+
+    private View dividerGames;
+    private TextView tvTotalToday, tvThisWeek, tvTrend;
 
     private Calendar weekStartMon;
     private int selectedIndex = 0;
-
-    // swipe vars
-    private float downX = 0f;
-    private boolean dragging = false;
 
     @Nullable
     @Override
@@ -69,16 +76,45 @@ public class StressHistoryFragment extends Fragment {
 
         tvSelectedDate = v.findViewById(R.id.tvSelectedDate);
         tvStressPercent = v.findViewById(R.id.tvStressPercent);
-        tvAppPlayed = v.findViewById(R.id.tvAppPlayed);
         seekStressPreview = v.findViewById(R.id.seekStressPreview);
 
-        weekRow = v.findViewById(R.id.weekRow);
+        // week nav
+        btnPrevWeek = v.findViewById(R.id.btnPrevWeek);
+        btnNextWeek = v.findViewById(R.id.btnNextWeek);
+        tvWeekLabel = v.findViewById(R.id.tvWeekLabel);
+
+        // ✅ NEW: bind game list views
+        rowStar = v.findViewById(R.id.rowStar);
+        rowLantern = v.findViewById(R.id.rowLantern);
+        rowPlanet = v.findViewById(R.id.rowPlanet);
+
+        ivStar = v.findViewById(R.id.ivStar);
+        ivLantern = v.findViewById(R.id.ivLantern);
+        ivPlanet = v.findViewById(R.id.ivPlanet);
+
+        tvStarName = v.findViewById(R.id.tvStarName);
+        tvLanternName = v.findViewById(R.id.tvLanternName);
+        tvPlanetName = v.findViewById(R.id.tvPlanetName);
+
+        tvStarTime = v.findViewById(R.id.tvStarTime);
+        tvLanternTime = v.findViewById(R.id.tvLanternTime);
+        tvPlanetTime = v.findViewById(R.id.tvPlanetTime);
+
+        dividerGames = v.findViewById(R.id.dividerGames);
+        tvTotalToday = v.findViewById(R.id.tvTotalToday);
+        tvThisWeek = v.findViewById(R.id.tvThisWeek);
+        tvTrend = v.findViewById(R.id.tvTrend);
+
+        // set static labels (safe)
+        if (tvStarName != null) tvStarName.setText("Star Sweep");
+        if (tvLanternName != null) tvLanternName.setText("Lantern Release");
+        if (tvPlanetName != null) tvPlanetName.setText("Planet");
 
         Calendar today = Calendar.getInstance();
         weekStartMon = getMonday(today);
         selectedIndex = mondayIndex(today);
 
-        // tap dot selects day
+        // dot click
         for (int i = 0; i < 7; i++) {
             final int idx = i;
             if (dots[i] == null) continue;
@@ -88,7 +124,17 @@ public class StressHistoryFragment extends Fragment {
             });
         }
 
-        installWeekSwipe();
+        // week nav buttons
+        if (btnPrevWeek != null) btnPrevWeek.setOnClickListener(vv -> {
+            weekStartMon.add(Calendar.DAY_OF_MONTH, -7);
+            refresh();
+        });
+
+        if (btnNextWeek != null) btnNextWeek.setOnClickListener(vv -> {
+            weekStartMon.add(Calendar.DAY_OF_MONTH, 7);
+            refresh();
+        });
+
         refresh();
         return v;
     }
@@ -96,80 +142,106 @@ public class StressHistoryFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        refresh(); // reflect latest saved stress + playtime
+        refresh();
     }
 
     private void refresh() {
+
+        // week label
+        if (tvWeekLabel != null) {
+            Calendar end = (Calendar) weekStartMon.clone();
+            end.add(Calendar.DAY_OF_MONTH, 6);
+            tvWeekLabel.setText(shortDate(weekStartMon) + " – " + shortDate(end));
+        }
+
+        // dot states (selected / filled / empty)
+        for (int i = 0; i < 7; i++) {
+            String dk = dateKey(i);
+            boolean hasData = hasStressOrPlay(dk);
+            boolean sel = (i == selectedIndex);
+
+            if (dots[i] == null) continue;
+
+            if (sel) dots[i].setBackgroundResource(R.drawable.dot_selected);
+            else if (hasData) dots[i].setBackgroundResource(R.drawable.dot_filled);
+            else dots[i].setBackgroundResource(R.drawable.dot_empty);
+        }
+
         String dk = dateKey(selectedIndex);
 
+        // selected date text
         if (tvSelectedDate != null) tvSelectedDate.setText(prettyDate(dk));
 
-        // --- Stress (day)
+        // stress preview
         int stress = prefs.getInt(stressKey(dk), 50);
         if (seekStressPreview != null) seekStressPreview.setProgress(stress);
         if (tvStressPercent != null) tvStressPercent.setText(stress + "%");
 
-        // --- Playtime (day)
+        // play totals (day)
         long totalMsToday = prefs.getLong(playTotalKey(dk), 0L);
 
-        // --- Top 2 games (day)
-        List<GameStat> stats = new ArrayList<>();
-        for (String g : GAMES) {
-            String perGameKey = "play_ms_" + sanitize(g) + "_" + dk;
-            long ms = prefs.getLong(perGameKey, 0L);
-            if (ms > 0) stats.add(new GameStat(g, ms));
-        }
-        stats.sort((a, b) -> Long.compare(b.ms, a.ms)); // desc
+        // per-game ms (day)
+        long starMs = prefs.getLong(perGameKey("Star Sweep", dk), 0L);
+        long lanternMs = prefs.getLong(perGameKey("Lantern Release", dk), 0L);
+        long planetMs = prefs.getLong(perGameKey("Planet", dk), 0L);
 
-        String top1 = null, top2 = null;
-        long top1Ms = 0, top2Ms = 0;
-
-        if (stats.size() >= 1) { top1 = stats.get(0).name; top1Ms = stats.get(0).ms; }
-        if (stats.size() >= 2) { top2 = stats.get(1).name; top2Ms = stats.get(1).ms; }
-
-        // fallback for old data (before per-game saving existed)
-        if (top1 == null && totalMsToday > 0) {
+        // fallback (old data): if total exists but no per-game keys, at least show top app text somewhere
+        // (we won’t break UI if older prefs exist)
+        if (totalMsToday > 0 && starMs == 0 && lanternMs == 0 && planetMs == 0) {
             String last = prefs.getString(playLastAppKey(dk), "");
-            if (!TextUtils.isEmpty(last)) top1 = last;
+            // put it into trend line as a tiny hint (optional)
+            if (!TextUtils.isEmpty(last) && tvTrend != null) {
+                // do nothing heavy; trend will be set below anyway
+            }
         }
 
-        // --- Weekly total playtime (Mon..Sun)
+        // update rows (with icons)
+        bindGameRow(
+                rowStar, ivStar, tvStarTime,
+                R.drawable.bg_constella, starMs
+        );
+        bindGameRow(
+                rowLantern, ivLantern, tvLanternTime,
+                R.drawable.bg_lantelle, lanternMs
+        );
+        bindGameRow(
+                rowPlanet, ivPlanet, tvPlanetTime,
+                R.drawable.bg_asthera, planetMs
+        );
+
+        // weekly total (Mon..Sun)
         long weekTotalMs = 0L;
         for (int i = 0; i < 7; i++) {
-            String dayKey = dateKey(i);
-            weekTotalMs += prefs.getLong(playTotalKey(dayKey), 0L);
+            weekTotalMs += prefs.getLong(playTotalKey(dateKey(i)), 0L);
         }
 
-        // --- Trend (this week): stress vs play minutes
+        // trend (week, skip missing stress days)
         TrendResult trend = computeWeeklyTrend();
 
-        // --- Build text into existing tvAppPlayed (no XML change)
-        if (tvAppPlayed != null) {
-            StringBuilder sb = new StringBuilder();
+        // bottom summary
+        if (tvTotalToday != null) tvTotalToday.setText("Total today: " + formatHoursMinutes(totalMsToday));
+        if (tvThisWeek != null) tvThisWeek.setText("This week: " + formatHoursMinutes(weekTotalMs));
+        if (tvTrend != null) tvTrend.setText("Trend: " + trend.message);
 
-            if (totalMsToday <= 0) {
-                sb.append("No play data for this day.");
-            } else {
-                sb.append("Top games:\n");
-                if (top1 != null) {
-                    sb.append("1) ").append(top1);
-                    if (top1Ms > 0) sb.append(" — ").append(formatMinutes(top1Ms));
-                    sb.append("\n");
-                }
-                if (top2 != null) {
-                    sb.append("2) ").append(top2).append(" — ").append(formatMinutes(top2Ms)).append("\n");
-                } else {
-                    sb.append("2) —\n");
-                }
-                sb.append("Total today: ").append(formatMinutes(totalMsToday));
-            }
+        // divider visibility (optional)
+        if (dividerGames != null) dividerGames.setVisibility(View.VISIBLE);
+    }
 
-            sb.append("\n\nThis week: ").append(formatHoursMinutes(weekTotalMs));
+    private void bindGameRow(View row, ImageView icon, TextView tvTime, int drawableRes, long ms) {
+        if (row == null) return;
+        if (icon != null) icon.setImageResource(drawableRes);
+        if (tvTime != null) tvTime.setText(formatMinutes0Ok(ms));
+    }
 
-            sb.append("\nTrend: ").append(trend.message);
+    // ✅ dot “filled” if stress saved OR any playtime exists
+    private boolean hasStressOrPlay(String dk) {
+        boolean hasStress = prefs.contains(stressKey(dk));
+        boolean hasPlay = prefs.getLong(playTotalKey(dk), 0L) > 0L;
+        return hasStress || hasPlay;
+    }
 
-            tvAppPlayed.setText(sb.toString());
-        }
+    private String perGameKey(String gameName, String dk) {
+        return "play_ms_" + sanitize(gameName) + "_" + dk;
     }
 
     // ---------------- Trend logic (week only, skip missing stress days) ----------------
@@ -181,15 +253,14 @@ public class StressHistoryFragment extends Fragment {
         for (int i = 0; i < 7; i++) {
             String dk = dateKey(i);
 
-            // ✅ skip missing stress days
+            // skip missing stress days
             if (!prefs.contains(stressKey(dk))) continue;
 
-            // play minutes can be 0 (still valid as "didn't play")
             int stress = prefs.getInt(stressKey(dk), 50);
             long playMs = prefs.getLong(playTotalKey(dk), 0L);
 
             xs.add((float) stress);
-            ys.add((float) (playMs / 60000f)); // minutes
+            ys.add((float) (playMs / 60000f));
         }
 
         int n = xs.size();
@@ -199,7 +270,6 @@ public class StressHistoryFragment extends Fragment {
 
         float r = pearson(xs, ys);
 
-        // interpret
         float abs = Math.abs(r);
         String strength;
         if (abs < 0.25f) strength = "No clear relationship";
@@ -212,11 +282,8 @@ public class StressHistoryFragment extends Fragment {
         else direction = "higher stress ↔ less playtime";
 
         String msg;
-        if (abs < 0.25f) {
-            msg = strength + " " + direction + " (" + n + " days).";
-        } else {
-            msg = strength + ": " + direction + " (" + n + " days).";
-        }
+        if (abs < 0.25f) msg = strength + " " + direction + " (" + n + " days).";
+        else msg = strength + ": " + direction + " (" + n + " days).";
 
         return new TrendResult(msg);
     }
@@ -245,43 +312,8 @@ public class StressHistoryFragment extends Fragment {
         return num / den;
     }
 
-    // ---------------- Swipe week ----------------
-
-    private void installWeekSwipe() {
-        if (weekRow == null) return;
-
-        weekRow.setOnTouchListener((v, event) -> {
-            switch (event.getActionMasked()) {
-                case MotionEvent.ACTION_DOWN:
-                    downX = event.getRawX();
-                    dragging = true;
-                    return true;
-
-                case MotionEvent.ACTION_MOVE:
-                    return true;
-
-                case MotionEvent.ACTION_UP:
-                case MotionEvent.ACTION_CANCEL:
-                    if (!dragging) return false;
-                    dragging = false;
-
-                    float dx = event.getRawX() - downX;
-                    float threshold = dp(60);
-                    if (Math.abs(dx) < threshold) return true;
-
-                    if (dx < 0) weekStartMon.add(Calendar.DAY_OF_MONTH, 7);   // next week
-                    else weekStartMon.add(Calendar.DAY_OF_MONTH, -7);         // prev week
-
-                    refresh();
-                    return true;
-            }
-            return false;
-        });
-    }
-
     // ---------------- Date helpers ----------------
 
-    // Monday of week (Mon-first)
     private Calendar getMonday(Calendar c) {
         Calendar cal = (Calendar) c.clone();
         int d = cal.get(Calendar.DAY_OF_WEEK);
@@ -293,7 +325,6 @@ public class StressHistoryFragment extends Fragment {
         return cal;
     }
 
-    // 0..6 (Mon..Sun)
     private int mondayIndex(Calendar c) {
         int d = c.get(Calendar.DAY_OF_WEEK);
         return d == Calendar.SUNDAY ? 6 : d - Calendar.MONDAY;
@@ -312,8 +343,12 @@ public class StressHistoryFragment extends Fragment {
         } catch (Exception e) { return dk; }
     }
 
-    private String formatMinutes(long ms) {
-        long min = Math.max(1, ms / 60000L);
+    private String shortDate(Calendar c) {
+        return new SimpleDateFormat("MMM dd", Locale.getDefault()).format(c.getTime());
+    }
+
+    private String formatMinutes0Ok(long ms) {
+        long min = (ms / 60000L);
         return min + " min";
     }
 
@@ -328,23 +363,12 @@ public class StressHistoryFragment extends Fragment {
         return h + " hr " + m + " min";
     }
 
-    private int dp(int dp) {
-        float d = requireContext().getResources().getDisplayMetrics().density;
-        return (int) (dp * d);
-    }
-
     private String sanitize(String s) {
         if (s == null) return "game";
         return s.replaceAll("[^a-zA-Z0-9_]", "_");
     }
 
     // ---------------- Small structs ----------------
-
-    private static class GameStat {
-        final String name;
-        final long ms;
-        GameStat(String name, long ms) { this.name = name; this.ms = ms; }
-    }
 
     private static class TrendResult {
         final String message;

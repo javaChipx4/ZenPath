@@ -22,7 +22,8 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="457dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_panel_purple_mt"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -36,6 +37,44 @@
                 android:textColor="#1E1E1E"
                 android:textSize="13sp"
                 android:textStyle="bold" />
+
+            <!-- Week navigation -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btnPrevWeek"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:gravity="center"
+                    android:text="‹"
+                    android:textColor="#1E1E1E"
+                    android:textSize="22sp" />
+
+                <TextView
+                    android:id="@+id/tvWeekLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="serif"
+                    android:gravity="center"
+                    android:text="This week"
+                    android:textColor="#1E1E1E"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/btnNextWeek"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:gravity="center"
+                    android:text="›"
+                    android:textColor="#1E1E1E"
+                    android:textSize="22sp" />
+            </LinearLayout>
 
             <!-- Days + dots aligned (Mon..Sun) -->
             <LinearLayout
@@ -242,36 +281,172 @@
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
+            <!-- ✅ Updated card: now shows icons + all games + totals + trend -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardAppPlayed"
-                android:layout_width="160dp"
-                android:layout_height="120dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 app:cardBackgroundColor="#EFE7DB"
                 app:cardCornerRadius="10dp"
                 app:cardElevation="0dp">
 
-                <TextView
-                    android:id="@+id/tvAppPlayed"
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:fontFamily="serif"
-                    android:padding="12dp"
-                    android:text="No play data yet."
-                    android:textColor="#1E1E1E"
-                    android:textSize="12sp" />
-            </androidx.cardview.widget.CardView>
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="12dp">
 
-            <TextView
-                android:id="@+id/tvHint"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:alpha="0.65"
-                android:fontFamily="serif"
-                android:text="Swipe the dots row to change week"
-                android:textColor="#4A4A4A"
-                android:textSize="10sp" />
+                    <!-- Star Sweep -->
+                    <LinearLayout
+                        android:id="@+id/rowStar"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/ivStar"
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/bg_constella" />
+
+                        <TextView
+                            android:id="@+id/tvStarName"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:fontFamily="serif"
+                            android:text="Constella"
+                            android:textColor="#1E1E1E"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvStarTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="serif"
+                            android:text="0 min"
+                            android:textColor="#1E1E1E"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <!-- Lantern Release -->
+                    <LinearLayout
+                        android:id="@+id/rowLantern"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/ivLantern"
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/bg_lantelle" />
+
+                        <TextView
+                            android:id="@+id/tvLanternName"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:fontFamily="serif"
+                            android:text="Lantelle"
+                            android:textColor="#1E1E1E"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvLanternTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="serif"
+                            android:text="0 min"
+                            android:textColor="#1E1E1E"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <!-- Planet -->
+                    <LinearLayout
+                        android:id="@+id/rowPlanet"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/ivPlanet"
+                            android:layout_width="34dp"
+                            android:layout_height="34dp"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/bg_asthera" />
+
+                        <TextView
+                            android:id="@+id/tvPlanetName"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:fontFamily="serif"
+                            android:text="Asthera"
+                            android:textColor="#1E1E1E"
+                            android:textSize="12sp" />
+
+                        <TextView
+                            android:id="@+id/tvPlanetTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="serif"
+                            android:text="0 min"
+                            android:textColor="#1E1E1E"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:id="@+id/dividerGames"
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:alpha="0.25"
+                        android:background="#000000" />
+
+                    <TextView
+                        android:id="@+id/tvTotalToday"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="serif"
+                        android:text="Total today: 0 min"
+                        android:textColor="#1E1E1E"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tvThisWeek"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="serif"
+                        android:text="This week: 0 min"
+                        android:textColor="#1E1E1E"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tvTrend"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:fontFamily="serif"
+                        android:text="Trend: Not enough data..."
+                        android:textColor="#1E1E1E"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
