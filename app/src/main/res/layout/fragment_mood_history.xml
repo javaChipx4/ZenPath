@@ -15,7 +15,6 @@
         android:layout_marginTop="10dp"
         app:cardCornerRadius="10dp"
         app:cardElevation="0dp"
-        app:cardBackgroundColor="#CFC6E6"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -24,7 +23,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:background="@drawable/bg_panel_purple_mt">
 
             <!-- ===== Week navigation ===== -->
             <LinearLayout
@@ -218,7 +218,6 @@
                         android:layout_marginTop="6dp"/>
                 </LinearLayout>
 
-
             </LinearLayout>
 
             <!-- Selected date -->
@@ -256,12 +255,25 @@
                 <TextView android:id="@+id/emoji4" style="@style/EmojiItem" android:text="😭"/>
             </LinearLayout>
 
+            <!-- ✅ NEW: Mood Quote (above note card) -->
+            <TextView
+                android:id="@+id/tvMoodQuote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="How are you feeling today?"
+                android:textSize="12sp"
+                android:textColor="#1E1E1E"
+                android:fontFamily="serif"
+                android:textStyle="italic"
+                android:alpha="0.9"/>
+
             <!-- Note -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/noteCard"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="10dp"
                 app:cardCornerRadius="8dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="#F6F6F6">

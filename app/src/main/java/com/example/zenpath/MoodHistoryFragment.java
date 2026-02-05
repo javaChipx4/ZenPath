@@ -30,6 +30,10 @@ public class MoodHistoryFragment extends Fragment {
     private TextView[] emojis = new TextView[5];
 
     private TextView tvMoodNote, tvSelectedDayLabel, tvWeekLabel;
+
+    // ✅ NEW: quote text above note card
+    private TextView tvMoodQuote;
+
     private View btnPrevWeek, btnNextWeek, noteCard;
 
     private Calendar weekStartMon;
@@ -61,6 +65,9 @@ public class MoodHistoryFragment extends Fragment {
         tvMoodNote = v.findViewById(R.id.tvMoodNote);
         tvSelectedDayLabel = v.findViewById(R.id.tvSelectedDayLabel);
         tvWeekLabel = v.findViewById(R.id.tvWeekLabel);
+
+        // ✅ NEW
+        tvMoodQuote = v.findViewById(R.id.tvMoodQuote);
 
         btnPrevWeek = v.findViewById(R.id.btnPrevWeek);
         btnNextWeek = v.findViewById(R.id.btnNextWeek);
@@ -128,10 +135,34 @@ public class MoodHistoryFragment extends Fragment {
             emojis[i].setAlpha(sel ? 1f : 0.55f);
         }
 
+        // ✅ NEW: quote based on mood
+        if (tvMoodQuote != null) {
+            tvMoodQuote.setText(getQuoteForMood(mood));
+        }
+
+        // note text (slightly nicer empty state)
         if (!TextUtils.isEmpty(note)) {
             tvMoodNote.setText(note);
         } else {
-            tvMoodNote.setText("No note for this day.");
+            tvMoodNote.setText("No note yet — tap here to add a reflection.");
+        }
+    }
+
+    // ✅ NEW: mood → quote
+    private String getQuoteForMood(int moodIndex) {
+        switch (moodIndex) {
+            case 0: // 😁
+                return "Hold on to this light moment.";
+            case 1: // 😌
+                return "Slow is still progress.";
+            case 2: // 😐
+                return "It’s okay to feel ‘in between’.";
+            case 3: // 🥰
+                return "You deserve this warmth.";
+            case 4: // 😭
+                return "One breath at a time. You’re doing your best.";
+            default:
+                return "How are you feeling today?";
         }
     }
 

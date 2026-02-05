@@ -13,7 +13,17 @@
         android:layout_height="match_parent"
         android:background="@drawable/bg_ripple">
 
-        <!-- This will become the "sliding container" later -->
+        <!-- ✅ NEW: glowing overlay (behind content) -->
+        <View
+            android:id="@+id/glowOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_home_glow"
+            android:alpha="0"
+            android:clickable="false"
+            android:focusable="false"/>
+
+        <!-- sliding container -->
         <LinearLayout
             android:id="@+id/homePagerContainer"
             android:layout_width="match_parent"
@@ -21,9 +31,7 @@
             android:orientation="vertical"
             android:background="@drawable/bg_blue_gradient_diary">
 
-            <!-- ========================= -->
-            <!-- PANEL A (Top) - Journal -->
-            <!-- ========================= -->
+            <!-- PANEL A -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/panelA"
                 android:layout_width="match_parent"
@@ -44,7 +52,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <!-- DIVIDER -->
                 <View
                     android:id="@+id/topDivider"
                     android:layout_width="0dp"
@@ -56,7 +63,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <!-- BURGER MENU -->
                 <ImageButton
                     android:id="@+id/btnMenu"
                     android:layout_width="28dp"
@@ -69,7 +75,6 @@
                     app:layout_constraintTop_toBottomOf="@id/topDivider"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <!-- DATE (new, does not break) -->
                 <TextView
                     android:id="@+id/tvTodayDate"
                     android:layout_width="wrap_content"
@@ -82,7 +87,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     android:layout_marginTop="6dp"/>
 
-                <!-- QUOTE -->
+                <!-- ✅ Panel A quote will be overwritten daily by MainActivity -->
                 <TextView
                     android:id="@+id/tvQuote"
                     android:layout_width="0dp"
@@ -90,7 +95,7 @@
                     android:layout_marginTop="12dp"
                     android:background="@drawable/box_rounded"
                     android:padding="14dp"
-                    android:text="Good Day, user! Take today slowly, even small moments of calm are still progress."
+                    android:text="Quote..."
                     android:textAlignment="center"
                     android:textSize="11.5sp"
                     android:textColor="#1E1E1E"
@@ -99,7 +104,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <!-- JOURNAL TITLE -->
+                <!-- Journal -->
                 <Button
                     android:id="@+id/tvJournal"
                     android:layout_width="wrap_content"
@@ -113,11 +118,13 @@
                     android:background="@android:color/transparent"
                     android:elevation="0dp"
                     android:padding="0dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless"
                     app:layout_constraintTop_toBottomOf="@id/tvQuote"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <!-- OVAL NOTE TEXT -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/ovalCard"
                     android:layout_width="0dp"
@@ -145,7 +152,6 @@
                         android:fontFamily="serif" />
                 </androidx.cardview.widget.CardView>
 
-                <!-- Left bubbles (visual-only, new) -->
                 <LinearLayout
                     android:id="@+id/bubbleColumn"
                     android:layout_width="wrap_content"
@@ -197,7 +203,6 @@
                         android:paddingBottom="6dp"/>
                 </LinearLayout>
 
-                <!-- Right quote block (visual-only, new) -->
                 <TextView
                     android:id="@+id/tvRightQuote"
                     android:layout_width="0dp"
@@ -213,7 +218,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginStart="16dp" />
 
-                <!-- Big circle above username (visual-only, new) -->
                 <View
                     android:id="@+id/profileCircle"
                     android:layout_width="120dp"
@@ -225,7 +229,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginBottom="10dp" />
 
-                <!-- USERNAME (display only) -->
                 <TextView
                     android:id="@+id/tvUsername"
                     android:layout_width="wrap_content"
@@ -240,7 +243,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginBottom="16dp" />
 
-                <!-- Small hint -->
                 <TextView
                     android:id="@+id/tvSlideHint"
                     android:layout_width="wrap_content"
@@ -255,7 +257,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginBottom="4dp"/>
 
-                <!-- Swipe Handle (only this area captures swipe) -->
                 <View
                     android:id="@+id/swipeHandle"
                     android:layout_width="0dp"
@@ -265,19 +266,15 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- ========================= -->
-            <!-- PANEL B (Bottom) - Play -->
-            <!-- ========================= -->
+            <!-- PANEL B -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/panelB"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:padding="18dp">
 
-                <!-- HELLO USER (keep same ID from your file so we can bind) -->
                 <TextView
                     android:id="@+id/tvHelloUser"
                     android:layout_width="wrap_content"
@@ -291,7 +288,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginTop="16dp"/>
 
-                <!-- Big top circle -->
                 <View
                     android:id="@+id/topCircle"
                     android:layout_width="0dp"
@@ -302,12 +298,12 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <!-- Center quote -->
+                <!-- ✅ Panel B quote will be overwritten daily by MainActivity -->
                 <TextView
                     android:id="@+id/tvCenterQuote"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Paper isn't just paper, but you should remember that you're not a paper."
+                    android:text="Quote..."
                     android:textColor="#1E1E1E"
                     android:textSize="11sp"
                     android:fontFamily="serif"
@@ -317,7 +313,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <!-- small circle -->
                 <View
                     android:id="@+id/smallDot"
                     android:layout_width="26dp"
@@ -329,6 +324,7 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginTop="18dp"/>
 
+                <!-- ✅ Sub quote (short mood line) -->
                 <TextView
                     android:id="@+id/tvSubQuote"
                     android:layout_width="wrap_content"
@@ -342,7 +338,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginTop="16dp"/>
 
-                <!-- CALENDAR (reuse same ID so your MainActivity code still finds it) -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/calendarCardHome"
                     android:layout_width="0dp"
@@ -359,26 +354,21 @@
                         android:id="@+id/calendarView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-
                         android:weekDayTextAppearance="@style/HomeCalendarWeekText"
                         android:dateTextAppearance="@style/HomeCalendarDateText"
-
                         android:focusedMonthDateColor="#1E1E1E"
                         android:unfocusedMonthDateColor="#8A8A8A"
                         android:selectedWeekBackgroundColor="#D6C9F2"
-                        android:weekSeparatorLineColor="#E0E0E0"
-                        />
-
+                        android:weekSeparatorLineColor="#E0E0E0"/>
                 </androidx.cardview.widget.CardView>
 
-
-                <!-- PLAY BUTTON (reuse same ID so your code still works) -->
+                <!-- ✅ ripple + press anim will work -->
                 <Button
                     android:id="@+id/btnPlay"
                     android:layout_width="0dp"
                     android:layout_height="56dp"
                     android:layout_marginTop="18dp"
-                    android:background="@drawable/button_pill"
+                    android:background="@drawable/button_pill_ripple"
                     android:text="PLAY"
                     android:textAllCaps="true"
                     android:textSize="22sp"
