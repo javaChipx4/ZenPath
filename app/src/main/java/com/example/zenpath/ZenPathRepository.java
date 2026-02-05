@@ -49,7 +49,8 @@ public class ZenPathRepository {
     }
 
     // ===== MOOD =====
-    public long addMood(String date, int moodValue, String note) {
+    // ✅ UPSERT: One mood per day (update if exists, insert if not)
+    public void saveMood(String date, int moodValue, String note) {
         SQLiteDatabase db = helper.getWritableDatabase();
 
         ContentValues cv = new ContentValues();
@@ -57,7 +58,46 @@ public class ZenPathRepository {
         cv.put(ZenPathDbHelper.M_VALUE, moodValue);
         cv.put(ZenPathDbHelper.M_NOTE, note);
 
-        return db.insert(ZenPathDbHelper.T_MOOD, null, cv);
+        int rows = db.update(
+                ZenPathDbHelper.T_MOOD,
+                cv,
+                ZenPathDbHelper.M_DATE + "=?",
+                new String[]{date}
+        );
+
+        if (rows == 0) {
+            db.insert(ZenPathDbHelper.T_MOOD, null, cv);
+        }
+    }
+
+    // ✅ READ: Get mood + note for a specific date (yyyy-MM-dd)
+    public MoodRecord getMoodByDate(String date) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_MOOD,
+                new String[]{ZenPathDbHelper.M_VALUE, ZenPathDbHelper.M_NOTE},
+                ZenPathDbHelper.M_DATE + "=?",
+                new String[]{date},
+                null, null,
+                ZenPathDbHelper.M_ID + " DESC",
+                "1"
+        );
+
+        MoodRecord record = null;
+
+        try {
+            if (c.moveToFirst()) {
+                int moodValue = c.getInt(0);
+                String note = c.getString(1);
+                if (note == null) note = "";
+                record = new MoodRecord(date, moodValue, note);
+            }
+        } finally {
+            c.close();
+        }
+
+        return record;
     }
 
     // ===== STRESS =====
@@ -126,5 +166,8 @@ public class ZenPathRepository {
             case 5: return "Very Happy";
             default: return "Unknown";
         }
+    }
+
+    public void addMood(String date, int selectedMoodIndex, String note) {
     }
 }
