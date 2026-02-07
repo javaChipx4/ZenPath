@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_blue_gradient_diary">
@@ -17,7 +18,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="28dp"
-        android:layout_marginEnd="22dp"/>
+        android:layout_marginEnd="22dp"
+        tools:ignore="UseAppTint" />
 
     <!-- TOP LINE -->
     <View
@@ -45,7 +47,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="40dp"
-        android:layout_marginBottom="40dp">
+        android:layout_marginBottom="40dp"
+        android:padding="10dp">
 
         <!-- GAME 1 -->
         <androidx.cardview.widget.CardView
@@ -55,9 +58,16 @@
             android:layout_marginBottom="16dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="#AC8DCE"
             app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
+            app:cardElevation="10dp">
+
+            <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/bg_constella"
+                android:tint="#77FFFFFF"
+                tools:ignore="UseAppTint" />
 
             <LinearLayout
                 android:layout_width="306dp"
@@ -93,7 +103,15 @@
             android:focusable="true"
             app:cardBackgroundColor="#9D80CA"
             app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
+            app:cardElevation="10dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/bg_lantelle"
+                android:tint="#77FFFFFF"
+                tools:ignore="UseAppTint" />
 
             <LinearLayout
                 android:layout_width="306dp"
@@ -128,7 +146,15 @@
             android:focusable="true"
             app:cardBackgroundColor="#8D99CE"
             app:cardCornerRadius="20dp"
-            app:cardElevation="0dp">
+            app:cardElevation="10dp">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="center"
+                android:src="@drawable/bg_asthera"
+                android:tint="#77FFFFFF"
+                tools:ignore="UseAppTint" />
 
             <LinearLayout
                 android:layout_width="306dp"

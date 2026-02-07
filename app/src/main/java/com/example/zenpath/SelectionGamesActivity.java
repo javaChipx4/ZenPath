@@ -1,7 +1,9 @@
 package com.example.zenpath;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -70,17 +72,41 @@ public class SelectionGamesActivity extends AppCompatActivity {
                 startActivity(new Intent(SelectionGamesActivity.this, MoodActivity.class));
             });
         }
+        View cardConstella = findViewById(R.id.cardConstella);
+        View cardLantelle = findViewById(R.id.cardLantelle);
+        View cardAsthera = findViewById(R.id.cardAsthera);
 
-        findViewById(R.id.cardConstella).setOnClickListener(v -> {
-            startActivity(new Intent(SelectionGamesActivity.this, StarSweepIntroActivity.class));
-        });
+        installPressAnim(cardConstella);
+        installPressAnim(cardLantelle);
+        installPressAnim(cardAsthera);
 
-        findViewById(R.id.cardLantelle).setOnClickListener(v -> {
-                    startActivity(new Intent(SelectionGamesActivity.this, LanternReleaseActivity.class));
-                });
+        cardConstella.setOnClickListener(v ->
+                startActivity(new Intent(this, StarSweepIntroActivity.class)));
 
-        findViewById(R.id.cardAsthera).setOnClickListener(v -> {
-            startActivity(new Intent(SelectionGamesActivity.this, PlanetActivity.class));
+        cardLantelle.setOnClickListener(v ->
+                startActivity(new Intent(this, LanternReleaseActivity.class)));
+
+        cardAsthera.setOnClickListener(v ->
+                startActivity(new Intent(this, PlanetActivity.class)));
+
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private void installPressAnim(View v) {
+        if (v == null) return;
+
+        v.setOnTouchListener((view, event) -> {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    view.animate().scaleX(0.98f).scaleY(0.98f).setDuration(70).start();
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    view.animate().scaleX(1f).scaleY(1f).setDuration(90).start();
+                    break;
+            }
+            // return false so click still works
+            return false;
         });
     }
 }
