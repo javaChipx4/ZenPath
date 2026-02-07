@@ -184,9 +184,36 @@ public class MainActivity extends AppCompatActivity {
         ImageButton btnBack = settingsPopup.findViewById(R.id.btnBack);
         ImageButton btnHistory = settingsPopup.findViewById(R.id.btnHistory);
         ImageButton btnMood = settingsPopup.findViewById(R.id.btnMood);
+        ImageButton btnSwitchProfile = settingsPopup.findViewById(R.id.btnSwitchProfile);
+        TextView tvSwitchProfile = settingsPopup.findViewById(R.id.tvSwitchProfile);
+
 
         if (btnHome != null) btnHome.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
         if (btnBack != null) btnBack.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
+        if (btnSwitchProfile != null) btnSwitchProfile.setVisibility(View.VISIBLE);
+        if (tvSwitchProfile != null) tvSwitchProfile.setVisibility(View.VISIBLE);
+
+        if (btnSwitchProfile != null) {
+            btnSwitchProfile.setOnClickListener(v -> {
+                settingsPopup.setVisibility(View.GONE);
+
+                // clear current user
+                prefs.edit().remove("current_user").apply();
+
+                // go to login screen
+                Intent i = new Intent(MainActivity.this, LoginActivity.class); // <-- change if your login activity name differs
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(i);
+            });
+        }
+
+// optional: clicking the label also works
+        if (tvSwitchProfile != null) {
+            tvSwitchProfile.setOnClickListener(v -> {
+                if (btnSwitchProfile != null) btnSwitchProfile.performClick();
+            });
+        }
+
 
         if (btnHistory != null) {
             btnHistory.setOnClickListener(v -> {
