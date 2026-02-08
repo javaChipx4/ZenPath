@@ -1,81 +1,110 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/root"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_lantern_night">
 
+    <!-- ⚙️ Cog Menu -->
+    <ImageButton
+        android:id="@+id/btnCog"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_margin="12dp"
+        android:background="@android:color/transparent"
+        android:contentDescription="Menu"
+        android:src="@drawable/ic_cog"
+        android:tint="#FFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- HUD -->
+    <TextView
+        android:id="@+id/tvScore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="14dp"
+        android:text="Score: 0"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="6dp"
+        android:text="Badge: —"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvScore" />
+
+    <TextView
+        android:id="@+id/tvHint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:layout_marginTop="6dp"
+        android:text="Tap to place a lantern ✨"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvBadge" />
+
+    <!-- Lantern View -->
     <com.example.zenpath.LanternReleaseView
         android:id="@+id/lanternView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tvHint"
+        app:layout_constraintBottom_toTopOf="@id/buttonRow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Top overlay -->
+    <!-- Buttons row (Play + Reset only) -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/buttonRow"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="top"
-        android:orientation="vertical"
-        android:padding="14dp">
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="18dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+        <Button
+            android:id="@+id/btnPlay"
+            android:layout_width="140dp"
+            android:layout_height="50dp"
+            android:text="Play" />
 
-            <Button
-                android:id="@+id/btnLanternGame"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Play Lantern Release"
-                android:textAllCaps="false" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
-            <ImageButton
-                android:id="@+id/menuIcon"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:background="@android:color/transparent"
-                android:contentDescription="Menu"
-                android:src="@drawable/ic_settings_ie"
-                android:tint="#FFFFFF" />
-
-            <Button
-                android:id="@+id/btnResetToday"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Reset Today"
-                android:textAllCaps="false" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/tvTotal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Total: 0"
-            android:textColor="#FFFFFF"
-            android:textSize="16sp"
-            android:paddingTop="6dp" />
-
-        <TextView
-            android:id="@+id/tvBadge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Badge: —"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/tvMessage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tap to place a lantern ✨"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp" />
+        <Button
+            android:id="@+id/btnReset"
+            android:layout_width="140dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="12dp"
+            android:text="Reset" />
     </LinearLayout>
 
-</FrameLayout>
+    <!-- Pause Popup Overlay -->
+    <include
+        android:id="@+id/pauseOverlay"
+        layout="@layout/dialog_lantern_pause"
+        android:visibility="gone" />
+
+    <!-- ✅ Instructions overlay (shows before play) -->
+    <include
+        android:id="@+id/instructionsOverlay"
+        layout="@layout/dialog_lantern_instructions"
+        android:visibility="gone" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

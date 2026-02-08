@@ -1,13 +1,18 @@
 package com.example.zenpath;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -47,7 +52,7 @@ public class MoodActivity extends AppCompatActivity {
     private EditText etReflection;
     private SeekBar seekStress;
 
-    // Sun..Sat circles (TextViews now so we can show dates)
+    // Sun..Sat circles
     private TextView[] dayCircles;
     private int selectedCircleIndex = -1;
 
@@ -57,6 +62,9 @@ public class MoodActivity extends AppCompatActivity {
     // swipe-week vars
     private float weekDownX = 0f;
     private boolean weekDragging = false;
+
+    // ✅ Suggestion popup anti-spam
+    private int lastSuggestedBucket = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +110,7 @@ public class MoodActivity extends AppCompatActivity {
 
         sheetScrim = findViewById(R.id.sheetScrim);
         bottomSheet = findViewById(R.id.moodBottomSheet);
-        tvSelectedDate = findViewById(R.id.tvSelectedDate); // currently hidden in XML
+        tvSelectedDate = findViewById(R.id.tvSelectedDate);
 
         etReflection = findViewById(R.id.etReflection);
         seekStress = findViewById(R.id.seekStress);
@@ -114,7 +122,6 @@ public class MoodActivity extends AppCompatActivity {
         TextView tvMood4 = findViewById(R.id.tvMood4);
         moodViews = new TextView[]{ tvMood0, tvMood1, tvMood2, tvMood3, tvMood4 };
 
-        // Sun..Sat order
         dayCircles = new TextView[]{
                 findViewById(R.id.circleSun),
                 findViewById(R.id.circleMon),
@@ -129,8 +136,8 @@ public class MoodActivity extends AppCompatActivity {
         setupCalendar();
         setupMoodClicks();
         setupCircleClicks();
-        installWeekSwipe(); // ✅ swipe week on circles row
-        setupStressSaver();
+        installWeekSwipe();
+        setupStressSaver();     // ✅ includes suggestion popup
         setupReflectionSaver();
 
         hideSheet(false);
@@ -143,11 +150,10 @@ public class MoodActivity extends AppCompatActivity {
                 calendarView.setDate(cal.getTimeInMillis(), false, true);
             }
             onDateSelected(fromHistory);
-            showSheetHalf(); // optional: open sheet when coming from History
+            showSheetHalf();
             return;
         }
 
-        // ✅ Normal open -> select today
         selectTodayWithoutOpeningSheet();
     }
 
@@ -159,26 +165,18 @@ public class MoodActivity extends AppCompatActivity {
         sheetBehavior.setHideable(true);
         sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
 
-        if (sheetScrim != null) {
-            sheetScrim.setOnClickListener(v -> hideSheet(true));
-        }
+        if (sheetScrim != null) sheetScrim.setOnClickListener(v -> hideSheet(true));
 
         sheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(View bottomSheet, int newState) {
-                if (newState == BottomSheetBehavior.STATE_HIDDEN) {
-                    if (sheetScrim != null) sheetScrim.setVisibility(View.GONE);
-                } else {
-                    if (sheetScrim != null) sheetScrim.setVisibility(View.VISIBLE);
-                }
+                if (sheetScrim == null) return;
+                sheetScrim.setVisibility(newState == BottomSheetBehavior.STATE_HIDDEN ? View.GONE : View.VISIBLE);
             }
 
             @Override
             public void onSlide(View bottomSheet, float slideOffset) {
-                if (sheetScrim != null) {
-                    if (slideOffset <= 0f) sheetScrim.setAlpha(0f);
-                    else sheetScrim.setAlpha(Math.min(1f, slideOffset));
-                }
+                if (sheetScrim != null) sheetScrim.setAlpha(Math.max(0f, Math.min(1f, slideOffset)));
             }
         });
     }
@@ -223,7 +221,6 @@ public class MoodActivity extends AppCompatActivity {
 
             String dateKey = formatDateKey(cal);
             onDateSelected(dateKey);
-
             showSheetHalf();
         });
     }
@@ -235,19 +232,14 @@ public class MoodActivity extends AppCompatActivity {
         if (calendarView != null) {
             calendarView.setDate(today.getTimeInMillis(), false, true);
         }
-
         onDateSelected(selectedDateKey);
     }
 
     private void onDateSelected(String dateKey) {
         if (dateKey == null || dateKey.isEmpty()) return;
-
         selectedDateKey = dateKey;
 
-        // optional (hidden) label
-        if (tvSelectedDate != null) {
-            tvSelectedDate.setText(prettyDate(dateKey));
-        }
+        if (tvSelectedDate != null) tvSelectedDate.setText(prettyDate(dateKey));
 
         selectedMoodIndex = prefs.getInt(moodKey(dateKey), -1);
         int stress = prefs.getInt(stressKey(dateKey), 50);
@@ -260,11 +252,11 @@ public class MoodActivity extends AppCompatActivity {
 
         updateMoodUI();
 
-        // update week circles (numbers + auto-highlight weekday)
         Calendar selected = parseDateKey(dateKey);
-        if (selected != null) {
-            updateWeekCircles(selected);
-        }
+        if (selected != null) updateWeekCircles(selected);
+
+        // optional: reset suggestion when changing date
+        lastSuggestedBucket = -1;
     }
 
     // ===================== MOOD =====================
@@ -292,7 +284,6 @@ public class MoodActivity extends AppCompatActivity {
 
     // ===================== WEEK CIRCLES =====================
     private void setupCircleClicks() {
-        // tapping a circle just highlights it (does NOT change selected day)
         for (int i = 0; i < dayCircles.length; i++) {
             final int idx = i;
             if (dayCircles[i] == null) continue;
@@ -304,23 +295,17 @@ public class MoodActivity extends AppCompatActivity {
     }
 
     private void updateWeekCircles(Calendar selectedDate) {
-        // Build Sunday of that week
         Calendar start = (Calendar) selectedDate.clone();
-        int dow = start.get(Calendar.DAY_OF_WEEK); // 1=Sun ... 7=Sat
-        int diffToSun = dow - Calendar.SUNDAY;     // 0..6
+        int dow = start.get(Calendar.DAY_OF_WEEK);
+        int diffToSun = dow - Calendar.SUNDAY;
         start.add(Calendar.DAY_OF_MONTH, -diffToSun);
 
-        // Fill Sun..Sat with day numbers
         for (int i = 0; i < 7; i++) {
             Calendar day = (Calendar) start.clone();
             day.add(Calendar.DAY_OF_MONTH, i);
-
-            if (dayCircles[i] != null) {
-                dayCircles[i].setText(String.valueOf(day.get(Calendar.DAY_OF_MONTH)));
-            }
+            if (dayCircles[i] != null) dayCircles[i].setText(String.valueOf(day.get(Calendar.DAY_OF_MONTH)));
         }
 
-        // Auto-select weekday index (Sun=0 .. Sat=6)
         selectedCircleIndex = diffToSun;
         updateCircleUI();
     }
@@ -328,13 +313,11 @@ public class MoodActivity extends AppCompatActivity {
     private void updateCircleUI() {
         for (int i = 0; i < dayCircles.length; i++) {
             if (dayCircles[i] == null) continue;
-
             boolean selected = (i == selectedCircleIndex);
 
             dayCircles[i].setScaleX(selected ? 1.20f : 1.0f);
             dayCircles[i].setScaleY(selected ? 1.20f : 1.0f);
             dayCircles[i].setAlpha(selected ? 1.0f : 0.55f);
-
             dayCircles[i].setTextColor(selected ? 0xFF1E1E1E : 0xFF3A3A3A);
         }
     }
@@ -343,7 +326,6 @@ public class MoodActivity extends AppCompatActivity {
     private void installWeekSwipe() {
         if (dayCircles == null || dayCircles.length == 0 || dayCircles[0] == null) return;
 
-        // circleSun -> parent FrameLayout -> parent LinearLayout row
         View parent1 = (View) dayCircles[0].getParent();
         if (parent1 == null) return;
         View weekRow = (View) parent1.getParent();
@@ -368,8 +350,8 @@ public class MoodActivity extends AppCompatActivity {
                     float threshold = dp(60);
                     if (Math.abs(dx) < threshold) return true;
 
-                    if (dx < 0) shiftSelectedDateByDays(+7);  // swipe left -> next week
-                    else shiftSelectedDateByDays(-7);         // swipe right -> prev week
+                    if (dx < 0) shiftSelectedDateByDays(+7);
+                    else shiftSelectedDateByDays(-7);
                     return true;
             }
             return false;
@@ -391,7 +373,6 @@ public class MoodActivity extends AppCompatActivity {
         if (calendarView != null) {
             calendarView.setDate(current.getTimeInMillis(), false, true);
         }
-
         onDateSelected(newKey);
     }
 
@@ -405,11 +386,25 @@ public class MoodActivity extends AppCompatActivity {
         if (seekStress == null) return;
 
         seekStress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser && !isLoading) saveStressForSelectedDate(progress);
             }
+
             @Override public void onStartTrackingTouch(SeekBar seekBar) {}
-            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                if (isLoading) return;
+
+                int stress = seekBar.getProgress();
+                int bucket = getBucket(stress);
+
+                if (bucket != lastSuggestedBucket) {
+                    lastSuggestedBucket = bucket;
+                    showSuggestionPopup(stress);
+                }
+            }
         });
     }
 
@@ -423,6 +418,78 @@ public class MoodActivity extends AppCompatActivity {
                 if (!isLoading) saveNoteForSelectedDate(s.toString());
             }
         });
+    }
+
+    // ===================== ✅ SUGGESTION POPUP =====================
+    private int getBucket(int stress) {
+        if (stress <= 33) return 0;     // Constella
+        if (stress <= 66) return 1;     // Lantelle
+        return 2;                       // Asthera
+    }
+
+    private void showSuggestionPopup(int stress) {
+        int bucket = getBucket(stress);
+
+        String gameName;
+        Class<?> gameActivity;
+        int previewRes;
+
+        // ✅ Map bucket -> game + preview
+        if (bucket == 0) {
+            gameName = "Constella";
+            gameActivity = StarSweepActivity.class;
+            previewRes = R.drawable.bg_constella;
+        } else if (bucket == 1) {
+            gameName = "Lantelle";
+            gameActivity = LanternReleaseActivity.class;
+            previewRes = R.drawable.bg_lantelle;
+        } else {
+            gameName = "Asthera";
+            gameActivity = PlanetActivity.class;
+            previewRes = R.drawable.bg_asthera;
+        }
+
+        Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_game_suggestion);
+        dialog.setCancelable(true);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        }
+
+        TextView tvMessage = dialog.findViewById(R.id.tvMessage);
+        Button btnPlay = dialog.findViewById(R.id.btnPlay);
+        ImageView ivPreview = dialog.findViewById(R.id.ivGamePreview);
+
+        if (tvMessage != null) {
+            tvMessage.setText(
+                    "Your stress level is " + stress + "%.\n" +
+                            "The game that is appropriate for you is: " + gameName + "."
+            );
+        }
+
+        if (ivPreview != null) {
+            ivPreview.setImageResource(previewRes);
+        }
+
+        if (btnPlay != null) {
+            btnPlay.setOnClickListener(v -> {
+                dialog.dismiss();
+                startActivity(new Intent(MoodActivity.this, gameActivity));
+            });
+        }
+
+        dialog.show();
+
+        // ✅ BIGGER POPUP (90% screen width)
+        Window window = dialog.getWindow();
+        if (window != null) {
+            window.setLayout(
+                    (int) (getResources().getDisplayMetrics().widthPixels * 0.90),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
     }
 
     // ===================== SAVE HELPERS =====================

@@ -45,7 +45,7 @@ public class PlanetActivity extends AppCompatActivity {
 
     // ✅ Pause overlay
     private View pauseOverlay;
-    private TextView btnResume, btnRestart, btnBackToSelection;
+    private TextView btnResume, btnBackToSelection; // ✅ REMOVED btnRestart
 
     private final int[] swatchColors = new int[]{
             Color.parseColor("#BFD6FF"),
@@ -123,7 +123,7 @@ public class PlanetActivity extends AppCompatActivity {
         if (pauseOverlay != null) {
             View pauseCard = pauseOverlay.findViewById(R.id.pauseCard);
             btnResume = pauseOverlay.findViewById(R.id.btnResume);
-            btnRestart = pauseOverlay.findViewById(R.id.btnRestart);
+            // ✅ REMOVED: btnRestart = pauseOverlay.findViewById(R.id.btnRestart);
             btnBackToSelection = pauseOverlay.findViewById(R.id.btnBackToSelection);
 
             // tap outside -> close
@@ -140,10 +140,9 @@ public class PlanetActivity extends AppCompatActivity {
 
         // pause buttons
         if (btnResume != null) btnResume.setOnClickListener(v -> hidePause());
-        if (btnRestart != null) btnRestart.setOnClickListener(v -> {
-            hidePause();
-            recreate();
-        });
+
+        // ✅ REMOVED Restart click listener completely
+
         if (btnBackToSelection != null) btnBackToSelection.setOnClickListener(v -> {
             hidePause();
 
@@ -151,7 +150,7 @@ public class PlanetActivity extends AppCompatActivity {
             if (playTracker != null) playTracker.stopAndSave(this);
 
             // ✅ Go back to Selection screen
-            startActivity(new Intent(PlanetActivity.this, SelectionGamesActivity.class)); // CHANGE if needed
+            startActivity(new Intent(PlanetActivity.this, SelectionGamesActivity.class));
             finish();
         });
 
@@ -287,7 +286,6 @@ public class PlanetActivity extends AppCompatActivity {
         }
     }
 
-    // ✅ start tracking when visible
     @Override
     protected void onResume() {
         super.onResume();
@@ -297,12 +295,10 @@ public class PlanetActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        // If pause overlay is open, close it first
         if (pauseOverlay != null && pauseOverlay.getVisibility() == View.VISIBLE) {
             hidePause();
             return;
         }
-        // If instructions overlay is open, close it
         if (instructionsOverlay != null && instructionsOverlay.getVisibility() == View.VISIBLE) {
             hideInstructionsOverlay();
             return;
@@ -313,19 +309,13 @@ public class PlanetActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-
-        // ✅ keep your original behavior
         saveStateToPrefs(false);
-
-        // ✅ save play time too
         if (playTracker != null) playTracker.stopAndSave(this);
     }
 
-    // ✅ Pause helpers
     private void showPause() {
         if (pauseOverlay == null) return;
 
-        // remember animation state then stop
         planetsPlayingBeforePause = planetsPlaying;
         planetsPlaying = false;
         if (spaceView != null) spaceView.setPlanetAnimationEnabled(false);
@@ -339,7 +329,6 @@ public class PlanetActivity extends AppCompatActivity {
 
         pauseOverlay.setVisibility(View.GONE);
 
-        // restore animation state
         planetsPlaying = planetsPlayingBeforePause;
         if (spaceView != null) spaceView.setPlanetAnimationEnabled(planetsPlaying);
         if (btnPlayPlanets != null) btnPlayPlanets.setText(planetsPlaying ? R.string.stop : R.string.play);

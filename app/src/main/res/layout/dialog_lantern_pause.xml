@@ -1,72 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pauseOverlayRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#80000000"
-    android:padding="18dp">
+    android:background="#66000000"
+    android:clickable="true"
+    android:focusable="true">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:id="@+id/pauseCard"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:background="@android:color/white"
+        android:padding="18dp">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Paused ⚙️"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:textColor="#111111"
+            android:paddingBottom="10dp"/>
 
-        <LinearLayout
-            android:id="@+id/pauseCard"
+        <TextView
+            android:id="@+id/btnResume"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="18dp"
-            android:background="#FFFFFF">
+            android:text="Resume"
+            android:textSize="16sp"
+            android:textColor="#111111"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Paused ⚙️"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="#111111" />
-
-            <TextView
-                android:id="@+id/btnResume"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="18dp"
-                android:paddingBottom="14dp"
-                android:text="Resume"
-                android:textSize="18sp"
-                android:textColor="#111111" />
-
-            <TextView
-                android:id="@+id/btnRestart"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="14dp"
-                android:paddingBottom="14dp"
-                android:text="Restart (Play Again)"
-                android:textSize="18sp"
-                android:textColor="#111111" />
-
-            <TextView
-                android:id="@+id/btnBackToSelection"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingTop="14dp"
-                android:paddingBottom="6dp"
-                android:text="Back to Selection"
-                android:textSize="18sp"
-                android:textColor="#111111" />
-
-        </LinearLayout>
-
-        <View
+        <TextView
+            android:id="@+id/btnBackToSelection"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_height="wrap_content"
+            android:text="Back to Selection"
+            android:textSize="16sp"
+            android:textColor="#111111"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp" />
 
     </LinearLayout>
 

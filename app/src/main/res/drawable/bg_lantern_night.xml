@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Deep night -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#050714"
+                android:centerColor="#0A1232"
+                android:endColor="#090B1F"
+                android:angle="270"/>
+        </shape>
+    </item>
+
+    <!-- Vignette -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:gradientRadius="520dp"
+                android:centerX="50%"
+                android:centerY="40%"
+                android:startColor="#00000000"
+                android:endColor="#8A000000"/>
+        </shape>
+    </item>
+
+    <!-- Soft nebula haze -->
+    <item android:top="-180dp" android:right="-140dp">
+        <shape android:shape="oval">
+            <size android:width="520dp" android:height="520dp"/>
+            <gradient
+                android:type="radial"
+                android:gradientRadius="260dp"
+                android:startColor="#1A9B5CFF"
+                android:endColor="#00000000"/>
+        </shape>
+    </item>
+
+</layer-list>

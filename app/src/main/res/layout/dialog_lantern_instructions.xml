@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#66000000"
+    android:clickable="true"
+    android:focusable="true">
+
+    <!-- Card Container -->
+    <LinearLayout
+        android:id="@+id/instructionCard"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:background="@drawable/bg_instruction_card"
+        android:padding="20dp"
+        android:elevation="10dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lantern Release ✨"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:paddingBottom="12dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="• Tap anywhere to place a lantern\n\n• Tap a lantern to write a message\n\n• Drag lanterns to move them\n\n• Hold a lantern to delete\n\n• Press Play to release them into the sky\n\n• Tap glowing lanterns to earn light ✨"
+            android:textColor="#E6E6FF"
+            android:textSize="14sp"
+            android:lineSpacingExtra="4dp"
+            android:paddingBottom="16dp"/>
+
+        <Button
+            android:id="@+id/btnStartPlay"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Start ✨"
+            android:textAllCaps="false"/>
+    </LinearLayout>
+
+</FrameLayout>
