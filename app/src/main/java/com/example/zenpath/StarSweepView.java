@@ -15,6 +15,7 @@ public class StarSweepView extends View {
     // ================= HUD =================
     public interface HudListener {
         void onBreathText(String text);
+        void onFactText(String fact);
         void onProgress(int selected, int goal);
         void onFinishFlashStarted();
         void onFinishedReady();
@@ -34,16 +35,13 @@ public class StarSweepView extends View {
     }
 
     // ================= CONFIG =================
-    // ✅ NO guide path lines (you asked to remove guide lines)
-    private static final boolean SHOW_GUIDE_PATH = false;
+    private static final boolean SHOW_GUIDE_PATH = false;     // keep false
+    private static final boolean SHOW_GUIDE_NUMBERS = false;  // keep false
 
-    // ✅ NO numbers
-    private static final boolean SHOW_GUIDE_NUMBERS = false;
-
-    // ✅ Random shape mode (no repeats until bag empty)
+    // ✅ Random constellation mode (no repeats until bag empty)
     private static final boolean RANDOM_NO_REPEAT = true;
     private final Random rng = new Random();
-    private final int[] bag = new int[Constellations.ALL.length];
+    private int[] bag;
     private int bagSize = 0;
 
     // ================= PAINTS =================
@@ -112,7 +110,11 @@ public class StarSweepView extends View {
 
     // ================= DATA =================
     private final ArrayList<Star> stars = new ArrayList<>();
-    private int currentIndex = 0;
+
+    // ✅ pattern wiring
+    private int[][] edges = new int[0][];
+    private int[] tapOrder = new int[0];
+    private int tapStep = 0;
     private int GOAL = 0;
 
     private boolean flashing = false;
@@ -121,6 +123,7 @@ public class StarSweepView extends View {
     private static final long FLASH_DURATION_MS = 2000;
 
     private String constellationName = "Constellation";
+    private String constellationFact = "";
 
     public StarSweepView(Context c) { super(c); init(); }
     public StarSweepView(Context c, AttributeSet a) { super(c, a); init(); }
@@ -146,6 +149,8 @@ public class StarSweepView extends View {
     // ================= INIT =================
     private void init() {
         setLayerType(LAYER_TYPE_SOFTWARE, null);
+
+        bag = new int[Constellations.ALL.length];
 
         Shader sky = new LinearGradient(
                 0, 0, 0, 2600,
@@ -407,7 +412,7 @@ public class StarSweepView extends View {
         finished = false;
         flashing = false;
         flashStartMs = 0;
-        currentIndex = 0;
+        tapStep = 0;
 
         loadNextShape();
         pushHud();
@@ -440,24 +445,28 @@ public class StarSweepView extends View {
         Constellations.Pattern p = Constellations.ALL[index];
 
         constellationName = p.name;
+        constellationFact = p.fact;
 
         stars.clear();
         for (float[] pt : p.points) stars.add(new Star(pt[0], pt[1]));
 
-        GOAL = stars.size();
-        currentIndex = 0;
+        edges = (p.edges != null) ? p.edges : new int[0][];
+        tapOrder = (p.tapOrder != null) ? p.tapOrder : new int[0];
+        tapStep = 0;
+
+        GOAL = (tapOrder.length > 0) ? tapOrder.length : stars.size();
 
         finished = false;
         flashing = false;
         flashStartMs = 0;
-
         celebrationStartMs = 0;
     }
 
     private void pushHud() {
         if (hudListener != null) {
-            hudListener.onBreathText("Shape: " + constellationName + " ✨");
-            hudListener.onProgress(currentIndex, GOAL);
+            hudListener.onBreathText("Tonight: " + constellationName + " ✨");
+            hudListener.onFactText(constellationFact);
+            hudListener.onProgress(tapStep, Math.max(1, GOAL));
         }
     }
 
@@ -483,8 +492,6 @@ public class StarSweepView extends View {
 
         updateAndDrawShootingStars(canvas, now, dt);
 
-        drawTitleBadge(canvas);
-
         if (paused) {
             drawConstellation(canvas, now);
             return;
@@ -503,32 +510,24 @@ public class StarSweepView extends View {
     private void drawConstellation(Canvas canvas, long now) {
         float pulse = (float) (0.5 + 0.5 * Math.sin(now * 0.006));
 
-        // ✅ NO GUIDE LINES (removed)
-        if (SHOW_GUIDE_PATH && stars.size() >= 2 && !finished) {
-            Path guide = buildCatmullRomPath(stars.size());
-            canvas.drawPath(guide, guideGlowPaint);
-            canvas.drawPath(guide, guidePathPaint);
+        // ✅ NEXT STAR HINT (uses tapOrder/tapStep)
+        if (!finished && !flashing && tapOrder != null && tapStep < tapOrder.length) {
+            int targetIndex = tapOrder[tapStep];
+            if (targetIndex >= 0 && targetIndex < stars.size()) {
+                Star h = stars.get(targetIndex);
+                float hx = mapX(h.x);
+                float hy = mapY(h.y);
+
+                float glowR = dp(26) + dp(14) * pulse;
+                float ringR = dp(18) + dp(10) * pulse;
+
+                canvas.drawCircle(hx, hy, glowR, nextHintGlowPaint);
+                canvas.drawCircle(hx, hy, ringR, nextHintRingPaint);
+            }
         }
 
-        // ✅ USER CONNECTED LINES ONLY
-        if (currentIndex >= 2) {
-            Path path = buildCatmullRomPath(currentIndex);
-            canvas.drawPath(path, lineGlowPaint);
-            canvas.drawPath(path, linePaint);
-        }
-
-        // ✅ GUIDE: ONLY NEXT STAR GLOWS (NO NUMBERS, NO LINE)
-        if (!finished && !flashing && currentIndex < stars.size()) {
-            Star h = stars.get(currentIndex);
-            float hx = mapX(h.x);
-            float hy = mapY(h.y);
-
-            float glowR = dp(26) + dp(14) * pulse;
-            float ringR = dp(18) + dp(10) * pulse;
-
-            canvas.drawCircle(hx, hy, glowR, nextHintGlowPaint);
-            canvas.drawCircle(hx, hy, ringR, nextHintRingPaint);
-        }
+        // ✅ draw connecting lines (THIS is what you were missing)
+        drawUnlockedEdges(canvas);
 
         // draw stars
         for (int i = 0; i < stars.size(); i++) {
@@ -537,8 +536,8 @@ public class StarSweepView extends View {
             float x = mapX(s.x);
             float y = mapY(s.y);
 
-            boolean connected = (i < currentIndex);
-            Paint mainPaint = connected ? starSelectedPaint : starPaint;
+            boolean unlocked = isStarUnlocked(i);
+            Paint mainPaint = unlocked ? starSelectedPaint : starPaint;
 
             float twinkle = (float) (1.0 + 0.18 * Math.sin(now * 0.006 + i));
 
@@ -546,60 +545,46 @@ public class StarSweepView extends View {
             drawStar(canvas, x, y, dp(10) * twinkle, mainPaint);
             canvas.drawCircle(x, y, dp(2.8f) * twinkle, starCorePaint);
 
-            // ❌ no numbers
             if (SHOW_GUIDE_NUMBERS) {
                 // disabled
             }
         }
 
         if (finished) {
-            canvas.drawText("Completed ✨", getWidth() / 2f, dp(140), msgPaint);
+            canvas.drawText("Completed ✨", getWidth() / 2f, dp(155), msgPaint);
         } else if (flashing) {
-            canvas.drawText("✨ Beautiful ✨", getWidth() / 2f, dp(140), msgPaint);
+            canvas.drawText("✨ Beautiful ✨", getWidth() / 2f, dp(155), msgPaint);
         }
     }
 
-    // spline that passes through all points
-    private Path buildCatmullRomPath(int count) {
-        Path path = new Path();
-        if (count <= 0) return path;
-
-        float[] xs = new float[count];
-        float[] ys = new float[count];
-
-        for (int i = 0; i < count; i++) {
-            Star s = stars.get(i);
-            xs[i] = mapX(s.x);
-            ys[i] = mapY(s.y);
+    // ================= LINES (EDGES) =================
+    private boolean isStarUnlocked(int starIndex) {
+        if (tapOrder == null) return false;
+        for (int i = 0; i < tapStep && i < tapOrder.length; i++) {
+            if (tapOrder[i] == starIndex) return true;
         }
+        return false;
+    }
 
-        path.moveTo(xs[0], ys[0]);
+    private void drawUnlockedEdges(Canvas canvas) {
+        if (edges == null || edges.length == 0) return;
+        if (stars.isEmpty()) return;
 
-        final float t = 0.5f;
+        for (int[] e : edges) {
+            if (e == null || e.length < 2) continue;
 
-        for (int i = 0; i < count - 1; i++) {
-            float x0 = (i == 0) ? xs[i] : xs[i - 1];
-            float y0 = (i == 0) ? ys[i] : ys[i - 1];
+            int a = e[0], b = e[1];
+            if (a < 0 || b < 0 || a >= stars.size() || b >= stars.size()) continue;
 
-            float x1 = xs[i];
-            float y1 = ys[i];
+            if (isStarUnlocked(a) && isStarUnlocked(b)) {
+                Star sa = stars.get(a), sb = stars.get(b);
+                float ax = mapX(sa.x), ay = mapY(sa.y);
+                float bx = mapX(sb.x), by = mapY(sb.y);
 
-            float x2 = xs[i + 1];
-            float y2 = ys[i + 1];
-
-            float x3 = (i + 2 < count) ? xs[i + 2] : xs[i + 1];
-            float y3 = (i + 2 < count) ? ys[i + 2] : ys[i + 1];
-
-            float c1x = x1 + (x2 - x0) * (t / 3f);
-            float c1y = y1 + (y2 - y0) * (t / 3f);
-
-            float c2x = x2 - (x3 - x1) * (t / 3f);
-            float c2y = y2 - (y3 - y1) * (t / 3f);
-
-            path.cubicTo(c1x, c1y, c2x, c2y, x2, y2);
+                canvas.drawLine(ax, ay, bx, by, lineGlowPaint);
+                canvas.drawLine(ax, ay, bx, by, linePaint);
+            }
         }
-
-        return path;
     }
 
     // 5-point star
@@ -649,19 +634,20 @@ public class StarSweepView extends View {
     // ================= INPUT =================
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         // ✅ Allow HUD buttons (like Settings) to receive touches
-        if (event.getY() < topInsetPx()) {
-            return false; // let button clicks pass through
-        }
+        if (event.getY() < topInsetPx()) return false;
 
         if (finished || flashing || paused) return true;
-        ;
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            if (currentIndex >= stars.size()) return true;
 
-            Star t = stars.get(currentIndex);
+            if (tapOrder == null || tapOrder.length == 0) return true;
+            if (tapStep >= tapOrder.length) return true;
+
+            int targetIndex = tapOrder[tapStep]; // ✅ next required star
+            if (targetIndex < 0 || targetIndex >= stars.size()) return true;
+
+            Star t = stars.get(targetIndex);
             float tx = mapX(t.x);
             float ty = mapY(t.y);
 
@@ -670,17 +656,21 @@ public class StarSweepView extends View {
 
             float tap = dp(36);
             if (dx * dx + dy * dy < tap * tap) {
-                currentIndex++;
-                if (hudListener != null) hudListener.onProgress(currentIndex, GOAL);
+                tapStep++;
 
-                if (currentIndex >= GOAL) {
+                if (hudListener != null) hudListener.onProgress(tapStep, Math.max(1, GOAL));
+
+                if (tapStep >= GOAL) {
                     flashing = true;
                     flashStartMs = SystemClock.uptimeMillis();
                     celebrationStartMs = flashStartMs;
                     if (hudListener != null) hudListener.onFinishFlashStarted();
                 }
+
+                invalidate();
             }
         }
+
         return true;
     }
 
@@ -690,252 +680,399 @@ public class StarSweepView extends View {
         Star(float x, float y) { this.x = x; this.y = y; }
     }
 
-    // ================= 40 CONSTELLATIONS =================
+    // ================= CONSTELLATIONS =================
     static class Constellations {
         static class Pattern {
             final String name;
+            final String fact;
             final float[][] points;
-            Pattern(String name, float[][] points) { this.name = name; this.points = points; }
+            final int[][] edges;   // pairs like {0,1}
+            final int[] tapOrder;  // order user must tap
+
+            Pattern(String name, String fact, float[][] points, int[][] edges, int[] tapOrder) {
+                this.name = name;
+                this.fact = fact;
+                this.points = points;
+                this.edges = edges;
+                this.tapOrder = tapOrder;
+            }
         }
 
         static final Pattern[] ALL = new Pattern[]{
 
-                // 1–5
-                new Pattern("Cat Head 🐱", new float[][]{
-                        {0.35f,0.35f},{0.40f,0.20f},{0.45f,0.32f},
-                        {0.55f,0.32f},{0.60f,0.20f},{0.65f,0.35f},
-                        {0.70f,0.50f},{0.62f,0.65f},{0.50f,0.72f},
-                        {0.38f,0.65f},{0.30f,0.50f},{0.35f,0.35f}
-                }),
-                new Pattern("Rabbit Head 🐰", new float[][]{
-                        {0.42f,0.20f},{0.46f,0.05f},{0.50f,0.18f},
-                        {0.54f,0.05f},{0.58f,0.20f},
-                        {0.64f,0.38f},{0.60f,0.55f},{0.50f,0.65f},
-                        {0.40f,0.55f},{0.36f,0.38f},{0.42f,0.20f}
-                }),
-                new Pattern("Butterfly 🦋", new float[][]{
-                        {0.50f,0.30f},{0.40f,0.20f},{0.30f,0.35f},
-                        {0.35f,0.55f},{0.45f,0.65f},{0.50f,0.55f},
-                        {0.55f,0.65f},{0.65f,0.55f},{0.70f,0.35f},
-                        {0.60f,0.20f},{0.50f,0.30f}
-                }),
-                new Pattern("Heart 💜", new float[][]{
-                        {0.50f,0.35f},{0.42f,0.25f},{0.34f,0.30f},
-                        {0.30f,0.40f},{0.36f,0.55f},{0.50f,0.70f},
-                        {0.64f,0.55f},{0.70f,0.40f},{0.66f,0.30f},
-                        {0.58f,0.25f},{0.50f,0.35f}
-                }),
-                new Pattern("Moon 🌙", new float[][]{
-                        {0.55f,0.20f},{0.65f,0.30f},{0.70f,0.45f},
-                        {0.66f,0.60f},{0.55f,0.70f},{0.42f,0.60f},
-                        {0.38f,0.45f},{0.42f,0.30f},{0.55f,0.20f}
-                }),
+                // ================= ZODIAC (12) =================
 
-                // 6–10
-                new Pattern("Dog Head 🐶", new float[][]{
-                        {0.32f,0.38f},{0.28f,0.25f},{0.40f,0.30f},
-                        {0.50f,0.28f},{0.60f,0.30f},{0.72f,0.25f},{0.68f,0.38f},
-                        {0.74f,0.52f},{0.62f,0.66f},{0.50f,0.72f},{0.38f,0.66f},{0.26f,0.52f},
-                        {0.32f,0.38f}
-                }),
-                new Pattern("Fox Head 🦊", new float[][]{
-                        {0.30f,0.40f},{0.40f,0.18f},{0.50f,0.32f},{0.60f,0.18f},{0.70f,0.40f},
-                        {0.62f,0.58f},{0.50f,0.72f},{0.38f,0.58f},
-                        {0.30f,0.40f}
-                }),
-                new Pattern("Fish 🐟", new float[][]{
-                        {0.25f,0.50f},{0.35f,0.40f},{0.50f,0.35f},{0.65f,0.45f},{0.72f,0.55f},
-                        {0.65f,0.65f},{0.50f,0.70f},{0.35f,0.60f},
-                        {0.25f,0.50f},{0.18f,0.40f},{0.18f,0.60f},{0.25f,0.50f}
-                }),
-                new Pattern("Flower 🌸", new float[][]{
-                        {0.50f,0.20f},{0.62f,0.28f},{0.70f,0.42f},{0.62f,0.55f},{0.50f,0.70f},
-                        {0.38f,0.55f},{0.30f,0.42f},{0.38f,0.28f},{0.50f,0.20f},
-                        {0.50f,0.40f},{0.56f,0.45f},{0.50f,0.50f},{0.44f,0.45f},{0.50f,0.40f}
-                }),
-                new Pattern("Crown 👑", new float[][]{
-                        {0.25f,0.65f},{0.32f,0.42f},{0.42f,0.62f},
-                        {0.50f,0.34f},{0.58f,0.62f},
-                        {0.68f,0.42f},{0.75f,0.65f},
-                        {0.65f,0.74f},{0.50f,0.76f},{0.35f,0.74f},
-                        {0.25f,0.65f}
-                }),
+                // ARIES
+                new Pattern(
+                        "Aries",
+                        "Aries is a short, curved line of stars.",
+                        new float[][]{
+                                {0.38f,0.48f},{0.48f,0.42f},{0.58f,0.46f},{0.68f,0.54f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3} },
+                        new int[]{0,1,2,3}
+                ),
 
-                // 11–15
-                new Pattern("Panda Head 🐼", new float[][]{
-                        {0.32f,0.30f},{0.28f,0.20f},{0.38f,0.22f},
-                        {0.50f,0.25f},{0.62f,0.22f},{0.72f,0.20f},{0.68f,0.30f},
-                        {0.74f,0.48f},{0.64f,0.64f},{0.50f,0.72f},{0.36f,0.64f},{0.26f,0.48f},
-                        {0.32f,0.30f}
-                }),
-                new Pattern("Frog 🐸", new float[][]{
-                        {0.30f,0.42f},{0.28f,0.30f},{0.38f,0.28f},{0.44f,0.38f},
-                        {0.50f,0.40f},
-                        {0.56f,0.38f},{0.62f,0.28f},{0.72f,0.30f},{0.70f,0.42f},
-                        {0.66f,0.60f},{0.50f,0.70f},{0.34f,0.60f},
-                        {0.30f,0.42f}
-                }),
-                new Pattern("Owl 🦉", new float[][]{
-                        {0.36f,0.35f},{0.40f,0.20f},{0.46f,0.32f},
-                        {0.54f,0.32f},{0.60f,0.20f},{0.64f,0.35f},
-                        {0.70f,0.50f},{0.62f,0.66f},{0.50f,0.74f},{0.38f,0.66f},{0.30f,0.50f},
-                        {0.36f,0.35f}
-                }),
-                new Pattern("Tree 🌳", new float[][]{
-                        {0.50f,0.20f},{0.62f,0.28f},{0.70f,0.42f},{0.64f,0.56f},{0.50f,0.66f},
-                        {0.36f,0.56f},{0.30f,0.42f},{0.38f,0.28f},{0.50f,0.20f},
-                        {0.50f,0.66f},{0.50f,0.82f}
-                }),
-                new Pattern("Rocket 🚀", new float[][]{
-                        {0.50f,0.18f},{0.60f,0.30f},{0.62f,0.50f},
-                        {0.58f,0.66f},{0.50f,0.78f},{0.42f,0.66f},
-                        {0.38f,0.50f},{0.40f,0.30f},{0.50f,0.18f},
-                        {0.50f,0.36f},{0.54f,0.42f},{0.50f,0.48f},{0.46f,0.42f},{0.50f,0.36f}
-                }),
+                // TAURUS
+                new Pattern(
+                        "Taurus",
+                        "Aldebaran is the bright eye of Taurus.",
+                        new float[][]{
+                                {0.46f,0.50f},{0.54f,0.50f},{0.50f,0.42f},{0.62f,0.38f},{0.70f,0.28f},{0.38f,0.38f},{0.30f,0.28f}
+                        },
+                        new int[][]{ {5,2},{2,3},{3,4},{5,6},{0,2},{1,2} },
+                        new int[]{2,0,1,5,6,3,4}
+                ),
 
-                // 16–20
-                new Pattern("Unicorn 🦄", new float[][]{
-                        {0.40f,0.22f},{0.46f,0.05f},{0.52f,0.22f},
-                        {0.60f,0.32f},{0.68f,0.44f},{0.62f,0.60f},
-                        {0.50f,0.72f},{0.38f,0.62f},{0.32f,0.48f},
-                        {0.34f,0.34f},{0.40f,0.22f}
-                }),
-                new Pattern("Turtle 🐢", new float[][]{
-                        {0.40f,0.42f},{0.50f,0.36f},{0.60f,0.42f},
-                        {0.66f,0.52f},{0.60f,0.64f},{0.50f,0.68f},{0.40f,0.64f},{0.34f,0.52f},
-                        {0.40f,0.42f},
-                        {0.30f,0.48f},{0.70f,0.48f},{0.50f,0.76f}
-                }),
-                new Pattern("Dolphin 🐬", new float[][]{
-                        {0.28f,0.56f},{0.36f,0.46f},{0.48f,0.40f},{0.60f,0.44f},{0.70f,0.54f},
-                        {0.62f,0.62f},{0.48f,0.68f},{0.34f,0.64f},
-                        {0.28f,0.56f}
-                }),
-                new Pattern("Cloud ☁️", new float[][]{
-                        {0.30f,0.56f},{0.34f,0.44f},{0.44f,0.40f},{0.52f,0.32f},{0.62f,0.38f},
-                        {0.70f,0.48f},{0.66f,0.62f},{0.52f,0.66f},{0.40f,0.64f},
-                        {0.30f,0.56f}
-                }),
-                new Pattern("Lightning ⚡", new float[][]{
-                        {0.56f,0.18f},{0.42f,0.46f},{0.56f,0.46f},
-                        {0.38f,0.82f},{0.62f,0.52f},{0.48f,0.52f},{0.56f,0.18f}
-                }),
+                // GEMINI
+                new Pattern(
+                        "Gemini",
+                        "Gemini represents the twins.",
+                        new float[][]{
+                                {0.40f,0.24f},{0.40f,0.40f},{0.40f,0.56f},{0.40f,0.72f},
+                                {0.60f,0.24f},{0.60f,0.40f},{0.60f,0.56f},{0.60f,0.72f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{4,5},{5,6},{6,7},{1,5} },
+                        new int[]{0,1,2,3,4,5,6,7}
+                ),
 
-                // 21–25
-                new Pattern("Lotus 🌸", new float[][]{
-                        {0.50f,0.20f},{0.60f,0.32f},{0.70f,0.48f},{0.62f,0.58f},{0.50f,0.70f},
-                        {0.38f,0.58f},{0.30f,0.48f},{0.40f,0.32f},{0.50f,0.20f},
-                        {0.50f,0.32f},{0.56f,0.44f},{0.50f,0.54f},{0.44f,0.44f},{0.50f,0.32f}
-                }),
-                new Pattern("Dove 🕊", new float[][]{
-                        {0.30f,0.52f},{0.42f,0.40f},{0.54f,0.38f},{0.68f,0.44f},{0.62f,0.52f},
-                        {0.52f,0.60f},{0.44f,0.66f},{0.36f,0.60f},{0.30f,0.52f}
-                }),
-                new Pattern("Octopus 🐙", new float[][]{
-                        {0.50f,0.26f},{0.62f,0.34f},{0.68f,0.48f},{0.62f,0.62f},{0.50f,0.68f},
-                        {0.38f,0.62f},{0.32f,0.48f},{0.38f,0.34f},{0.50f,0.26f},
-                        {0.40f,0.72f},{0.34f,0.82f},{0.46f,0.74f},{0.44f,0.86f},
-                        {0.54f,0.74f},{0.56f,0.86f},{0.60f,0.72f},{0.66f,0.82f}
-                }),
-                new Pattern("Royal Crown 👑", new float[][]{
-                        {0.22f,0.68f},{0.30f,0.44f},{0.40f,0.64f},
-                        {0.50f,0.32f},{0.60f,0.64f},
-                        {0.70f,0.44f},{0.78f,0.68f},
-                        {0.70f,0.76f},{0.50f,0.80f},{0.30f,0.76f},
-                        {0.22f,0.68f}
-                }),
-                new Pattern("Wave 🌊", new float[][]{
-                        {0.20f,0.62f},{0.30f,0.52f},{0.40f,0.58f},{0.50f,0.48f},{0.60f,0.54f},
-                        {0.70f,0.44f},{0.80f,0.50f},{0.72f,0.66f},{0.56f,0.68f},{0.40f,0.66f},
-                        {0.20f,0.62f}
-                }),
+                // CANCER
+                new Pattern(
+                        "Cancer",
+                        "Cancer is faint but forms a small Y-like shape.",
+                        new float[][]{
+                                {0.50f,0.34f},{0.44f,0.46f},{0.56f,0.46f},{0.50f,0.58f},{0.50f,0.46f}
+                        },
+                        new int[][]{ {0,4},{4,1},{4,2},{4,3} },
+                        new int[]{0,4,1,2,3}
+                ),
 
-                // 26–30
-                new Pattern("Dragon 🐉", new float[][]{
-                        {0.38f,0.28f},{0.44f,0.14f},{0.50f,0.26f},
-                        {0.62f,0.34f},{0.72f,0.46f},
-                        {0.66f,0.58f},{0.54f,0.70f},{0.42f,0.64f},
-                        {0.34f,0.50f},{0.30f,0.38f},
-                        {0.38f,0.28f}
-                }),
-                new Pattern("Swan 🦢", new float[][]{
-                        {0.55f,0.20f},{0.50f,0.30f},{0.46f,0.44f},{0.48f,0.60f},
-                        {0.60f,0.70f},{0.72f,0.62f},{0.66f,0.50f},
-                        {0.54f,0.56f},{0.42f,0.64f},{0.38f,0.54f},
-                        {0.48f,0.44f},{0.55f,0.20f}
-                }),
-                new Pattern("Crescent Star 🌙⭐", new float[][]{
-                        {0.56f,0.22f},{0.66f,0.32f},{0.70f,0.48f},{0.64f,0.62f},{0.52f,0.70f},
-                        {0.40f,0.62f},{0.38f,0.46f},{0.42f,0.32f},{0.56f,0.22f},
-                        {0.74f,0.30f},{0.78f,0.40f},{0.88f,0.40f},{0.80f,0.48f},{0.84f,0.60f},
-                        {0.74f,0.52f},{0.64f,0.60f},{0.68f,0.48f},{0.60f,0.40f},{0.70f,0.40f},
-                        {0.74f,0.30f}
-                }),
-                new Pattern("Bow 🎀", new float[][]{
-                        {0.50f,0.50f},{0.40f,0.40f},{0.28f,0.50f},{0.40f,0.60f},{0.50f,0.50f},
-                        {0.60f,0.40f},{0.72f,0.50f},{0.60f,0.60f},{0.50f,0.50f},
-                        {0.46f,0.70f},{0.54f,0.70f}
-                }),
-                new Pattern("Mushroom 🍄", new float[][]{
-                        {0.30f,0.44f},{0.40f,0.32f},{0.50f,0.28f},{0.60f,0.32f},{0.70f,0.44f},
-                        {0.30f,0.44f},
-                        {0.44f,0.44f},{0.44f,0.72f},{0.56f,0.72f},{0.56f,0.44f}
-                }),
+                // LEO
+                new Pattern(
+                        "Leo",
+                        "Leo’s ‘sickle’ is a famous backward question mark.",
+                        new float[][]{
+                                {0.44f,0.30f},{0.56f,0.34f},{0.62f,0.46f},{0.56f,0.56f},{0.46f,0.58f},{0.36f,0.52f},
+                                {0.34f,0.64f},{0.46f,0.72f},{0.60f,0.66f}
+                        },
+                        new int[][]{
+                                {0,1},{1,2},{2,3},{3,4},{4,5},{5,0},
+                                {4,6},{6,7},{7,8},{8,4}
+                        },
+                        new int[]{0,1,2,3,4,6,7,8,5}
+                ),
 
-                // 31–35
-                new Pattern("Big Butterfly 🦋", new float[][]{
-                        {0.50f,0.26f},{0.42f,0.18f},{0.32f,0.26f},{0.24f,0.40f},{0.30f,0.56f},{0.40f,0.66f},
-                        {0.50f,0.58f},{0.60f,0.66f},{0.70f,0.56f},{0.76f,0.40f},{0.68f,0.26f},{0.58f,0.18f},
-                        {0.50f,0.26f}
-                }),
-                new Pattern("Wolf Head 🐺", new float[][]{
-                        {0.30f,0.42f},{0.40f,0.18f},{0.50f,0.32f},{0.60f,0.18f},{0.70f,0.42f},
-                        {0.62f,0.60f},{0.50f,0.74f},{0.38f,0.60f},{0.30f,0.42f}
-                }),
-                new Pattern("Rose 🌹", new float[][]{
-                        {0.50f,0.22f},{0.62f,0.30f},{0.70f,0.44f},{0.62f,0.58f},{0.50f,0.70f},
-                        {0.38f,0.58f},{0.30f,0.44f},{0.38f,0.30f},{0.50f,0.22f},
-                        {0.50f,0.36f},{0.56f,0.44f},{0.50f,0.52f},{0.44f,0.44f},{0.50f,0.36f}
-                }),
-                new Pattern("Guitar 🎸", new float[][]{
-                        {0.42f,0.60f},{0.38f,0.48f},{0.42f,0.38f},{0.50f,0.34f},{0.58f,0.38f},{0.62f,0.48f},
-                        {0.58f,0.60f},{0.50f,0.66f},{0.42f,0.60f},
-                        {0.50f,0.34f},{0.52f,0.18f},{0.56f,0.10f}
-                }),
-                new Pattern("Umbrella ☂", new float[][]{
-                        {0.30f,0.46f},{0.40f,0.34f},{0.50f,0.30f},{0.60f,0.34f},{0.70f,0.46f},
-                        {0.50f,0.46f},
-                        {0.50f,0.80f},{0.46f,0.86f},{0.52f,0.88f}
-                }),
+                // VIRGO
+                new Pattern(
+                        "Virgo",
+                        "Spica is Virgo’s brightest star.",
+                        new float[][]{
+                                {0.38f,0.26f},{0.46f,0.34f},{0.54f,0.42f},{0.62f,0.52f},{0.54f,0.62f},{0.46f,0.72f},{0.38f,0.82f},{0.68f,0.40f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{4,5},{5,6},{2,7} },
+                        new int[]{0,1,2,7,3,4,5,6}
+                ),
 
-                // 36–40
-                new Pattern("Full Dragon 🐉", new float[][]{
-                        {0.30f,0.42f},{0.40f,0.28f},{0.55f,0.30f},{0.68f,0.42f},
-                        {0.72f,0.56f},{0.62f,0.66f},{0.48f,0.70f},{0.34f,0.64f},
-                        {0.26f,0.54f},{0.32f,0.46f},{0.30f,0.42f}
-                }),
-                new Pattern("Lion Head 🦁", new float[][]{
-                        {0.32f,0.38f},{0.28f,0.28f},{0.38f,0.20f},{0.50f,0.22f},{0.62f,0.20f},{0.72f,0.28f},{0.68f,0.38f},
-                        {0.74f,0.50f},{0.66f,0.64f},{0.50f,0.74f},{0.34f,0.64f},{0.26f,0.50f},
-                        {0.32f,0.38f}
-                }),
-                new Pattern("Rainbow 🌈", new float[][]{
-                        {0.25f,0.62f},{0.32f,0.46f},{0.42f,0.34f},{0.50f,0.30f},{0.58f,0.34f},{0.68f,0.46f},{0.75f,0.62f},
-                        {0.68f,0.58f},{0.58f,0.44f},{0.50f,0.40f},{0.42f,0.44f},{0.32f,0.58f},{0.25f,0.62f}
-                }),
-                new Pattern("Gift 🎁", new float[][]{
-                        {0.34f,0.40f},{0.66f,0.40f},{0.66f,0.70f},{0.34f,0.70f},{0.34f,0.40f},
-                        {0.50f,0.40f},{0.50f,0.70f},
-                        {0.34f,0.54f},{0.66f,0.54f},
-                        {0.46f,0.30f},{0.50f,0.36f},{0.54f,0.30f}
-                }),
-                new Pattern("Snowflake ❄", new float[][]{
-                        {0.50f,0.22f},{0.50f,0.78f},
-                        {0.32f,0.34f},{0.68f,0.66f},
-                        {0.32f,0.66f},{0.68f,0.34f},
-                        {0.22f,0.50f},{0.78f,0.50f},
-                        {0.50f,0.22f}
-                }),
+                // LIBRA ✅ (fixed so it doesn't look like a diamond badge)
+                new Pattern(
+                        "Libra",
+                        "Libra’s brightest stars are Zubenelgenubi and Zubeneschamali.",
+                        new float[][]{
+                                {0.34f,0.32f}, // 0 top-left
+                                {0.66f,0.30f}, // 1 top-right
+                                {0.58f,0.46f}, // 2 mid-right
+                                {0.40f,0.48f}, // 3 mid-left
+                                {0.50f,0.70f}  // 4 bottom
+                        },
+                        new int[][]{
+                                {0,1},{1,2},{2,3},{3,0},{3,4},{2,4}
+                        },
+                        new int[]{0,1,2,3,4}
+                ),
+
+                // SCORPIO
+                new Pattern(
+                        "Scorpio",
+                        "Scorpio curves into a hooked stinger tail.",
+                        new float[][]{
+                                {0.34f,0.22f},{0.44f,0.32f},{0.52f,0.44f},{0.58f,0.56f},{0.54f,0.68f},{0.46f,0.78f},{0.38f,0.86f},{0.46f,0.92f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{4,5},{5,6},{6,7} },
+                        new int[]{0,1,2,3,4,5,6,7}
+                ),
+
+                // SAGITTARIUS
+                new Pattern(
+                        "Sagittarius",
+                        "Sagittarius is often drawn like a teapot.",
+                        new float[][]{
+                                {0.38f,0.48f},{0.46f,0.38f},{0.56f,0.38f},{0.64f,0.48f},{0.58f,0.56f},{0.50f,0.60f},{0.42f,0.56f},{0.72f,0.42f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{4,5},{5,6},{6,0},{3,7} },
+                        new int[]{0,1,2,3,7,4,5,6}
+                ),
+
+                // CAPRICORN
+                new Pattern(
+                        "Capricorn",
+                        "Capricornus is a subtle, bent-line constellation.",
+                        new float[][]{
+                                {0.34f,0.58f},{0.44f,0.48f},{0.56f,0.50f},{0.66f,0.64f},{0.54f,0.74f},{0.40f,0.70f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{4,5},{5,0} },
+                        new int[]{0,1,2,3,4,5}
+                ),
+
+                // AQUARIUS
+                new Pattern(
+                        "Aquarius",
+                        "Aquarius is often shown as water waves.",
+                        new float[][]{
+                                {0.30f,0.44f},{0.40f,0.38f},{0.50f,0.44f},{0.60f,0.38f},{0.70f,0.44f},
+                                {0.30f,0.62f},{0.40f,0.56f},{0.50f,0.62f},{0.60f,0.56f},{0.70f,0.62f}
+                        },
+                        new int[][]{
+                                {0,1},{1,2},{2,3},{3,4},
+                                {5,6},{6,7},{7,8},{8,9}
+                        },
+                        new int[]{0,1,2,3,4,5,6,7,8,9}
+                ),
+
+                // PISCES
+                new Pattern(
+                        "Pisces",
+                        "Pisces is two star groups linked by a long cord.",
+                        new float[][]{
+                                {0.34f,0.52f},{0.40f,0.44f},{0.46f,0.52f},{0.40f,0.60f},
+                                {0.66f,0.52f},{0.60f,0.44f},{0.54f,0.52f},{0.60f,0.60f}
+                        },
+                        new int[][]{
+                                {0,1},{1,2},{2,3},{3,0},
+                                {4,5},{5,6},{6,7},{7,4},
+                                {2,6}
+                        },
+                        new int[]{0,1,2,3,6,5,4,7}
+                ),
+
+                // ================= EXTRA CONSTELLATIONS =================
+
+                new Pattern(
+                        "Orion",
+                        "Orion’s Belt are three aligned stars.",
+                        new float[][]{
+                                {0.32f,0.24f},{0.68f,0.24f},
+                                {0.42f,0.40f},{0.50f,0.44f},{0.58f,0.40f},
+                                {0.50f,0.56f},
+                                {0.38f,0.74f},{0.62f,0.74f},{0.50f,0.66f}
+                        },
+                        new int[][]{
+                                {0,2},{2,3},{3,4},{4,1},
+                                {3,5},
+                                {2,6},{4,7},
+                                {6,8},{8,7}
+                        },
+                        new int[]{0,2,3,4,1,5,6,8,7}
+                ),
+
+                new Pattern(
+                        "Cassiopeia",
+                        "Cassiopeia is the famous W shape.",
+                        new float[][]{
+                                {0.22f,0.46f},{0.36f,0.32f},{0.50f,0.46f},{0.64f,0.32f},{0.78f,0.46f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4} },
+                        new int[]{0,1,2,3,4}
+                ),
+
+                new Pattern(
+                        "Ursa Major (Big Dipper)",
+                        "The ‘pointer stars’ help you find Polaris.",
+                        new float[][]{
+                                {0.28f,0.36f},{0.40f,0.32f},{0.54f,0.36f},{0.60f,0.46f},{0.68f,0.56f},{0.76f,0.66f},{0.84f,0.78f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,0},{3,4},{4,5},{5,6} },
+                        new int[]{0,1,2,3,4,5,6}
+                ),
+
+                new Pattern(
+                        "Ursa Minor (Little Dipper)",
+                        "Polaris is the bright star at the handle tip.",
+                        new float[][]{
+                                {0.34f,0.50f},{0.44f,0.46f},{0.54f,0.50f},{0.60f,0.60f},{0.56f,0.70f},{0.46f,0.74f},{0.34f,0.68f},{0.22f,0.82f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,0},{3,4},{4,5},{5,6},{6,7} },
+                        new int[]{0,1,2,3,4,5,6,7}
+                ),
+
+                new Pattern(
+                        "Cygnus",
+                        "Cygnus is the Northern Cross with Deneb at the top.",
+                        new float[][]{
+                                {0.50f,0.18f},{0.50f,0.34f},{0.50f,0.50f},{0.50f,0.68f},{0.50f,0.84f},{0.34f,0.50f},{0.66f,0.50f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{2,5},{2,6} },
+                        new int[]{0,1,2,5,6,3,4}
+                ),
+
+                new Pattern(
+                        "Lyra",
+                        "Vega is one of the brightest stars in the sky.",
+                        new float[][]{
+                                {0.54f,0.24f},{0.64f,0.36f},{0.58f,0.52f},{0.44f,0.52f},{0.38f,0.36f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{4,0} },
+                        new int[]{0,1,2,3,4}
+                ),
+
+                new Pattern(
+                        "Aquila",
+                        "Altair forms the Summer Triangle with Vega and Deneb.",
+                        new float[][]{
+                                {0.50f,0.24f},{0.50f,0.42f},{0.50f,0.62f},{0.34f,0.50f},{0.66f,0.50f}
+                        },
+                        new int[][]{ {0,1},{1,2},{1,3},{1,4} },
+                        new int[]{1,0,2,3,4}
+                ),
+
+                new Pattern(
+                        "Pegasus (Great Square)",
+                        "The Great Square is easy to spot in autumn skies.",
+                        new float[][]{
+                                {0.34f,0.30f},{0.66f,0.30f},{0.66f,0.62f},{0.34f,0.62f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,0} },
+                        new int[]{0,1,2,3}
+                ),
+
+                new Pattern(
+                        "Andromeda",
+                        "Andromeda is a long chain of stars extending from Pegasus.",
+                        new float[][]{
+                                {0.26f,0.44f},{0.40f,0.38f},{0.54f,0.44f},{0.68f,0.54f},{0.82f,0.66f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4} },
+                        new int[]{0,1,2,3,4}
+                ),
+
+                new Pattern(
+                        "Perseus",
+                        "Perseus contains Algol, the famous ‘Demon Star’.",
+                        new float[][]{
+                                {0.44f,0.22f},{0.52f,0.34f},{0.60f,0.46f},{0.52f,0.58f},{0.42f,0.72f},{0.34f,0.52f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{2,5} },
+                        new int[]{0,1,2,5,3,4}
+                ),
+
+                new Pattern(
+                        "Canis Major",
+                        "Sirius is the brightest star in the night sky.",
+                        new float[][]{
+                                {0.38f,0.52f},{0.50f,0.44f},{0.62f,0.52f},{0.58f,0.66f},{0.44f,0.70f},{0.34f,0.62f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{4,5},{5,1} },
+                        new int[]{1,0,2,3,4,5}
+                ),
+
+                new Pattern(
+                        "Canis Minor",
+                        "Procyon is the brightest star in Canis Minor.",
+                        new float[][]{
+                                {0.40f,0.44f},{0.58f,0.56f}
+                        },
+                        new int[][]{ {0,1} },
+                        new int[]{0,1}
+                ),
+
+                new Pattern(
+                        "Draco",
+                        "Draco winds between Ursa Major and Ursa Minor.",
+                        new float[][]{
+                                {0.30f,0.30f},{0.42f,0.26f},{0.54f,0.30f},{0.62f,0.40f},{0.56f,0.52f},{0.46f,0.60f},{0.36f,0.70f},{0.28f,0.82f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{4,5},{5,6},{6,7} },
+                        new int[]{0,1,2,3,4,5,6,7}
+                ),
+
+                new Pattern(
+                        "Hercules",
+                        "Hercules is marked by the ‘Keystone’ quadrilateral.",
+                        new float[][]{
+                                {0.40f,0.34f},{0.60f,0.34f},{0.62f,0.54f},{0.42f,0.54f},{0.30f,0.64f},{0.72f,0.64f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,0},{3,4},{2,5} },
+                        new int[]{0,1,2,5,3,4}
+                ),
+
+                new Pattern(
+                        "Boötes",
+                        "Arcturus is the bright star of Boötes.",
+                        new float[][]{
+                                {0.50f,0.22f},{0.62f,0.36f},{0.56f,0.54f},{0.44f,0.54f},{0.38f,0.36f},{0.50f,0.70f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,5},{5,3},{3,4},{4,0},{2,3} },
+                        new int[]{0,1,2,3,4,5}
+                ),
+
+                new Pattern(
+                        "Corona Borealis",
+                        "A small arc that looks like a crown.",
+                        new float[][]{
+                                {0.30f,0.52f},{0.38f,0.44f},{0.48f,0.40f},{0.58f,0.44f},{0.66f,0.52f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4} },
+                        new int[]{0,1,2,3,4}
+                ),
+
+                new Pattern(
+                        "Delphinus",
+                        "Delphinus is a tiny dolphin-shaped diamond.",
+                        new float[][]{
+                                {0.48f,0.40f},{0.58f,0.46f},{0.50f,0.56f},{0.40f,0.48f},{0.34f,0.58f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,0},{2,4} },
+                        new int[]{0,1,2,3,4}
+                ),
+
+                new Pattern(
+                        "Cepheus",
+                        "Cepheus is often drawn like a house shape.",
+                        new float[][]{
+                                {0.40f,0.34f},{0.60f,0.34f},{0.66f,0.50f},{0.50f,0.62f},{0.34f,0.50f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{4,0} },
+                        new int[]{0,1,2,3,4}
+                ),
+
+                new Pattern(
+                        "Auriga",
+                        "Auriga contains Capella, one of the brightest stars.",
+                        new float[][]{
+                                {0.50f,0.22f},{0.66f,0.34f},{0.62f,0.54f},{0.44f,0.62f},{0.34f,0.44f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{4,0},{1,4} },
+                        new int[]{0,1,2,3,4}
+                ),
+
+                new Pattern(
+                        "Hydra",
+                        "Hydra is the largest constellation by area.",
+                        new float[][]{
+                                {0.20f,0.58f},{0.32f,0.52f},{0.44f,0.56f},{0.56f,0.50f},{0.68f,0.54f},{0.80f,0.48f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{4,5} },
+                        new int[]{0,1,2,3,4,5}
+                ),
+
+                new Pattern(
+                        "Pleiades (M45)",
+                        "The Pleiades are the ‘Seven Sisters’ star cluster.",
+                        new float[][]{
+                                {0.40f,0.40f},{0.48f,0.34f},{0.58f,0.36f},{0.62f,0.46f},{0.54f,0.52f},{0.44f,0.50f},{0.50f,0.44f}
+                        },
+                        new int[][]{ {0,1},{1,2},{2,3},{3,4},{4,5},{5,0},{6,1},{6,4} },
+                        new int[]{6,1,2,3,4,5,0}
+                ),
         };
     }
 }

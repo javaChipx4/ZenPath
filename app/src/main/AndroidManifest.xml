@@ -24,7 +24,7 @@
 
         <activity
             android:name=".DiaryEntryReadActivity"
-            />
+            android:exported="false" />
 
         <activity
             android:name=".MoodActivity"
@@ -38,7 +38,6 @@
             android:name=".StressHistoryActivity"
             android:exported="false" />
 
-
         <activity
             android:name=".SelectionGamesActivity"
             android:exported="false" />
@@ -46,7 +45,6 @@
         <activity
             android:name=".PlanetActivity"
             android:exported="false" />
-
 
         <activity
             android:name=".LanternReleaseActivity"
@@ -65,6 +63,11 @@
             android:exported="false" />
 
         <activity
+            android:name=".AddUserActivity"
+            android:exported="false" />
+
+        <!-- ✅ Launcher = Login -->
+        <activity
             android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
@@ -74,6 +77,5 @@
         </activity>
 
     </application>
-
 
 </manifest>

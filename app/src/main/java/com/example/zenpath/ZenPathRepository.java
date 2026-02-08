@@ -2,6 +2,7 @@ package com.example.zenpath;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
@@ -10,13 +11,116 @@ import java.util.ArrayList;
 public class ZenPathRepository {
 
     private final ZenPathDbHelper helper;
+    private final Context context;
+
+    private static final String PREFS = "zen_path_prefs";
+    private static final String KEY_CURRENT_USER = "current_user"; // stores userId as String
 
     public ZenPathRepository(Context context) {
-        helper = new ZenPathDbHelper(context);
+        this.context = context.getApplicationContext();
+        helper = new ZenPathDbHelper(this.context);
     }
 
+    // =========================
+    // ✅ Current userId from session
+    // =========================
+    private long currentUserId() {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String s = prefs.getString(KEY_CURRENT_USER, null);
+        if (s == null) return -1;
+        try { return Long.parseLong(s); } catch (Exception e) { return -1; }
+    }
+
+    // =========================
+    // ===== USERS (ACCOUNTS) ===
+    // =========================
+
+    public long createUser(String username) {
+        if (username == null) return -1;
+        username = username.trim();
+        if (username.isEmpty()) return -1;
+
+        SQLiteDatabase db = helper.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put(ZenPathDbHelper.U_USERNAME, username);
+        cv.put(ZenPathDbHelper.U_CREATED_AT, System.currentTimeMillis());
+
+        return db.insert(ZenPathDbHelper.T_USERS, null, cv);
+    }
+
+    public boolean userExists(String username) {
+        if (username == null) return false;
+        username = username.trim();
+        if (username.isEmpty()) return false;
+
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_USERS,
+                new String[]{ZenPathDbHelper.U_ID},
+                ZenPathDbHelper.U_USERNAME + "=?",
+                new String[]{username},
+                null, null, null,
+                "1"
+        );
+
+        boolean exists = c.moveToFirst();
+        c.close();
+        return exists;
+    }
+
+    public long getUserId(String username) {
+        if (username == null) return -1;
+        username = username.trim();
+        if (username.isEmpty()) return -1;
+
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_USERS,
+                new String[]{ZenPathDbHelper.U_ID},
+                ZenPathDbHelper.U_USERNAME + "=?",
+                new String[]{username},
+                null, null, null,
+                "1"
+        );
+
+        long id = -1;
+        if (c.moveToFirst()) id = c.getLong(0);
+        c.close();
+        return id;
+    }
+
+    public String getUsernameById(long userId) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_USERS,
+                new String[]{ ZenPathDbHelper.U_USERNAME },
+                ZenPathDbHelper.U_ID + "=?",
+                new String[]{ String.valueOf(userId) },
+                null, null, null,
+                "1"
+        );
+
+        String username = "";
+        if (c.moveToFirst()) username = c.getString(0);
+        c.close();
+        return username;
+    }
+
+    // =========================
+    // ===== DIARY PAGES =======
+    // =========================
+
     public ArrayList<String> getDiaryPagesByDate(String date) {
-        String raw = getJournalTextByDate(date); // reuse your existing method
+        long userId = currentUserId();
+        return getDiaryPagesByDate(userId, date);
+    }
+
+    public ArrayList<String> getDiaryPagesByDate(long userId, String date) {
+        String raw = getJournalTextByDate(userId, date);
         ArrayList<String> pages = new ArrayList<>();
 
         if (raw == null || raw.trim().isEmpty()) {
@@ -32,8 +136,13 @@ public class ZenPathRepository {
     }
 
     public void upsertDiaryPages(String date, ArrayList<String> pages) {
+        long userId = currentUserId();
+        upsertDiaryPages(userId, date, pages);
+    }
+
+    public void upsertDiaryPages(long userId, String date, ArrayList<String> pages) {
         if (pages == null || pages.isEmpty()) {
-            upsertJournalEntry(date, "");
+            upsertJournalEntry(userId, date, "");
             return;
         }
 
@@ -43,15 +152,18 @@ public class ZenPathRepository {
             sb.append(pages.get(i) == null ? "" : pages.get(i));
         }
 
-        upsertJournalEntry(date, sb.toString()); // reuse existing DB save
+        upsertJournalEntry(userId, date, sb.toString());
     }
 
-    // ===== JOURNAL =====
+    // =========================
+    // ===== JOURNAL (PER USER) =
+    // =========================
 
-    public long addJournalEntry(String date, String text) {
+    public long addJournalEntry(long userId, String date, String text) {
         SQLiteDatabase db = helper.getWritableDatabase();
 
         ContentValues cv = new ContentValues();
+        cv.put(ZenPathDbHelper.COL_USER_ID, userId);
         cv.put(ZenPathDbHelper.J_DATE, date);
         cv.put(ZenPathDbHelper.J_TEXT, text);
         cv.put(ZenPathDbHelper.J_CREATED_AT, System.currentTimeMillis());
@@ -59,14 +171,14 @@ public class ZenPathRepository {
         return db.insert(ZenPathDbHelper.T_JOURNAL, null, cv);
     }
 
-    public boolean hasJournalEntry(String date) {
+    public boolean hasJournalEntry(long userId, String date) {
         SQLiteDatabase db = helper.getReadableDatabase();
 
         Cursor c = db.query(
                 ZenPathDbHelper.T_JOURNAL,
-                new String[]{ ZenPathDbHelper.J_DATE },
-                ZenPathDbHelper.J_DATE + "=?",
-                new String[]{ date },
+                new String[]{ ZenPathDbHelper.J_ID },
+                ZenPathDbHelper.COL_USER_ID + "=? AND " + ZenPathDbHelper.J_DATE + "=?",
+                new String[]{ String.valueOf(userId), date },
                 null, null, null,
                 "1"
         );
@@ -76,7 +188,7 @@ public class ZenPathRepository {
         return exists;
     }
 
-    public int updateJournalEntry(String date, String text) {
+    public int updateJournalEntry(long userId, String date, String text) {
         SQLiteDatabase db = helper.getWritableDatabase();
 
         ContentValues cv = new ContentValues();
@@ -86,65 +198,42 @@ public class ZenPathRepository {
         return db.update(
                 ZenPathDbHelper.T_JOURNAL,
                 cv,
-                ZenPathDbHelper.J_DATE + "=?",
-                new String[]{ date }
+                ZenPathDbHelper.COL_USER_ID + "=? AND " + ZenPathDbHelper.J_DATE + "=?",
+                new String[]{ String.valueOf(userId), date }
         );
     }
 
-    // ✅ FIXED UPSERT — no redline, no ambiguity
-    public long upsertJournalEntry(String date, String text) {
-        if (hasJournalEntry(date)) {
-            updateJournalEntry(date, text);
+    public long upsertJournalEntry(long userId, String date, String text) {
+        if (hasJournalEntry(userId, date)) {
+            updateJournalEntry(userId, date, text);
             return 1L;
         } else {
-            return addJournalEntry(date, text);
+            return addJournalEntry(userId, date, text);
         }
     }
 
-    // Get the journal text for a specific date (yyyy-MM-dd)
-// Returns "" if none found.
-    public String getJournalTextByDate(String date) {
+    public String getJournalTextByDate(long userId, String date) {
         SQLiteDatabase db = helper.getReadableDatabase();
 
         Cursor c = db.query(
                 ZenPathDbHelper.T_JOURNAL,
                 new String[]{ ZenPathDbHelper.J_TEXT },
-                ZenPathDbHelper.J_DATE + "=?",
-                new String[]{ date },
+                ZenPathDbHelper.COL_USER_ID + "=? AND " + ZenPathDbHelper.J_DATE + "=?",
+                new String[]{ String.valueOf(userId), date },
                 null, null,
                 ZenPathDbHelper.J_CREATED_AT + " DESC",
                 "1"
         );
 
         String text = "";
-        if (c.moveToFirst()) {
-            text = c.getString(0);
-        }
+        if (c.moveToFirst()) text = c.getString(0);
         c.close();
         return text;
     }
 
-    // ===== READ ALL (optional) =====
-    public ArrayList<String> getJournalEntries() {
-        ArrayList<String> list = new ArrayList<>();
-        SQLiteDatabase db = helper.getReadableDatabase();
-
-        Cursor c = db.query(
-                ZenPathDbHelper.T_JOURNAL,
-                new String[]{ZenPathDbHelper.J_DATE, ZenPathDbHelper.J_TEXT},
-                null, null, null, null,
-                ZenPathDbHelper.J_CREATED_AT + " DESC"
-        );
-
-        while (c.moveToNext()) {
-            list.add(c.getString(0) + " - " + c.getString(1));
-        }
-
-        c.close();
-        return list;
-    }
-
-    // ===== DIARY HISTORY META =====
+    // =========================
+    // ===== DIARY HISTORY (PER USER)
+    // =========================
 
     public static class DiaryEntryMeta {
         public final String date;
@@ -158,19 +247,24 @@ public class ZenPathRepository {
         }
     }
 
-    // Latest first, only entries that are saved (non-empty text)
     public ArrayList<DiaryEntryMeta> getSavedDiaryHistory() {
+        long userId = currentUserId();
+        return getSavedDiaryHistory(userId);
+    }
+
+    public ArrayList<DiaryEntryMeta> getSavedDiaryHistory(long userId) {
         ArrayList<DiaryEntryMeta> list = new ArrayList<>();
         SQLiteDatabase db = helper.getReadableDatabase();
 
-        // Only non-empty text
-        String where = ZenPathDbHelper.J_TEXT + " IS NOT NULL AND length(trim(" + ZenPathDbHelper.J_TEXT + ")) > 0";
+        String where =
+                ZenPathDbHelper.COL_USER_ID + "=? AND " +
+                        ZenPathDbHelper.J_TEXT + " IS NOT NULL AND length(trim(" + ZenPathDbHelper.J_TEXT + ")) > 0";
 
         Cursor c = db.query(
                 ZenPathDbHelper.T_JOURNAL,
                 new String[]{ ZenPathDbHelper.J_DATE, ZenPathDbHelper.J_TEXT, ZenPathDbHelper.J_CREATED_AT },
                 where,
-                null,
+                new String[]{ String.valueOf(userId) },
                 null, null,
                 ZenPathDbHelper.J_CREATED_AT + " DESC"
         );
@@ -180,8 +274,7 @@ public class ZenPathRepository {
             String text = c.getString(1);
             long createdAt = c.getLong(2);
 
-            String preview = makePreview(text);
-            list.add(new DiaryEntryMeta(date, preview, createdAt));
+            list.add(new DiaryEntryMeta(date, makePreview(text), createdAt));
         }
 
         c.close();
@@ -190,11 +283,178 @@ public class ZenPathRepository {
 
     private String makePreview(String raw) {
         if (raw == null) return "";
-        // Remove page breaks so preview is clean
         String clean = raw.replace("\n<<PAGE_BREAK>>\n", "\n").trim();
-        // Take first ~120 chars
         if (clean.length() > 120) clean = clean.substring(0, 120).trim() + "…";
         return clean;
     }
 
+    // =========================
+    // ===== MOOD (PER USER) ====
+    // =========================
+
+    public long upsertMood(String date, String moodText, String reflection) {
+        long userId = currentUserId();
+        return upsertMood(userId, date, moodText, reflection);
+    }
+
+    public long upsertMood(long userId, String date, String moodText, String reflection) {
+        if (userId <= 0) return -1;
+
+        SQLiteDatabase db = helper.getWritableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_MOOD,
+                new String[]{ZenPathDbHelper.M_ID},
+                ZenPathDbHelper.COL_USER_ID + "=? AND " + ZenPathDbHelper.M_DATE + "=?",
+                new String[]{String.valueOf(userId), date},
+                null, null, null,
+                "1"
+        );
+
+        boolean exists = c.moveToFirst();
+        long rowId = exists ? c.getLong(0) : -1;
+        c.close();
+
+        ContentValues cv = new ContentValues();
+        cv.put(ZenPathDbHelper.COL_USER_ID, userId);
+        cv.put(ZenPathDbHelper.M_DATE, date);
+        cv.put(ZenPathDbHelper.M_TEXT, moodText == null ? "" : moodText);
+        cv.put(ZenPathDbHelper.M_REFLECTION, reflection);
+        cv.put(ZenPathDbHelper.M_CREATED_AT, System.currentTimeMillis());
+
+        if (exists) {
+            db.update(ZenPathDbHelper.T_MOOD, cv,
+                    ZenPathDbHelper.M_ID + "=?",
+                    new String[]{String.valueOf(rowId)});
+            return rowId;
+        } else {
+            return db.insert(ZenPathDbHelper.T_MOOD, null, cv);
+        }
+    }
+
+    public String[] getMoodByDate(String date) {
+        long userId = currentUserId();
+        return getMoodByDate(userId, date);
+    }
+
+    public String[] getMoodByDate(long userId, String date) {
+        SQLiteDatabase db = helper.getReadableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_MOOD,
+                new String[]{ZenPathDbHelper.M_TEXT, ZenPathDbHelper.M_REFLECTION},
+                ZenPathDbHelper.COL_USER_ID + "=? AND " + ZenPathDbHelper.M_DATE + "=?",
+                new String[]{String.valueOf(userId), date},
+                null, null,
+                ZenPathDbHelper.M_CREATED_AT + " DESC",
+                "1"
+        );
+
+        String mood = "";
+        String reflection = "";
+        if (c.moveToFirst()) {
+            mood = c.getString(0);
+            reflection = c.getString(1);
+        }
+        c.close();
+
+        return new String[]{mood, reflection};
+    }
+
+    // =========================
+    // ===== STRESS (PER USER) ==
+    // =========================
+
+    public long upsertStress(String date, int stressLevel, int starSweepSec, int lanternSec, int planetSec) {
+        long userId = currentUserId();
+        return upsertStress(userId, date, stressLevel, starSweepSec, lanternSec, planetSec);
+    }
+
+    public long upsertStress(long userId, String date, int stressLevel, int starSweepSec, int lanternSec, int planetSec) {
+        if (userId <= 0) return -1;
+
+        SQLiteDatabase db = helper.getWritableDatabase();
+
+        Cursor c = db.query(
+                ZenPathDbHelper.T_STRESS,
+                new String[]{ZenPathDbHelper.S_ID},
+                ZenPathDbHelper.COL_USER_ID + "=? AND " + ZenPathDbHelper.S_DATE + "=?",
+                new String[]{String.valueOf(userId), date},
+                null, null, null,
+                "1"
+        );
+
+        boolean exists = c.moveToFirst();
+        long rowId = exists ? c.getLong(0) : -1;
+        c.close();
+
+        ContentValues cv = new ContentValues();
+        cv.put(ZenPathDbHelper.COL_USER_ID, userId);
+        cv.put(ZenPathDbHelper.S_DATE, date);
+        cv.put(ZenPathDbHelper.S_LEVEL, stressLevel);
+        cv.put(ZenPathDbHelper.S_PLAY_STAR, starSweepSec);
+        cv.put(ZenPathDbHelper.S_PLAY_LANTERN, lanternSec);
+        cv.put(ZenPathDbHelper.S_PLAY_PLANET, planetSec);
+        cv.put(ZenPathDbHelper.S_CREATED_AT, System.currentTimeMillis());
+
+        if (exists) {
+            db.update(ZenPathDbHelper.T_STRESS, cv,
+                    ZenPathDbHelper.S_ID + "=?",
+                    new String[]{String.valueOf(rowId)});
+            return rowId;
+        } else {
+            return db.insert(ZenPathDbHelper.T_STRESS, null, cv);
+        }
+    }
+
+    public void addGamePlaytime(String date, String gameKey, int secondsToAdd) {
+        long userId = currentUserId();
+        addGamePlaytime(userId, date, gameKey, secondsToAdd);
+    }
+
+    public void addGamePlaytime(long userId, String date, String gameKey, int secondsToAdd) {
+        if (userId <= 0) return;
+
+        SQLiteDatabase db = helper.getWritableDatabase();
+
+        String col;
+        if ("STAR_SWEEP".equals(gameKey)) col = ZenPathDbHelper.S_PLAY_STAR;
+        else if ("LANTERN_RELEASE".equals(gameKey)) col = ZenPathDbHelper.S_PLAY_LANTERN;
+        else if ("PLANET".equals(gameKey)) col = ZenPathDbHelper.S_PLAY_PLANET;
+        else return;
+
+        // Ensure row exists for the date
+        Cursor c = db.query(
+                ZenPathDbHelper.T_STRESS,
+                new String[]{ZenPathDbHelper.S_ID},
+                ZenPathDbHelper.COL_USER_ID + "=? AND " + ZenPathDbHelper.S_DATE + "=?",
+                new String[]{String.valueOf(userId), date},
+                null, null, null,
+                "1"
+        );
+
+        boolean exists = c.moveToFirst();
+        long rowId = exists ? c.getLong(0) : -1;
+        c.close();
+
+        if (!exists) {
+            ContentValues cv = new ContentValues();
+            cv.put(ZenPathDbHelper.COL_USER_ID, userId);
+            cv.put(ZenPathDbHelper.S_DATE, date);
+            cv.put(ZenPathDbHelper.S_LEVEL, 0);
+            cv.put(ZenPathDbHelper.S_PLAY_STAR, 0);
+            cv.put(ZenPathDbHelper.S_PLAY_LANTERN, 0);
+            cv.put(ZenPathDbHelper.S_PLAY_PLANET, 0);
+            cv.put(ZenPathDbHelper.S_CREATED_AT, System.currentTimeMillis());
+            rowId = db.insert(ZenPathDbHelper.T_STRESS, null, cv);
+        }
+
+        db.execSQL(
+                "UPDATE " + ZenPathDbHelper.T_STRESS +
+                        " SET " + col + " = " + col + " + ?, " +
+                        ZenPathDbHelper.S_CREATED_AT + " = ? " +
+                        " WHERE " + ZenPathDbHelper.S_ID + " = ?",
+                new Object[]{secondsToAdd, System.currentTimeMillis(), rowId}
+        );
+    }
 }

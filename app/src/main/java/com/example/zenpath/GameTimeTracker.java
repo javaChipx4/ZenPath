@@ -10,6 +10,7 @@ import java.util.Locale;
 public class GameTimeTracker {
 
     private static final String PREFS = "zen_path_prefs";
+    private static final String KEY_CURRENT_USER = "current_user"; // userId
 
     private long startMs = 0L;
     private final String gameName;
@@ -26,36 +27,49 @@ public class GameTimeTracker {
         if (startMs <= 0) return;
 
         long now = System.currentTimeMillis();
-        long dur = Math.max(0, now - startMs);
+        long durMs = Math.max(0, now - startMs);
         startMs = 0;
 
-        // Ignore ultra-tiny sessions (prevents 0-1 second noise)
-        if (dur < 1500) return;
+        // Ignore tiny sessions
+        if (durMs < 1500) return;
 
-        String dateKey = new SimpleDateFormat("yyyyMMdd", Locale.getDefault())
-                .format(new Date());
+        int seconds = (int) (durMs / 1000);
 
-        SharedPreferences p = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String dateKey = new SimpleDateFormat(
+                "yyyyMMdd",
+                Locale.getDefault()
+        ).format(new Date());
 
-        // ✅ total today
-        String totalKey = "play_ms_" + dateKey;
-        long total = p.getLong(totalKey, 0L) + dur;
+        long userId = currentUserId(ctx);
+        if (userId <= 0) return;
 
-        // ✅ per game today
-        String perGameKey = "play_ms_" + sanitize(gameName) + "_" + dateKey;
-        long gameTotal = p.getLong(perGameKey, 0L) + dur;
+        ZenPathRepository repo = new ZenPathRepository(ctx);
 
-        p.edit()
-                .putLong(totalKey, total)
-                .putLong(perGameKey, gameTotal)
-                // fallback “last played”
-                .putString("play_topapp_" + dateKey, gameName)
-                .apply();
+        // Map game → DB column
+        String gameKey;
+        if ("Star Sweep".equalsIgnoreCase(gameName)) {
+            gameKey = "STAR_SWEEP";
+        } else if ("Lantern Release".equalsIgnoreCase(gameName)) {
+            gameKey = "LANTERN_RELEASE";
+        } else if ("Planet".equalsIgnoreCase(gameName)) {
+            gameKey = "PLANET";
+        } else {
+            return;
+        }
+
+        // ✅ Increment playtime safely in DB
+        repo.addGamePlaytime(userId, dateKey, gameKey, seconds);
     }
 
-    // Makes key safe even if game name has spaces
-    private String sanitize(String s) {
-        if (s == null) return "game";
-        return s.replaceAll("[^a-zA-Z0-9_]", "_");
+    private long currentUserId(Context ctx) {
+        SharedPreferences prefs =
+                ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        String s = prefs.getString(KEY_CURRENT_USER, null);
+        if (s == null) return -1;
+        try {
+            return Long.parseLong(s);
+        } catch (Exception e) {
+            return -1;
+        }
     }
 }

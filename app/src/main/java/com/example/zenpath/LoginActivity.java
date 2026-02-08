@@ -17,38 +17,36 @@ import java.util.Set;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String PREFS = "zen_path_prefs";
-    private static final String KEY_CURRENT_USER = "current_user";
     private static final String KEY_USERS_SET = "users_set";
+    private static final int REQ_ADD_USER = 1001;
 
     private EditText etUsername;
     private Button btnLogin;
-    private TextView tvQuote;
+    private TextView tvQuote, tvAddUser;
 
     private SharedPreferences prefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_login);
 
         prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-
-        // OPTIONAL: auto-skip login if user already selected
-        String currentUser = prefs.getString(KEY_CURRENT_USER, null);
-        if (!TextUtils.isEmpty(currentUser)) {
-            goHome();
-            return;
-        }
-
-        setContentView(R.layout.activity_login);
 
         etUsername = findViewById(R.id.etUsername);
         btnLogin = findViewById(R.id.btnLogin);
         tvQuote = findViewById(R.id.tvQuote);
+        tvAddUser = findViewById(R.id.tvAddUser);
 
-        // You can later replace this with your "quote of the day" logic
         tvQuote.setText("“Small moments of calm still count.”");
 
         btnLogin.setOnClickListener(v -> handleLogin());
+
+        // You can rename text in XML to "+ Create Account" if you want
+        tvAddUser.setOnClickListener(v -> {
+            Intent i = new Intent(LoginActivity.this, AddUserActivity.class);
+            startActivityForResult(i, REQ_ADD_USER);
+        });
     }
 
     private void handleLogin() {
@@ -59,19 +57,46 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        // Save current user
-        prefs.edit().putString(KEY_CURRENT_USER, username).apply();
+        ZenPathRepository repo = new ZenPathRepository(this);
 
-        // Add to known users list (Option B-ready)
-        Set<String> users = prefs.getStringSet(KEY_USERS_SET, new HashSet<>());
-        Set<String> updated = new HashSet<>(users); // IMPORTANT: copy set before editing
-        updated.add(username);
-        prefs.edit().putStringSet(KEY_USERS_SET, updated).apply();
+        // ✅ Must exist in DB
+        if (!repo.userExists(username)) {
+            Toast.makeText(this,
+                    "User not found. Please create an account first.",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
 
-        Toast.makeText(this, "Welcome, " + username + "!", Toast.LENGTH_SHORT).show();
+        long userId = repo.getUserId(username);
+        if (userId == -1) {
+            Toast.makeText(this, "Login error. Try again.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // ✅ Store current user (better to store userId, not username)
+        // For now: store userId as String so your SessionManager doesn't change yet
+        SessionManager.setCurrentUser(this, String.valueOf(userId));
+
+        Toast.makeText(this, "Welcome back, " + username + "!", Toast.LENGTH_SHORT).show();
         goHome();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQ_ADD_USER && resultCode == RESULT_OK && data != null) {
+            String newUsername = data.getStringExtra("new_username");
+            if (!TextUtils.isEmpty(newUsername)) {
+                etUsername.setText(newUsername);
+                etUsername.setSelection(newUsername.length());
+                Toast.makeText(this, "Account created: " + newUsername, Toast.LENGTH_SHORT).show();
+
+                // ✅ Optional: auto-login immediately after creating account
+                // handleLogin();
+            }
+        }
+    }
 
     private void goHome() {
         Intent intent = new Intent(this, MainActivity.class);

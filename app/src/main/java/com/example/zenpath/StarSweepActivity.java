@@ -17,14 +17,14 @@ public class StarSweepActivity extends AppCompatActivity
 
     private StarSweepView starSweepView;
 
-    private TextView tvBreath, tvStarsLeft, tvStreakGame;
+    private TextView tvBreath, tvStarsLeft, tvStreakGame, tvFact;
     private ProgressBar progressStars;
 
     private ImageButton btnSettings;
     private Button btnPlayAgain;
+
     // ✅ Play time tracker
     private GameTimeTracker playTracker;
-
 
     // ✅ streak prefs
     private SharedPreferences prefs;
@@ -33,7 +33,7 @@ public class StarSweepActivity extends AppCompatActivity
 
     private int goal = 1;
 
-    // ✅ Settings dialog ref (so we can close it safely)
+    // ✅ Settings dialog ref
     private AlertDialog settingsDialog;
 
     @Override
@@ -49,10 +49,14 @@ public class StarSweepActivity extends AppCompatActivity
         tvBreath = findViewById(R.id.tvBreath);
         tvStarsLeft = findViewById(R.id.tvStarsLeft);
         tvStreakGame = findViewById(R.id.tvStreakGame);
+        tvFact = findViewById(R.id.tvFact); // ✅ IMPORTANT
         progressStars = findViewById(R.id.progressStars);
 
         btnSettings = findViewById(R.id.menuIcon);
         btnPlayAgain = findViewById(R.id.btnPlayAgain);
+
+        // ✅ Fact should be hidden until finished
+        tvFact.setVisibility(View.GONE);
 
         // ✅ Connect HUD
         starSweepView.setHudListener(this);
@@ -63,6 +67,7 @@ public class StarSweepActivity extends AppCompatActivity
         // ✅ Play again
         btnPlayAgain.setOnClickListener(v -> {
             btnPlayAgain.setVisibility(View.GONE);
+            tvFact.setVisibility(View.GONE); // ✅ hide fact again
             starSweepView.setPaused(false);
             starSweepView.resetGame();
         });
@@ -72,7 +77,6 @@ public class StarSweepActivity extends AppCompatActivity
         // ✅ Start play time tracking
         playTracker = new GameTimeTracker("Star Sweep");
         playTracker.start();
-
     }
 
     // ================= HUD CALLBACKS =================
@@ -80,6 +84,16 @@ public class StarSweepActivity extends AppCompatActivity
     @Override
     public void onBreathText(String text) {
         tvBreath.setText(text);
+    }
+
+    @Override
+    public void onFactText(String fact) {
+        if (fact == null || fact.trim().isEmpty()) {
+            tvFact.setText("Fact: —");
+        } else {
+            tvFact.setText("Fact: " + fact);
+        }
+        // keep it hidden until finished (we show it in onFinishedReady)
     }
 
     @Override
@@ -99,49 +113,39 @@ public class StarSweepActivity extends AppCompatActivity
 
     @Override
     public void onFinishedReady() {
-        // ✅ show play again
+        // ✅ show play again + fact
         btnPlayAgain.setVisibility(View.VISIBLE);
+        tvFact.setVisibility(View.VISIBLE);
 
         // ✅ streak++
         int streak = prefs.getInt(KEY_STREAK, 0);
         streak++;
         prefs.edit().putInt(KEY_STREAK, streak).apply();
-
         updateStreakUI();
     }
 
     // ================= SETTINGS (PAUSE) =================
 
     private void openSettingsPaused() {
-        // ✅ Pause game when settings opens
         starSweepView.setPaused(true);
 
-        String[] options = {
-                "Resume",
-                "Restart Shape",
-                "Back to Selection"
-        };
+        String[] options = {"Resume", "Restart Shape", "Back to Selection"};
 
         settingsDialog = new AlertDialog.Builder(this)
                 .setTitle("Paused ⚙️")
                 .setItems(options, (dialog, which) -> {
                     if (which == 0) {
-                        // ✅ Resume
                         resumeGame();
                     } else if (which == 1) {
-                        // ✅ Restart
                         btnPlayAgain.setVisibility(View.GONE);
+                        tvFact.setVisibility(View.GONE); // ✅ hide
                         starSweepView.resetGame();
                         starSweepView.setPaused(false);
-                    } else if (which == 2) {
-                        // ✅ Back to selection screen
+                    } else {
                         goBackToSelection();
                     }
                 })
-                .setOnCancelListener(d -> {
-                    // ✅ If user taps outside/back button: resume
-                    resumeGame();
-                })
+                .setOnCancelListener(d -> resumeGame())
                 .show();
     }
 
@@ -153,7 +157,6 @@ public class StarSweepActivity extends AppCompatActivity
     }
 
     private void goBackToSelection() {
-        // ✅ Save play time before leaving
         if (playTracker != null) playTracker.stopAndSave(this);
 
         starSweepView.setPaused(false);
@@ -163,7 +166,6 @@ public class StarSweepActivity extends AppCompatActivity
         finish();
     }
 
-
     // ================= STREAK UI =================
 
     private void updateStreakUI() {
@@ -171,25 +173,18 @@ public class StarSweepActivity extends AppCompatActivity
         tvStreakGame.setText("Daily streak: " + streak + " 🔥");
     }
 
-    // ✅ Safety: if user leaves app while paused, don't keep stuck
     @Override
     protected void onPause() {
         super.onPause();
-
-        // ✅ Save play time when app goes background
         if (playTracker != null) playTracker.stopAndSave(this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-        if (playTracker == null) {
-            playTracker = new GameTimeTracker("Star Sweep");
-        }
+        if (playTracker == null) playTracker = new GameTimeTracker("Star Sweep");
         playTracker.start();
     }
-
 
     @Override
     protected void onDestroy() {

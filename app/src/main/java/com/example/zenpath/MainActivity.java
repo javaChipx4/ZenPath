@@ -42,88 +42,52 @@ public class MainActivity extends AppCompatActivity {
     private View bookContainer, pageLeft, pageRight, bookShadow;
     private boolean isBookAnimating = false;
 
-    // ✅ NEW: quote views
+    // existing quote views (Panel B still uses them)
     private TextView tvQuote, tvCenterQuote, tvSubQuote;
 
-    // ✅ NEW: glow overlay view
+    // NEW: top pill quote
+    private TextView tvPillQuote;
+
+    // NEW: fortune overlay
+    private View fortuneOverlay;
+    private View fortuneCard;
+
+    // glow overlay
     private View glowOverlay;
 
-    // ✅ prefs keys
+    // prefs keys
     private static final String PREFS = "zen_path_prefs";
     private static final String KEY_QUOTE_DATE = "daily_quote_date";
     private static final String KEY_QUOTE_TEXT = "daily_quote_text";
-    private static final String KEY_QUOTE_SUB = "daily_quote_sub";
 
-    private static String moodKey(String d) { return "mood_" + d; }
+    private static final String KEY_FORTUNE_REVEAL_DATE = "fortune_reveal_date";
 
-    // Mood index mapping from your app:
-    // 0😁 1😌 2😐 3🥰 4😭
-
-    private static final String[] QUOTES_HAPPY = new String[]{
-            "You’re allowed to enjoy this moment. Let it count.",
-            "Small wins still count. Keep going.",
-            "Your energy is contagious — share it gently.",
-            "Today feels lighter. Hold onto that."
-    };
-
-    private static final String[] QUOTES_CALM = new String[]{
-            "Breathe in. Breathe out. You’re doing enough.",
-            "Slow is still progress.",
-            "Quiet moments are healing moments.",
-            "You don’t need to rush to be okay."
-    };
-
-    private static final String[] QUOTES_NEUTRAL = new String[]{
-            "You don’t have to feel “great” to move forward.",
-            "Steady days build strong weeks.",
-            "Just show up for yourself — even a little.",
-            "Neutral is valid. Rest here."
-    };
-
-    private static final String[] QUOTES_LOVED = new String[]{
-            "You deserve softness — especially from yourself.",
-            "Be proud of how far you’ve come.",
-            "Love the way you keep trying.",
-            "You are worth taking care of."
-    };
-
-    private static final String[] QUOTES_SAD = new String[]{
-            "It’s okay to not be okay. Stay gentle.",
-            "You’re not behind. You’re healing.",
-            "One breath at a time. One step at a time.",
-            "You don’t have to carry everything alone."
-    };
-
-    private static final String[] QUOTES_GENERAL = new String[]{
+    // Quote pool (general/positive)
+    private static final String[] QUOTES_DAILY = new String[]{
             "Take today slowly. Calm is still progress.",
-            "You’re doing better than you think.",
-            "Even small moments of peace matter.",
-            "Your pace is valid. Keep going."
-    };
-
-    private static final String[] SUB_HAPPY = new String[]{
-            "Keep the good energy 🌟", "Celebrate small wins ✨", "Let yourself smile 🙂"
-    };
-    private static final String[] SUB_CALM = new String[]{
-            "Stay soft 🌿", "Breathe easy 💛", "One step at a time 🫧"
-    };
-    private static final String[] SUB_NEUTRAL = new String[]{
-            "Steady and okay 🤍", "No pressure today ☁️", "You’re allowed to be neutral 🫶"
-    };
-    private static final String[] SUB_LOVED = new String[]{
-            "You matter 🫶", "Be kind to yourself 💗", "You’re worthy 🌸"
-    };
-    private static final String[] SUB_SAD = new String[]{
-            "Gentle day 🫧", "You’re not alone 🤍", "It will pass 🌙"
-    };
-    private static final String[] SUB_GENERAL = new String[]{
-            "You are valid.", "Be gentle with yourself.", "Just breathe."
+            "You are doing better than you think.",
+            "Small steps still move you forward.",
+            "Breathe. You’re safe in this moment.",
+            "You don’t need to rush to be okay.",
+            "Be proud of how far you’ve come.",
+            "You are allowed to rest without guilt.",
+            "Your pace is valid. Keep going.",
+            "Gentleness is strength too.",
+            "Today, choose one kind thing for yourself."
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // date in pill
+        TextView tvDate = findViewById(R.id.tvDate);
+        if (tvDate != null) {
+            String pretty = new SimpleDateFormat("MMMM dd", Locale.getDefault())
+                    .format(Calendar.getInstance().getTime());
+            tvDate.setText(pretty);
+        }
 
         // ===== Book overlay views =====
         openBookOverlay = findViewById(R.id.openBookOverlay);
@@ -145,27 +109,59 @@ public class MainActivity extends AppCompatActivity {
         calendarView = findViewById(R.id.calendarView);
         selectedCalendar = Calendar.getInstance();
 
-        // ✅ quotes in both panels
-        tvQuote = findViewById(R.id.tvQuote);              // Panel A
+        tvQuote = findViewById(R.id.tvQuote);              // (maybe hidden in panelA, ok)
         tvCenterQuote = findViewById(R.id.tvCenterQuote);  // Panel B
         tvSubQuote = findViewById(R.id.tvSubQuote);        // Panel B (optional)
-        glowOverlay = findViewById(R.id.glowOverlay);      // background glow layer
+        glowOverlay = findViewById(R.id.glowOverlay);
+
+        // NEW bindings
+        tvPillQuote = findViewById(R.id.tvPillQuote);
+        fortuneOverlay = findViewById(R.id.fortuneOverlay);
+        fortuneCard = findViewById(R.id.fortuneCard);
 
         // ===== Username =====
         SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-        String username = prefs.getString("current_user", null);
-        if (TextUtils.isEmpty(username)) username = "User";
+
+// current_user now stores userId as String (ex: "1")
+        String current = prefs.getString("current_user", null);
+
+        String displayName = "User";
+        if (!TextUtils.isEmpty(current)) {
+            try {
+                long userId = Long.parseLong(current);
+                ZenPathRepository repo = new ZenPathRepository(this);
+                String nameFromDb = repo.getUsernameById(userId);
+                if (!TextUtils.isEmpty(nameFromDb)) displayName = nameFromDb;
+            } catch (NumberFormatException ignored) {
+                // fallback: if somehow current_user is a username string
+                displayName = current;
+            }
+        }
 
         TextView tvUsername = findViewById(R.id.tvUsername);
         TextView tvHelloUser = findViewById(R.id.tvHelloUser);
 
-        if (tvUsername != null) tvUsername.setText(username.toUpperCase());
-        if (tvHelloUser != null) tvHelloUser.setText("Hello, " + username + "!");
+        if (tvUsername != null) tvUsername.setText(displayName.toUpperCase());
+        if (tvHelloUser != null) tvHelloUser.setText("Hello, " + displayName + "!");
 
-        // ✅ set daily mood-based quotes (once per day)
-        applyDailyQuotes();
 
-        // ✅ animate background glow
+        // ✅ Generate quote for the day (always, once per day)
+        String todayQuote = getOrCreateDailyQuote();
+
+        // ✅ If revealed today -> show it in pill immediately
+        // ✅ If not revealed -> show "Tap to reveal" and pop fortune overlay
+        if (isFortuneRevealedToday()) {
+            setPillQuote(todayQuote);
+        } else {
+            setPillQuote("Tap to reveal");
+            showFortuneOverlay(); // appears on open
+        }
+
+        // ✅ Still show quote on Panel B (optional — keep or remove)
+        // If you only want it in the top pill, comment these out:
+        setQuotesToUI(todayQuote, ""); // sub quote not used now
+
+        // glow
         startGlowAnimation();
 
         // ===== Settings Popup Overlay =====
@@ -187,7 +183,6 @@ public class MainActivity extends AppCompatActivity {
         ImageButton btnSwitchProfile = settingsPopup.findViewById(R.id.btnSwitchProfile);
         TextView tvSwitchProfile = settingsPopup.findViewById(R.id.tvSwitchProfile);
 
-
         if (btnHome != null) btnHome.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
         if (btnBack != null) btnBack.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
         if (btnSwitchProfile != null) btnSwitchProfile.setVisibility(View.VISIBLE);
@@ -196,24 +191,19 @@ public class MainActivity extends AppCompatActivity {
         if (btnSwitchProfile != null) {
             btnSwitchProfile.setOnClickListener(v -> {
                 settingsPopup.setVisibility(View.GONE);
-
-                // clear current user
                 prefs.edit().remove("current_user").apply();
 
-                // go to login screen
-                Intent i = new Intent(MainActivity.this, LoginActivity.class); // <-- change if your login activity name differs
+                Intent i = new Intent(MainActivity.this, LoginActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(i);
             });
         }
 
-// optional: clicking the label also works
         if (tvSwitchProfile != null) {
             tvSwitchProfile.setOnClickListener(v -> {
                 if (btnSwitchProfile != null) btnSwitchProfile.performClick();
             });
         }
-
 
         if (btnHistory != null) {
             btnHistory.setOnClickListener(v -> {
@@ -229,11 +219,11 @@ public class MainActivity extends AppCompatActivity {
             });
         }
 
-        // ===== Journal click -> show book =====
-        Button tvJournal = findViewById(R.id.tvJournal);
-        if (tvJournal != null) {
-            tvJournal.setOnClickListener(v -> showBookOverlay());
-            installPressAnim(tvJournal);
+        // ===== Virtual Diary oval click -> show book =====
+        View ovalCard = findViewById(R.id.ovalCard);
+        if (ovalCard != null) {
+            ovalCard.setOnClickListener(v -> showBookOverlay());
+            installPressAnim(ovalCard);
         }
 
         // ===== Calendar -> Mood =====
@@ -252,7 +242,6 @@ public class MainActivity extends AppCompatActivity {
             installPressAnim(btnPlay);
         }
 
-        // ✅ press anim for menu (nice touch)
         if (btnMenu != null) installPressAnim(btnMenu);
 
         // ===== Swipe setup =====
@@ -279,37 +268,113 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // =========================
-    // ✅ DAILY MOOD-BASED QUOTES
+    // ✅ Quote of the day (no mood)
     // =========================
 
-    private void applyDailyQuotes() {
+    private String getOrCreateDailyQuote() {
         SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
         String todayKey = todayDateKey();
         String savedDate = prefs.getString(KEY_QUOTE_DATE, null);
 
-        // if already generated for today, reuse
         if (todayKey.equals(savedDate)) {
-            String q = prefs.getString(KEY_QUOTE_TEXT, "");
-            String sub = prefs.getString(KEY_QUOTE_SUB, "");
-            setQuotesToUI(q, sub);
-            return;
+            return prefs.getString(KEY_QUOTE_TEXT, "");
         }
 
-        // mood-based (if today's mood exists), else general
-        int mood = prefs.getInt(moodKey(todayKey), -1);
-
-        String quote = pickQuoteForMood(mood);
-        String sub = pickSubForMood(mood);
-
+        String quote = QUOTES_DAILY[new Random().nextInt(QUOTES_DAILY.length)];
         prefs.edit()
                 .putString(KEY_QUOTE_DATE, todayKey)
                 .putString(KEY_QUOTE_TEXT, quote)
-                .putString(KEY_QUOTE_SUB, sub)
                 .apply();
 
-        setQuotesToUI(quote, sub);
+        return quote;
     }
+
+    private void setPillQuote(String text) {
+        if (tvPillQuote != null) tvPillQuote.setText(text);
+    }
+
+    private String todayDateKey() {
+        return new SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+                .format(Calendar.getInstance().getTime());
+    }
+
+    // =========================
+    // ✅ Fortune reveal logic
+    // =========================
+
+    private boolean isFortuneRevealedToday() {
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        String today = todayDateKey();
+        String revealedDate = prefs.getString(KEY_FORTUNE_REVEAL_DATE, null);
+        return today.equals(revealedDate);
+    }
+
+    private void markFortuneRevealedToday() {
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        prefs.edit().putString(KEY_FORTUNE_REVEAL_DATE, todayDateKey()).apply();
+    }
+
+    private void showFortuneOverlay() {
+        if (fortuneOverlay == null) return;
+
+        fortuneOverlay.setVisibility(View.VISIBLE);
+        fortuneOverlay.setAlpha(0f);
+        fortuneOverlay.animate().alpha(1f).setDuration(180).start();
+
+        // Tap card to reveal
+        if (fortuneCard != null) {
+            fortuneCard.setOnClickListener(v -> revealFortune());
+            installPressAnim(fortuneCard);
+        }
+
+        // Optional: block clicks behind overlay
+        fortuneOverlay.setOnClickListener(v -> {
+            // do nothing (force reveal)
+        });
+    }
+
+    private void hideFortuneOverlay() {
+        if (fortuneOverlay == null) return;
+
+        fortuneOverlay.animate()
+                .alpha(0f)
+                .setDuration(140)
+                .withEndAction(() -> {
+                    fortuneOverlay.setAlpha(1f);
+                    fortuneOverlay.setVisibility(View.GONE);
+                })
+                .start();
+    }
+
+    private void revealFortune() {
+        String quote = getSharedPreferences(PREFS, MODE_PRIVATE).getString(KEY_QUOTE_TEXT, "");
+        if (TextUtils.isEmpty(quote)) quote = getOrCreateDailyQuote();
+
+        // small pop animation
+        if (fortuneCard != null) {
+            fortuneCard.animate()
+                    .scaleX(1.06f).scaleY(1.06f)
+                    .setDuration(120)
+                    .withEndAction(() -> fortuneCard.animate().scaleX(1f).scaleY(1f).setDuration(120).start())
+                    .start();
+        }
+
+        markFortuneRevealedToday();
+        setPillQuote(quote);
+
+        // also update Panel B quote if you want it synced
+        setQuotesToUI(quote, "");
+
+        // close
+        if (fortuneOverlay != null) {
+            fortuneOverlay.postDelayed(this::hideFortuneOverlay, 280);
+        }
+    }
+
+    // =========================
+    // ✅ Keep your existing UI quote setters
+    // =========================
 
     private void setQuotesToUI(String quote, String sub) {
         if (tvQuote != null && !TextUtils.isEmpty(quote)) {
@@ -318,36 +383,9 @@ public class MainActivity extends AppCompatActivity {
         if (tvCenterQuote != null && !TextUtils.isEmpty(quote)) {
             tvCenterQuote.setText(quote);
         }
-        if (tvSubQuote != null && !TextUtils.isEmpty(sub)) {
+        if (tvSubQuote != null) {
+            // you can hide/remove this if you want
             tvSubQuote.setText(sub);
-        }
-    }
-
-    private String todayDateKey() {
-        return new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Calendar.getInstance().getTime());
-    }
-
-    private String pickQuoteForMood(int mood) {
-        Random r = new Random();
-        switch (mood) {
-            case 0: return QUOTES_HAPPY[r.nextInt(QUOTES_HAPPY.length)];
-            case 1: return QUOTES_CALM[r.nextInt(QUOTES_CALM.length)];
-            case 2: return QUOTES_NEUTRAL[r.nextInt(QUOTES_NEUTRAL.length)];
-            case 3: return QUOTES_LOVED[r.nextInt(QUOTES_LOVED.length)];
-            case 4: return QUOTES_SAD[r.nextInt(QUOTES_SAD.length)];
-            default: return QUOTES_GENERAL[r.nextInt(QUOTES_GENERAL.length)];
-        }
-    }
-
-    private String pickSubForMood(int mood) {
-        Random r = new Random();
-        switch (mood) {
-            case 0: return SUB_HAPPY[r.nextInt(SUB_HAPPY.length)];
-            case 1: return SUB_CALM[r.nextInt(SUB_CALM.length)];
-            case 2: return SUB_NEUTRAL[r.nextInt(SUB_NEUTRAL.length)];
-            case 3: return SUB_LOVED[r.nextInt(SUB_LOVED.length)];
-            case 4: return SUB_SAD[r.nextInt(SUB_SAD.length)];
-            default: return SUB_GENERAL[r.nextInt(SUB_GENERAL.length)];
         }
     }
 
@@ -378,7 +416,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // =========================
-    // ✅ PRESS ANIM (scale)
+    // ✅ PRESS ANIM
     // =========================
 
     private void installPressAnim(View v) {
@@ -394,13 +432,12 @@ public class MainActivity extends AppCompatActivity {
                     view.animate().scaleX(1f).scaleY(1f).setDuration(90).start();
                     break;
             }
-            // return false so click still works
             return false;
         });
     }
 
     // =========================
-    // Existing book + swipe code
+    // Existing book + swipe code (UNCHANGED)
     // =========================
 
     private void showBookOverlay() {

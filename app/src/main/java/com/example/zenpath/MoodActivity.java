@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
@@ -25,13 +27,7 @@ import java.util.Locale;
 
 public class MoodActivity extends AppCompatActivity {
 
-    private static final String PREFS = "zen_path_prefs";
-    private static String moodKey(String dateKey)   { return "mood_" + dateKey; }
-    private static String stressKey(String dateKey) { return "stress_" + dateKey; }
-    private static String noteKey(String dateKey)   { return "note_" + dateKey; }
     public static final String EXTRA_DATE_KEY = "extra_date_key"; // yyyyMMdd
-
-    private SharedPreferences prefs;
 
     private CalendarView calendarView;
 
@@ -45,9 +41,12 @@ public class MoodActivity extends AppCompatActivity {
     private int selectedMoodIndex = -1;
 
     private EditText etReflection;
+
+    // ✅ stress percent label (if you added it)
+    private TextView tvStressValue;
     private SeekBar seekStress;
 
-    // Sun..Sat circles (TextViews now so we can show dates)
+    // Sun..Sat circles
     private TextView[] dayCircles;
     private int selectedCircleIndex = -1;
 
@@ -58,10 +57,22 @@ public class MoodActivity extends AppCompatActivity {
     private float weekDownX = 0f;
     private boolean weekDragging = false;
 
+    // ✅ DB repo
+    private ZenPathRepository repo;
+
+    private static final String[] MOOD_LABELS = new String[]{
+            "Sad", "Angry", "Okay", "Good", "Happy"
+    };
+
+    private static final String PREFS = "zen_path_prefs";
+    private static final String KEY_CURRENT_USER = "current_user";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mood_mt);
+
+        repo = new ZenPathRepository(this);
 
         // ===== Settings Popup Overlay =====
         ViewGroup rootView = findViewById(android.R.id.content);
@@ -94,27 +105,25 @@ public class MoodActivity extends AppCompatActivity {
             finish();
         });
 
-        // ===== Prefs =====
-        prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-
         // ===== Bind =====
         calendarView = findViewById(R.id.calendarView);
 
         sheetScrim = findViewById(R.id.sheetScrim);
         bottomSheet = findViewById(R.id.moodBottomSheet);
-        tvSelectedDate = findViewById(R.id.tvSelectedDate); // currently hidden in XML
+        tvSelectedDate = findViewById(R.id.tvSelectedDate);
 
         etReflection = findViewById(R.id.etReflection);
+
         seekStress = findViewById(R.id.seekStress);
+        tvStressValue = findViewById(R.id.tvStressValue); // if exists in your XML
 
         TextView tvMood0 = findViewById(R.id.tvMood0);
         TextView tvMood1 = findViewById(R.id.tvMood1);
         TextView tvMood2 = findViewById(R.id.tvMood2);
         TextView tvMood3 = findViewById(R.id.tvMood3);
         TextView tvMood4 = findViewById(R.id.tvMood4);
-        moodViews = new TextView[]{ tvMood0, tvMood1, tvMood2, tvMood3, tvMood4 };
+        moodViews = new TextView[]{tvMood0, tvMood1, tvMood2, tvMood3, tvMood4};
 
-        // Sun..Sat order
         dayCircles = new TextView[]{
                 findViewById(R.id.circleSun),
                 findViewById(R.id.circleMon),
@@ -129,26 +138,32 @@ public class MoodActivity extends AppCompatActivity {
         setupCalendar();
         setupMoodClicks();
         setupCircleClicks();
-        installWeekSwipe(); // ✅ swipe week on circles row
+        installWeekSwipe();
         setupStressSaver();
         setupReflectionSaver();
 
         hideSheet(false);
 
-        // ✅ If opened from History, jump to that date
         String fromHistory = getIntent().getStringExtra(EXTRA_DATE_KEY);
-        if (fromHistory != null && !fromHistory.isEmpty()) {
+        if (!TextUtils.isEmpty(fromHistory)) {
             Calendar cal = parseDateKey(fromHistory);
             if (cal != null && calendarView != null) {
                 calendarView.setDate(cal.getTimeInMillis(), false, true);
             }
             onDateSelected(fromHistory);
-            showSheetHalf(); // optional: open sheet when coming from History
+            showSheetHalf();
             return;
         }
 
-        // ✅ Normal open -> select today
         selectTodayWithoutOpeningSheet();
+    }
+
+    // ===================== USER ID =====================
+    private long currentUserId() {
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        String s = prefs.getString(KEY_CURRENT_USER, null);
+        if (s == null) return -1;
+        try { return Long.parseLong(s); } catch (Exception e) { return -1; }
     }
 
     // ===================== BOTTOM SHEET =====================
@@ -223,7 +238,6 @@ public class MoodActivity extends AppCompatActivity {
 
             String dateKey = formatDateKey(cal);
             onDateSelected(dateKey);
-
             showSheetHalf();
         });
     }
@@ -240,31 +254,37 @@ public class MoodActivity extends AppCompatActivity {
     }
 
     private void onDateSelected(String dateKey) {
-        if (dateKey == null || dateKey.isEmpty()) return;
+        if (TextUtils.isEmpty(dateKey)) return;
 
         selectedDateKey = dateKey;
 
-        // optional (hidden) label
-        if (tvSelectedDate != null) {
-            tvSelectedDate.setText(prettyDate(dateKey));
-        }
+        if (tvSelectedDate != null) tvSelectedDate.setText(prettyDate(dateKey));
 
-        selectedMoodIndex = prefs.getInt(moodKey(dateKey), -1);
-        int stress = prefs.getInt(stressKey(dateKey), 50);
-        String note = prefs.getString(noteKey(dateKey), "");
+        long userId = currentUserId();
+        if (userId <= 0) return;
+
+        // ✅ LOAD MOOD
+        String[] moodData = repo.getMoodByDate(userId, dateKey);
+        String moodText = moodData != null ? moodData[0] : "";
+        String reflection = moodData != null ? moodData[1] : "";
+        selectedMoodIndex = moodTextToIndex(moodText);
+
+        // ✅ LOAD STRESS
+        StressRow sr = getStressRow(userId, dateKey);
 
         isLoading = true;
-        if (seekStress != null) seekStress.setProgress(stress);
-        if (etReflection != null) etReflection.setText(note);
+
+        if (seekStress != null) seekStress.setProgress(sr.level);
+        updateStressUI(sr.level); // ✅ sets % text + drawable color
+
+        if (etReflection != null) etReflection.setText(reflection == null ? "" : reflection);
+
         isLoading = false;
 
         updateMoodUI();
 
-        // update week circles (numbers + auto-highlight weekday)
         Calendar selected = parseDateKey(dateKey);
-        if (selected != null) {
-            updateWeekCircles(selected);
-        }
+        if (selected != null) updateWeekCircles(selected);
     }
 
     // ===================== MOOD =====================
@@ -272,10 +292,11 @@ public class MoodActivity extends AppCompatActivity {
         for (int i = 0; i < moodViews.length; i++) {
             final int idx = i;
             if (moodViews[i] == null) continue;
+
             moodViews[i].setOnClickListener(v -> {
                 selectedMoodIndex = idx;
-                saveMoodForSelectedDate();
                 updateMoodUI();
+                saveMoodAndReflection();
             });
         }
     }
@@ -290,9 +311,33 @@ public class MoodActivity extends AppCompatActivity {
         }
     }
 
+    private int moodTextToIndex(String moodText) {
+        if (moodText == null) return -1;
+        for (int i = 0; i < MOOD_LABELS.length; i++) {
+            if (moodText.equalsIgnoreCase(MOOD_LABELS[i])) return i;
+        }
+        return -1;
+    }
+
+    private String indexToMoodText(int idx) {
+        if (idx < 0 || idx >= MOOD_LABELS.length) return "";
+        return MOOD_LABELS[idx];
+    }
+
+    private void saveMoodAndReflection() {
+        if (TextUtils.isEmpty(selectedDateKey)) return;
+
+        long userId = currentUserId();
+        if (userId <= 0) return;
+
+        String moodText = indexToMoodText(selectedMoodIndex);
+        String reflection = etReflection != null ? etReflection.getText().toString() : "";
+
+        repo.upsertMood(userId, selectedDateKey, moodText, reflection);
+    }
+
     // ===================== WEEK CIRCLES =====================
     private void setupCircleClicks() {
-        // tapping a circle just highlights it (does NOT change selected day)
         for (int i = 0; i < dayCircles.length; i++) {
             final int idx = i;
             if (dayCircles[i] == null) continue;
@@ -304,23 +349,19 @@ public class MoodActivity extends AppCompatActivity {
     }
 
     private void updateWeekCircles(Calendar selectedDate) {
-        // Build Sunday of that week
         Calendar start = (Calendar) selectedDate.clone();
-        int dow = start.get(Calendar.DAY_OF_WEEK); // 1=Sun ... 7=Sat
-        int diffToSun = dow - Calendar.SUNDAY;     // 0..6
+        int dow = start.get(Calendar.DAY_OF_WEEK);
+        int diffToSun = dow - Calendar.SUNDAY;
         start.add(Calendar.DAY_OF_MONTH, -diffToSun);
 
-        // Fill Sun..Sat with day numbers
         for (int i = 0; i < 7; i++) {
             Calendar day = (Calendar) start.clone();
             day.add(Calendar.DAY_OF_MONTH, i);
-
             if (dayCircles[i] != null) {
                 dayCircles[i].setText(String.valueOf(day.get(Calendar.DAY_OF_MONTH)));
             }
         }
 
-        // Auto-select weekday index (Sun=0 .. Sat=6)
         selectedCircleIndex = diffToSun;
         updateCircleUI();
     }
@@ -339,11 +380,10 @@ public class MoodActivity extends AppCompatActivity {
         }
     }
 
-    // ===================== SWIPE WEEK ON CIRCLES ROW =====================
+    // ===================== SWIPE WEEK =====================
     private void installWeekSwipe() {
         if (dayCircles == null || dayCircles.length == 0 || dayCircles[0] == null) return;
 
-        // circleSun -> parent FrameLayout -> parent LinearLayout row
         View parent1 = (View) dayCircles[0].getParent();
         if (parent1 == null) return;
         View weekRow = (View) parent1.getParent();
@@ -368,8 +408,8 @@ public class MoodActivity extends AppCompatActivity {
                     float threshold = dp(60);
                     if (Math.abs(dx) < threshold) return true;
 
-                    if (dx < 0) shiftSelectedDateByDays(+7);  // swipe left -> next week
-                    else shiftSelectedDateByDays(-7);         // swipe right -> prev week
+                    if (dx < 0) shiftSelectedDateByDays(+7);
+                    else shiftSelectedDateByDays(-7);
                     return true;
             }
             return false;
@@ -377,7 +417,7 @@ public class MoodActivity extends AppCompatActivity {
     }
 
     private void shiftSelectedDateByDays(int days) {
-        if (selectedDateKey == null || selectedDateKey.isEmpty()) {
+        if (TextUtils.isEmpty(selectedDateKey)) {
             selectTodayWithoutOpeningSheet();
             return;
         }
@@ -400,12 +440,15 @@ public class MoodActivity extends AppCompatActivity {
         return (int) (dp * d);
     }
 
-    // ===================== STRESS + REFLECTION =====================
+    // ===================== STRESS =====================
     private void setupStressSaver() {
         if (seekStress == null) return;
 
+        seekStress.setMax(100);
+
         seekStress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                updateStressUI(progress); // ✅ updates drawable + percent text
                 if (fromUser && !isLoading) saveStressForSelectedDate(progress);
             }
             @Override public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -413,6 +456,21 @@ public class MoodActivity extends AppCompatActivity {
         });
     }
 
+    // ✅ This matches StressHistoryFragment logic (low/med/high)
+    private void updateStressUI(int stress) {
+        if (tvStressValue != null) tvStressValue.setText(stress + "%");
+
+        if (seekStress != null) {
+            int resId;
+            if (stress <= 33) resId = R.drawable.progress_stress_low;
+            else if (stress <= 66) resId = R.drawable.progress_stress_med;
+            else resId = R.drawable.progress_stress_high;
+
+            seekStress.setProgressDrawable(ContextCompat.getDrawable(this, resId));
+        }
+    }
+
+    // ===================== REFLECTION =====================
     private void setupReflectionSaver() {
         if (etReflection == null) return;
 
@@ -420,25 +478,62 @@ public class MoodActivity extends AppCompatActivity {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
             @Override public void afterTextChanged(Editable s) {
-                if (!isLoading) saveNoteForSelectedDate(s.toString());
+                if (!isLoading) saveMoodAndReflection();
             }
         });
     }
 
-    // ===================== SAVE HELPERS =====================
-    private void saveMoodForSelectedDate() {
-        if (selectedDateKey.isEmpty()) return;
-        prefs.edit().putInt(moodKey(selectedDateKey), selectedMoodIndex).apply();
-    }
-
     private void saveStressForSelectedDate(int stress) {
-        if (selectedDateKey.isEmpty()) return;
-        prefs.edit().putInt(stressKey(selectedDateKey), stress).apply();
+        if (TextUtils.isEmpty(selectedDateKey)) return;
+
+        long userId = currentUserId();
+        if (userId <= 0) return;
+
+        StressRow sr = getStressRow(userId, selectedDateKey);
+        repo.upsertStress(userId, selectedDateKey, stress, sr.starSec, sr.lanternSec, sr.planetSec);
     }
 
-    private void saveNoteForSelectedDate(String note) {
-        if (selectedDateKey.isEmpty()) return;
-        prefs.edit().putString(noteKey(selectedDateKey), note).apply();
+    // ===================== STRESS ROW LOADER =====================
+    private StressRow getStressRow(long userId, String dateKey) {
+        StressRow out = new StressRow();
+
+        ZenPathDbHelper helper = new ZenPathDbHelper(this);
+        try (android.database.sqlite.SQLiteDatabase db = helper.getReadableDatabase()) {
+
+            String sql =
+                    "SELECT " +
+                            ZenPathDbHelper.S_LEVEL + ", " +
+                            ZenPathDbHelper.S_PLAY_STAR + ", " +
+                            ZenPathDbHelper.S_PLAY_LANTERN + ", " +
+                            ZenPathDbHelper.S_PLAY_PLANET +
+                            " FROM " + ZenPathDbHelper.T_STRESS +
+                            " WHERE " + ZenPathDbHelper.COL_USER_ID + "=? AND " + ZenPathDbHelper.S_DATE + "=? " +
+                            " ORDER BY " + ZenPathDbHelper.S_CREATED_AT + " DESC LIMIT 1";
+
+            try (android.database.Cursor c = db.rawQuery(sql,
+                    new String[]{String.valueOf(userId), dateKey})) {
+
+                if (c.moveToFirst()) {
+                    out.level = c.getInt(0);
+                    out.starSec = c.getInt(1);
+                    out.lanternSec = c.getInt(2);
+                    out.planetSec = c.getInt(3);
+                } else {
+                    out.level = 50;
+                }
+            }
+        } catch (Exception e) {
+            out.level = 50;
+        }
+
+        return out;
+    }
+
+    private static class StressRow {
+        int level = 50;
+        int starSec = 0;
+        int lanternSec = 0;
+        int planetSec = 0;
     }
 
     // ===================== DATE HELPERS =====================

@@ -250,14 +250,16 @@
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
-            <androidx.appcompat.widget.AppCompatSeekBar
-                android:id="@+id/seekStressPreview"
+            <ProgressBar
+                android:id="@+id/progStressPreview"
+                style="?android:attr/progressBarStyleHorizontal"
                 android:layout_width="match_parent"
-                android:layout_height="26dp"
-                android:layout_marginTop="8dp"
-                android:enabled="false"
+                android:layout_height="16dp"
+                android:layout_marginTop="10dp"
                 android:max="100"
-                android:progress="50" />
+                android:progress="50"
+                android:progressDrawable="@drawable/progress_stress_low"
+                android:indeterminate="false" />
 
             <TextView
                 android:id="@+id/tvStressPercent"
