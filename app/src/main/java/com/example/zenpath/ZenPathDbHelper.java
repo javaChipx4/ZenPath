@@ -9,13 +9,17 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class ZenPathDbHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "zenpath.db";
-    public static final int DB_VERSION = 4;
+    public static final int DB_VERSION = 5; // ✅ bumped
 
     // ===== USERS TABLE =====
     public static final String T_USERS = "users";
     public static final String U_ID = "_id";
     public static final String U_USERNAME = "username";
     public static final String U_CREATED_AT = "created_at";
+
+    // ✅ NEW PROFILE COLUMNS
+    public static final String U_GENDER = "gender";          // "Male"/"Female"
+    public static final String U_AVATAR_RES = "avatar_res";  // drawable resId (int)
 
     // ✅ Shared column for per-user data
     public static final String COL_USER_ID = "user_id";
@@ -27,7 +31,7 @@ public class ZenPathDbHelper extends SQLiteOpenHelper {
     public static final String J_TEXT = "entry_text";
     public static final String J_CREATED_AT = "created_at";
 
-    // ===== MOOD (NEW) =====
+    // ===== MOOD =====
     public static final String T_MOOD = "mood";
     public static final String M_ID = "_id";
     public static final String M_DATE = "mood_date";          // yyyyMMdd
@@ -35,11 +39,11 @@ public class ZenPathDbHelper extends SQLiteOpenHelper {
     public static final String M_REFLECTION = "reflection";   // user reflection
     public static final String M_CREATED_AT = "created_at";
 
-    // ===== STRESS (NEW) =====
+    // ===== STRESS =====
     public static final String T_STRESS = "stress";
     public static final String S_ID = "_id";
     public static final String S_DATE = "stress_date";        // yyyyMMdd
-    public static final String S_LEVEL = "stress_level";      // 0..100 (seekbar)
+    public static final String S_LEVEL = "stress_level";      // 0..100
     public static final String S_PLAY_STAR = "play_star_sweep";          // seconds
     public static final String S_PLAY_LANTERN = "play_lantern_release";  // seconds
     public static final String S_PLAY_PLANET = "play_planet";            // seconds
@@ -56,7 +60,9 @@ public class ZenPathDbHelper extends SQLiteOpenHelper {
                 "CREATE TABLE " + T_USERS + " (" +
                         U_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                         U_USERNAME + " TEXT UNIQUE NOT NULL, " +
-                        U_CREATED_AT + " INTEGER NOT NULL" +
+                        U_CREATED_AT + " INTEGER NOT NULL, " +
+                        U_GENDER + " TEXT DEFAULT 'Male', " +
+                        U_AVATAR_RES + " INTEGER DEFAULT 0" +
                         ");";
 
         String createJournal =
@@ -118,26 +124,22 @@ public class ZenPathDbHelper extends SQLiteOpenHelper {
             );
         }
 
-        // v2 -> v3 add user_id to journal/mood/stress
+        // v2 -> v3 add user_id to journal/mood/stress (safe)
         if (oldVersion < 3) {
             createGuestIfNeeded(db);
             long guestId = getGuestId(db);
             if (guestId <= 0) guestId = 1;
 
-            db.execSQL("ALTER TABLE " + T_JOURNAL + " ADD COLUMN " + COL_USER_ID + " INTEGER DEFAULT " + guestId);
-            db.execSQL("ALTER TABLE " + T_MOOD + " ADD COLUMN " + COL_USER_ID + " INTEGER DEFAULT " + guestId);
-            db.execSQL("ALTER TABLE " + T_STRESS + " ADD COLUMN " + COL_USER_ID + " INTEGER DEFAULT " + guestId);
+            safeAddColumn(db, T_JOURNAL, COL_USER_ID, "INTEGER DEFAULT " + guestId);
+            safeAddColumn(db, T_MOOD, COL_USER_ID, "INTEGER DEFAULT " + guestId);
+            safeAddColumn(db, T_STRESS, COL_USER_ID, "INTEGER DEFAULT " + guestId);
 
             db.execSQL("UPDATE " + T_JOURNAL + " SET " + COL_USER_ID + "=" + guestId + " WHERE " + COL_USER_ID + " IS NULL");
             db.execSQL("UPDATE " + T_MOOD + " SET " + COL_USER_ID + "=" + guestId + " WHERE " + COL_USER_ID + " IS NULL");
             db.execSQL("UPDATE " + T_STRESS + " SET " + COL_USER_ID + "=" + guestId + " WHERE " + COL_USER_ID + " IS NULL");
-
-            db.execSQL("CREATE INDEX IF NOT EXISTS idx_journal_user_date ON " + T_JOURNAL + "(" + COL_USER_ID + "," + J_DATE + ")");
-            db.execSQL("CREATE INDEX IF NOT EXISTS idx_mood_user_date ON " + T_MOOD + "(" + COL_USER_ID + "," + M_DATE + ")");
-            db.execSQL("CREATE INDEX IF NOT EXISTS idx_stress_user_date ON " + T_STRESS + "(" + COL_USER_ID + "," + S_DATE + ")");
         }
 
-        // ✅ v3 -> v4 : REPLACE mood + stress schemas
+        // v3 -> v4 replace mood + stress schemas (your existing logic)
         if (oldVersion < 4) {
             createGuestIfNeeded(db);
             long guestId = getGuestId(db);
@@ -157,8 +159,6 @@ public class ZenPathDbHelper extends SQLiteOpenHelper {
                             ");"
             );
 
-            // best-effort migrate old mood_value/note -> mood_text/reflection
-            // if old columns are missing in mood_old, reinstall/clear data once
             db.execSQL(
                     "INSERT INTO " + T_MOOD + " (" +
                             COL_USER_ID + "," + M_DATE + "," + M_TEXT + "," + M_REFLECTION + "," + M_CREATED_AT +
@@ -205,16 +205,29 @@ public class ZenPathDbHelper extends SQLiteOpenHelper {
             );
 
             db.execSQL("DROP TABLE stress_old");
-
-            db.execSQL("CREATE INDEX IF NOT EXISTS idx_mood_user_date ON " + T_MOOD + "(" + COL_USER_ID + "," + M_DATE + ")");
-            db.execSQL("CREATE INDEX IF NOT EXISTS idx_stress_user_date ON " + T_STRESS + "(" + COL_USER_ID + "," + S_DATE + ")");
         }
+
+        // ✅ v4 -> v5 add user profile columns (gender/avatar)
+        if (oldVersion < 5) {
+            safeAddColumn(db, T_USERS, U_GENDER, "TEXT DEFAULT 'Male'");
+            safeAddColumn(db, T_USERS, U_AVATAR_RES, "INTEGER DEFAULT 0");
+        }
+
+        createGuestIfNeeded(db);
+    }
+
+    private void safeAddColumn(SQLiteDatabase db, String table, String col, String typeSql) {
+        try {
+            db.execSQL("ALTER TABLE " + table + " ADD COLUMN " + col + " " + typeSql);
+        } catch (Exception ignored) {}
     }
 
     private void createGuestIfNeeded(SQLiteDatabase db) {
         ContentValues cv = new ContentValues();
         cv.put(U_USERNAME, "Guest");
         cv.put(U_CREATED_AT, System.currentTimeMillis());
+        cv.put(U_GENDER, "Male");
+        cv.put(U_AVATAR_RES, 0);
         db.insertWithOnConflict(T_USERS, null, cv, SQLiteDatabase.CONFLICT_IGNORE);
     }
 

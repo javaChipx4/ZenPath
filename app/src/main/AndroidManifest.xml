@@ -10,71 +10,42 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ZenPath">
 
-        <activity
-            android:name=".HistoryActivity"
-            android:exported="false"/>
+        <!-- ===== OTHER ACTIVITIES ===== -->
+
+        <activity android:name=".HistoryActivity" android:exported="false"/>
+        <activity android:name=".ActivityDiary" android:exported="false"/>
+        <activity android:name=".DiaryHistoryActivity" android:exported="false"/>
+        <activity android:name=".DiaryEntryReadActivity" android:exported="false"/>
+        <activity android:name=".MoodActivity" android:exported="false"/>
+        <activity android:name=".MoodHistoryActivity" android:exported="false"/>
+        <activity android:name=".StressHistoryActivity" android:exported="false"/>
+        <activity android:name=".SelectionGamesActivity" android:exported="false"/>
+        <activity android:name=".PlanetActivity" android:exported="false"/>
+        <activity android:name=".LanternReleaseActivity" android:exported="false"/>
+        <activity android:name=".StarSweepIntroActivity" android:exported="false"/>
+        <activity android:name=".StarSweepActivity" android:exported="false"/>
+        <activity android:name=".MainActivity" android:exported="false"/>
+        <activity android:name=".AddUserActivity" android:exported="false"/>
+
+        <!-- ===== LAUNCHER (ONLY ONE) ===== -->
 
         <activity
-            android:name=".ActivityDiary"
-            android:exported="false" />
+            android:name=".HomeLoginActivity"
+            android:exported="true">
 
-        <activity
-            android:name=".DiaryHistoryActivity"
-            android:exported="false" />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
 
-        <activity
-            android:name=".DiaryEntryReadActivity"
-            android:exported="false" />
+        </activity>
 
-        <activity
-            android:name=".MoodActivity"
-            android:exported="false" />
+        <!-- ===== LOGIN SCREEN ===== -->
+        <!-- Kept normal (NOT launcher so no crash) -->
 
-        <activity
-            android:name=".MoodHistoryActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".StressHistoryActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".SelectionGamesActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".PlanetActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".LanternReleaseActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".StarSweepIntroActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".StarSweepActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".AddUserActivity"
-            android:exported="false" />
-
-        <!-- ✅ Launcher = Login -->
         <activity
             android:name=".LoginActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+            android:exported="true"/>
 
     </application>
 

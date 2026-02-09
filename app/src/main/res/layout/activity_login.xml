@@ -1,167 +1,202 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/loginRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_blue_gradient_diary">
+    android:background="@android:color/transparent">
 
-    <!-- Title -->
-    <TextView
-        android:id="@+id/tvBigTitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Who’s using Zen-Path today?"
-        android:textColor="#1E1E1E"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:fontFamily="serif"
-        android:gravity="center"
-        android:layout_marginTop="64dp"
-        android:layout_marginStart="22dp"
-        android:layout_marginEnd="22dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!-- Subtitle -->
-    <TextView
-        android:id="@+id/tvQuote"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Breathe slowly. You are safe in this moment."
-        android:textColor="#3A3A3A"
-        android:textSize="14sp"
-        android:fontFamily="serif"
-        android:gravity="center"
-        android:layout_marginTop="12dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginEnd="28dp"
-        app:layout_constraintTop_toBottomOf="@id/tvBigTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-
-    <!-- Card container -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardLogin"
+    <!-- ✅ Background ripple behind everything -->
+    <com.example.zenpath.AmbientRippleView
+        android:id="@+id/ambientBg"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="22dp"
-        android:layout_marginEnd="22dp"
-        android:layout_marginTop="34dp"
-        android:layout_marginBottom="34dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="#EDE7F5"
-        app:layout_constraintTop_toBottomOf="@id/tvQuote"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="22dp">
+    <!-- ✅ CENTER CONTAINER (this makes everything stay in the middle) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contentGroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:paddingStart="22dp"
+        android:paddingEnd="22dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.5">
 
-            <!-- Username pill background -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/usernamePill"
-                android:layout_width="0dp"
-                android:layout_height="52dp"
-                android:layout_marginTop="30dp"
-                app:cardCornerRadius="999dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="#F2EFFA"
-                app:cardUseCompatPadding="false"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvBigTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Welcome to your ZenPath Space"
+            android:textColor="#1E1E1E"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:fontFamily="serif"
+            android:gravity="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+        <!-- Quote -->
+        <TextView
+            android:id="@+id/tvQuote"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="“Your moment of calm begins here.”"
+            android:textColor="#3A3A3A"
+            android:textSize="15sp"
+            android:fontFamily="serif"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            app:layout_constraintTop_toBottomOf="@id/tvBigTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-                    <ImageView
-                        android:id="@+id/imgUser"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_marginStart="16dp"
-                        android:src="@android:drawable/ic_menu_myplaces"
-                        android:tint="#6A6A6A"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent" />
+        <!-- Card container -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardLogin"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#EEE9F7"
+            app:layout_constraintTop_toBottomOf="@id/tvQuote"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- ✅ THIS was missing: your whole login UI must be INSIDE the card -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="22dp">
+
+                <!-- Avatar tile -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/avatarTile"
+                    android:layout_width="86dp"
+                    android:layout_height="86dp"
+                    app:cardBackgroundColor="#F6F0E6"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="6dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <ImageView
+                            android:id="@+id/imgAvatarLogin"
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/bg_avatar_border_selector"
+                            android:clickable="true"
+                            android:contentDescription="Avatar"
+                            android:focusable="true"
+                            android:padding="3dp"
+                            android:scaleType="centerCrop" />
+                    </FrameLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- Username pill -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/usernamePill"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_marginStart="14dp"
+                    app:cardBackgroundColor="#F2EFFA"
+                    app:cardCornerRadius="999dp"
+                    app:cardElevation="0dp"
+                    app:layout_constraintStart_toEndOf="@id/avatarTile"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@id/avatarTile">
 
                     <EditText
                         android:id="@+id/etUsername"
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:background="@android:color/transparent"
-                        android:hint="Enter your username"
+                        android:hint="Username"
                         android:inputType="textPersonName"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
                         android:singleLine="true"
-                        android:textColor="#1E1E1E"
-                        android:textColorHint="#7A7A7A"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="16dp"
-                        app:layout_constraintStart_toEndOf="@id/imgUser"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent" />
+                        android:textColor="#111111"
+                        android:textColorHint="#8D8D8D" />
+                </androidx.cardview.widget.CardView>
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.cardview.widget.CardView>
+                <!-- Login button -->
+                <LinearLayout
+                    android:id="@+id/btnLogin"
+                    android:layout_width="120dp"
+                    android:layout_height="42dp"
+                    android:layout_marginTop="18dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/bg_pill_button"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/usernamePill">
 
-            <!-- Big Log In button pill -->
-            <Button
-                android:id="@+id/btnLogin"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_marginTop="36dp"
-                android:text="Log In   ➜"
-                android:textAllCaps="false"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:fontFamily="serif"
-                android:textColor="#1E1E1E"
-                android:background="@drawable/bg_login_button"
-                app:layout_constraintTop_toBottomOf="@id/usernamePill"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Log in"
+                        android:textColor="#111111"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
-            <!-- + Add New User -->
-            <TextView
-                android:id="@+id/tvAddUser"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="+ Add New User"
-                android:textSize="16sp"
-                android:textColor="#2E4A7A"
-                android:fontFamily="serif"
-                android:clickable="true"
-                android:focusable="true"
-                app:layout_constraintTop_toBottomOf="@id/btnLogin"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_marginStart="8dp"
+                        android:contentDescription="Go"
+                        android:src="@android:drawable/ic_media_next" />
+                </LinearLayout>
 
-            <!-- Bottom helper -->
-            <TextView
-                android:id="@+id/tvBottomHelper"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="Start or continue your journey."
-                android:textColor="#5A5A5A"
-                android:textSize="14sp"
-                android:fontFamily="serif"
-                android:gravity="center"
-                android:layout_marginTop="22dp"
-                app:layout_constraintTop_toBottomOf="@id/tvAddUser"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                <!-- Add new user -->
+                <TextView
+                    android:id="@+id/tvAddUser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="+Add New User"
+                    android:textColor="#111111"
+                    android:textSize="12sp"
+                    app:layout_constraintEnd_toEndOf="@id/btnLogin"
+                    app:layout_constraintTop_toBottomOf="@id/btnLogin" />
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.cardview.widget.CardView>
+                <!-- Footer -->
+                <TextView
+                    android:id="@+id/tvFooter"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="26dp"
+                    android:gravity="center"
+                    android:text="Start or Continue your Journey!"
+                    android:textColor="#111111"
+                    android:textSize="12sp"
+                    app:layout_constraintTop_toBottomOf="@id/tvAddUser"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

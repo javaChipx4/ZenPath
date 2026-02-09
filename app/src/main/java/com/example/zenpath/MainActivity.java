@@ -15,6 +15,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +31,9 @@ public class MainActivity extends AppCompatActivity {
     private CalendarView calendarView;
 
     private Calendar selectedCalendar;
+
+    // ✅ NEW: avatar in top-left circle
+    private ImageView imgProfileAvatar;
 
     // swipe vars
     private View viewport, container, panelA, panelB;
@@ -81,6 +85,10 @@ public class MainActivity extends AppCompatActivity {
     // ✅ Latest recommendation cached
     private GameRecommender.Recommendation currentRec;
 
+    // ✅ gender pref from LoginActivity
+    private static final String LOGIN_PREF = "zenpath_user";
+    private static final String KEY_GENDER = "gender";
+
     // Quote pool
     private static final String[] QUOTES_DAILY = new String[]{
             "Take today slowly. Calm is still progress.",
@@ -127,6 +135,30 @@ public class MainActivity extends AppCompatActivity {
         tvIdentity = findViewById(R.id.tvIdentity);
         tvStreak = findViewById(R.id.tvStreak);
         tvWeeklyReflection = findViewById(R.id.tvWeeklyReflection);
+
+        // ✅ NEW: avatar view bind + apply + click
+        imgProfileAvatar = findViewById(R.id.imgProfileAvatar);
+        applyAvatarFromGender();
+
+        if (imgProfileAvatar != null) {
+            // press animation
+            installPressAnim(imgProfileAvatar);
+
+            // click = highlight border + switch profile
+            imgProfileAvatar.setOnClickListener(v -> {
+                // show border briefly
+                v.setSelected(true);
+                v.postDelayed(() -> v.setSelected(false), 300);
+
+                // switch profile -> go to login and clear current user
+                SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+                prefs.edit().remove("current_user").apply();
+
+                Intent i = new Intent(MainActivity.this, LoginActivity.class);
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(i);
+            });
+        }
 
         if (btnCheckInNow != null) {
             btnCheckInNow.setOnClickListener(v -> openMoodForDate(todayDateKey()));
@@ -323,9 +355,35 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        applyAvatarFromGender(); // ✅ ensure it updates if user switched
         refreshTodayCheckInCard();
         refreshWindDownSuggestion();
         refreshProgressWidgets();
+    }
+
+    // ✅ NEW: avatar logic
+    private void applyAvatarFromGender() {
+        if (imgProfileAvatar == null) return;
+
+        String genderIntent = getIntent().getStringExtra("gender");
+        if (!TextUtils.isEmpty(genderIntent)) {
+            setAvatar(genderIntent);
+            return;
+        }
+
+        SharedPreferences p = getSharedPreferences(LOGIN_PREF, MODE_PRIVATE);
+        String gender = p.getString(KEY_GENDER, "Male");
+        setAvatar(gender);
+    }
+
+    private void setAvatar(String gender) {
+        if (imgProfileAvatar == null) return;
+
+        if ("Female".equalsIgnoreCase(gender)) {
+            imgProfileAvatar.setImageResource(R.drawable.girl);
+        } else {
+            imgProfileAvatar.setImageResource(R.drawable.boy);
+        }
     }
 
     // =========================
@@ -518,10 +576,6 @@ public class MainActivity extends AppCompatActivity {
         return 3;
     }
 
-    // =========================
-    // ✅ NEW: streak + weekly reflection
-    // =========================
-
     private void refreshProgressWidgets() {
         long userId = currentUserId();
         if (userId <= 0 || repo == null) {
@@ -543,7 +597,7 @@ public class MainActivity extends AppCompatActivity {
         Calendar cal = Calendar.getInstance();
         int streak = 0;
 
-        for (int i = 0; i < 365; i++) { // safe cap
+        for (int i = 0; i < 365; i++) {
             String key = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(cal.getTime());
 
             if (repo.hasMoodOnDate(userId, key)) {
@@ -555,10 +609,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return streak;
     }
-
-    // =========================
-    // ✅ Wind down suggestion (Panel B)
-    // =========================
 
     private void refreshWindDownSuggestion() {
         String key = todayDateKey();
@@ -584,20 +634,14 @@ public class MainActivity extends AppCompatActivity {
         int moodLevel = moodTextToLevel(moodText);
         int stress = getStressLevel(userId, key);
 
-        // ✅ Use same prefs file (no mixing)
         SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
         String lastGame = sp.getString("last_game", null);
 
         GameRecommender.Recommendation rec = GameRecommender.recommend(moodLevel, stress, lastGame);
 
-        // ✅ softer + less specific (still based on rec)
         tvWindDownSuggestion.setText("Suggestion: If you want something gentle, try something that suits your mood right now.");
         currentRec = rec;
     }
-
-    // =========================
-    // ✅ BACKGROUND GLOW
-    // =========================
 
     private void startGlowAnimation() {
         if (glowOverlay == null) return;
@@ -621,10 +665,6 @@ public class MainActivity extends AppCompatActivity {
         set.start();
     }
 
-    // =========================
-    // ✅ PRESS ANIM
-    // =========================
-
     private void installPressAnim(View v) {
         if (v == null) return;
 
@@ -641,10 +681,6 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
     }
-
-    // =========================
-    // Book overlay
-    // =========================
 
     private void showBookOverlay() {
         if (openBookOverlay == null || bookContainer == null) {
@@ -762,10 +798,6 @@ public class MainActivity extends AppCompatActivity {
             }, 360);
         });
     }
-
-    // =========================
-    // Swipe panels
-    // =========================
 
     private void setExactHeight(View v, int h) {
         ViewGroup.LayoutParams lp = v.getLayoutParams();

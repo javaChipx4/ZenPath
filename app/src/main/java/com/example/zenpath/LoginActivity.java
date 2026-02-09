@@ -4,103 +4,169 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private static final String PREFS = "zen_path_prefs";
-    private static final String KEY_USERS_SET = "users_set";
-    private static final int REQ_ADD_USER = 1001;
-
     private EditText etUsername;
-    private Button btnLogin;
-    private TextView tvQuote, tvAddUser;
+    private LinearLayout btnLogin;
+    private TextView tvAddUser;
+    private ImageView imgAvatarLogin;
+
+    private ZenPathRepository repo;
 
     private SharedPreferences prefs;
+    private static final String PREF_NAME = "zenpath_user";
+    private static final String KEY_USERNAME = "username";
+    private static final String KEY_GENDER = "gender";
+
+    private static final int REQ_ADD_USER = 2001;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        repo = new ZenPathRepository(this);
 
         etUsername = findViewById(R.id.etUsername);
         btnLogin = findViewById(R.id.btnLogin);
-        tvQuote = findViewById(R.id.tvQuote);
         tvAddUser = findViewById(R.id.tvAddUser);
+        imgAvatarLogin = findViewById(R.id.imgAvatarLogin);
 
-        tvQuote.setText("“Small moments of calm still count.”");
+        prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
 
-        btnLogin.setOnClickListener(v -> handleLogin());
+        loadLastUser();
+        updateAvatarFromPrefs();
 
-        // You can rename text in XML to "+ Create Account" if you want
+        // ✅ Auto-login if session exists AND userId still exists in DB
+        autoLoginIfRemembered();
+
+        if (imgAvatarLogin != null) {
+            imgAvatarLogin.setOnClickListener(v -> {
+                toggleGender();
+                updateAvatarFromPrefs();
+            });
+        }
+
+        btnLogin.setOnClickListener(v -> loginUser());
+
         tvAddUser.setOnClickListener(v -> {
             Intent i = new Intent(LoginActivity.this, AddUserActivity.class);
             startActivityForResult(i, REQ_ADD_USER);
         });
     }
 
-    private void handleLogin() {
-        String username = etUsername.getText().toString().trim();
+    private void autoLoginIfRemembered() {
+        SharedPreferences sessionPrefs = getSharedPreferences("zen_path_prefs", MODE_PRIVATE);
+        String s = sessionPrefs.getString("current_user", null);
+        if (TextUtils.isEmpty(s)) return;
 
-        if (TextUtils.isEmpty(username)) {
-            etUsername.setError("Please enter a username");
-            return;
+        long userId = -1;
+        try { userId = Long.parseLong(s); } catch (Exception ignored) {}
+
+        if (userId > 0 && repo != null && repo.userIdExists(userId)) {
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            finish();
+        } else {
+            // invalid session, clear it
+            sessionPrefs.edit().remove("current_user").apply();
         }
-
-        ZenPathRepository repo = new ZenPathRepository(this);
-
-        // ✅ Must exist in DB
-        if (!repo.userExists(username)) {
-            Toast.makeText(this,
-                    "User not found. Please create an account first.",
-                    Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        long userId = repo.getUserId(username);
-        if (userId == -1) {
-            Toast.makeText(this, "Login error. Try again.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // ✅ Store current user (better to store userId, not username)
-        // For now: store userId as String so your SessionManager doesn't change yet
-        SessionManager.setCurrentUser(this, String.valueOf(userId));
-
-        Toast.makeText(this, "Welcome back, " + username + "!", Toast.LENGTH_SHORT).show();
-        goHome();
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQ_ADD_USER && resultCode == RESULT_OK && data != null) {
-            String newUsername = data.getStringExtra("new_username");
-            if (!TextUtils.isEmpty(newUsername)) {
-                etUsername.setText(newUsername);
-                etUsername.setSelection(newUsername.length());
-                Toast.makeText(this, "Account created: " + newUsername, Toast.LENGTH_SHORT).show();
+            String newUser = data.getStringExtra("new_username");
+            String newGender = data.getStringExtra("new_gender");
 
-                // ✅ Optional: auto-login immediately after creating account
-                // handleLogin();
+            if (!TextUtils.isEmpty(newUser)) {
+                etUsername.setText(newUser);
+                saveLastUsername(newUser);
+
+                if (!TextUtils.isEmpty(newGender)) saveGender(newGender);
+
+                updateAvatarFromPrefs();
+                Toast.makeText(this, "Registered: " + newUser, Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void goHome() {
-        Intent intent = new Intent(this, MainActivity.class);
+    private void loginUser() {
+        String username = etUsername.getText().toString().trim();
+
+        if (TextUtils.isEmpty(username)) {
+            Toast.makeText(this, "Please enter username", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // ✅ BLOCK if not registered
+        if (repo == null || !repo.userExists(username)) {
+            Toast.makeText(this,
+                    "User not registered. Please tap +Add New User first.",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        saveLastUsername(username);
+
+        long userId = repo.getUserIdByUsername(username);
+
+        // ✅ Save session so app remembers user
+        getSharedPreferences("zen_path_prefs", MODE_PRIVATE)
+                .edit()
+                .putString("current_user", String.valueOf(userId))
+                .apply();
+
+        // ✅ OPTIONAL: try saving gender to DB (won’t crash if column missing)
+        String gender = prefs.getString(KEY_GENDER, "Male");
+        repo.updateUserGender(userId, gender);
+
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        intent.putExtra("username", username);
+        intent.putExtra("gender", gender);
         startActivity(intent);
         finish();
+    }
+
+    private void saveLastUsername(String username) {
+        prefs.edit().putString(KEY_USERNAME, username).apply();
+    }
+
+    private void saveGender(String gender) {
+        prefs.edit().putString(KEY_GENDER, gender).apply();
+    }
+
+    private void loadLastUser() {
+        String lastUser = prefs.getString(KEY_USERNAME, "");
+        if (!TextUtils.isEmpty(lastUser)) {
+            etUsername.setText(lastUser);
+        }
+        if (TextUtils.isEmpty(prefs.getString(KEY_GENDER, ""))) {
+            saveGender("Male");
+        }
+    }
+
+    private void toggleGender() {
+        String g = prefs.getString(KEY_GENDER, "Male");
+        String next = "Male".equalsIgnoreCase(g) ? "Female" : "Male";
+        saveGender(next);
+    }
+
+    private void updateAvatarFromPrefs() {
+        if (imgAvatarLogin == null) return;
+
+        String g = prefs.getString(KEY_GENDER, "Male");
+        if ("Female".equalsIgnoreCase(g)) imgAvatarLogin.setImageResource(R.drawable.girl);
+        else imgAvatarLogin.setImageResource(R.drawable.boy);
     }
 }

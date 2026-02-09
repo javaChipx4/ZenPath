@@ -30,22 +30,18 @@ public class GameTimeTracker {
         long durMs = Math.max(0, now - startMs);
         startMs = 0;
 
-        // Ignore tiny sessions
         if (durMs < 1500) return;
 
         int seconds = (int) (durMs / 1000);
 
-        String dateKey = new SimpleDateFormat(
-                "yyyyMMdd",
-                Locale.getDefault()
-        ).format(new Date());
+        String dateKey = new SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+                .format(new Date());
 
         long userId = currentUserId(ctx);
         if (userId <= 0) return;
 
         ZenPathRepository repo = new ZenPathRepository(ctx);
 
-        // Map game → DB column
         String gameKey;
         if ("Star Sweep".equalsIgnoreCase(gameName)) {
             gameKey = "STAR_SWEEP";
@@ -57,13 +53,12 @@ public class GameTimeTracker {
             return;
         }
 
-        // ✅ Increment playtime safely in DB
+        // ✅ matches repository signature
         repo.addGamePlaytime(userId, dateKey, gameKey, seconds);
     }
 
     private long currentUserId(Context ctx) {
-        SharedPreferences prefs =
-                ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+        SharedPreferences prefs = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
         String s = prefs.getString(KEY_CURRENT_USER, null);
         if (s == null) return -1;
         try {

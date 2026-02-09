@@ -1,28 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/addUserRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_blue_gradient_diary">
+    android:background="@android:color/transparent">
 
+    <!-- ✅ Ripple background -->
+    <com.example.zenpath.AmbientRippleView
+        android:id="@+id/ambientBgAddUser"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clickable="false"
+        android:focusable="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Title -->
     <TextView
         android:id="@+id/tvAddTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Add a new user"
         android:textColor="#1E1E1E"
-        android:textSize="24sp"
+        android:textSize="28sp"
         android:textStyle="bold"
         android:fontFamily="serif"
         android:gravity="center"
-        android:layout_marginTop="64dp"
         android:layout_marginStart="22dp"
         android:layout_marginEnd="22dp"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cardAddUser"
+        app:layout_constraintVertical_bias="0.18"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Subtitle -->
     <TextView
         android:id="@+id/tvAddSub"
         android:layout_width="0dp"
@@ -32,111 +48,194 @@
         android:textSize="14sp"
         android:fontFamily="serif"
         android:gravity="center"
-        android:layout_marginTop="12dp"
         android:layout_marginStart="28dp"
         android:layout_marginEnd="28dp"
         app:layout_constraintTop_toBottomOf="@id/tvAddTitle"
+        app:layout_constraintBottom_toTopOf="@id/cardAddUser"
+        app:layout_constraintVertical_bias="0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- ✅ Centered Card -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardAddUser"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="22dp"
-        android:layout_marginEnd="22dp"
-        android:layout_marginTop="34dp"
-        android:layout_marginBottom="34dp"
-        app:cardCornerRadius="20dp"
-        app:cardElevation="0dp"
-        app:cardBackgroundColor="#EDE7F5"
-        app:layout_constraintTop_toBottomOf="@id/tvAddSub"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="#EEE9F7"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="22dp">
+            android:layout_height="wrap_content"
+            android:padding="26dp">
 
+            <!-- Avatar preview (changes when gender is selected) -->
+            <ImageView
+                android:id="@+id/imgPreview"
+                android:layout_width="92dp"
+                android:layout_height="92dp"
+                android:src="@drawable/boy"
+                android:scaleType="centerCrop"
+                android:background="@drawable/bg_avatar_circle_soft"
+                android:padding="6dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <!-- Username pill -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/newUserPill"
                 android:layout_width="0dp"
-                android:layout_height="52dp"
-                android:layout_marginTop="30dp"
+                android:layout_height="54dp"
+                android:layout_marginTop="18dp"
                 app:cardCornerRadius="999dp"
                 app:cardElevation="0dp"
                 app:cardBackgroundColor="#F2EFFA"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/imgPreview"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <EditText
+                    android:id="@+id/etNewUsername"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <ImageView
-                        android:id="@+id/imgNewUser"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
-                        android:layout_marginStart="16dp"
-                        android:src="@android:drawable/ic_input_add"
-                        android:tint="#6A6A6A"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent" />
-
-                    <EditText
-                        android:id="@+id/etNewUsername"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:background="@android:color/transparent"
-                        android:hint="New username"
-                        android:inputType="textPersonName"
-                        android:singleLine="true"
-                        android:textColor="#1E1E1E"
-                        android:textColorHint="#7A7A7A"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="16dp"
-                        app:layout_constraintStart_toEndOf="@id/imgNewUser"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent" />
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:hint="New Username"
+                    android:textColor="#1E1E1E"
+                    android:textColorHint="#7A7A7A"
+                    android:paddingStart="18dp"
+                    android:paddingEnd="18dp"
+                    android:singleLine="true"
+                    android:inputType="textPersonName"/>
             </androidx.cardview.widget.CardView>
 
+            <!-- Choose gender title -->
+            <TextView
+                android:id="@+id/tvGenderTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="-- choose your gender --"
+                android:textColor="#1E1E1E"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:fontFamily="serif"
+                android:gravity="center"
+                android:layout_marginTop="18dp"
+                app:layout_constraintTop_toBottomOf="@id/newUserPill"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+            <!-- ✅ Male option -->
+            <LinearLayout
+                android:id="@+id/optMale"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="10dp"
+                android:background="@drawable/bg_gender_option"
+                android:clickable="true"
+                android:focusable="true"
+                app:layout_constraintTop_toBottomOf="@id/tvGenderTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <ImageView
+                    android:layout_width="78dp"
+                    android:layout_height="78dp"
+                    android:src="@drawable/boy"
+                    android:scaleType="centerCrop"
+                    android:background="@drawable/bg_avatar_circle_soft"
+                    android:padding="6dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Male"
+                    android:textStyle="bold"
+                    android:textColor="#1E1E1E"
+                    android:textSize="14sp"
+                    android:fontFamily="serif"
+                    android:layout_marginTop="6dp"/>
+            </LinearLayout>
+
+            <!-- ✅ Female option -->
+            <LinearLayout
+                android:id="@+id/optFemale"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="10dp"
+                android:background="@drawable/bg_gender_option"
+                android:clickable="true"
+                android:focusable="true"
+                app:layout_constraintTop_toBottomOf="@id/optMale"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <ImageView
+                    android:layout_width="78dp"
+                    android:layout_height="78dp"
+                    android:src="@drawable/girl"
+                    android:scaleType="centerCrop"
+                    android:background="@drawable/bg_avatar_circle_soft"
+                    android:padding="6dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Female"
+                    android:textStyle="bold"
+                    android:textColor="#1E1E1E"
+                    android:textSize="14sp"
+                    android:fontFamily="serif"
+                    android:layout_marginTop="6dp"/>
+            </LinearLayout>
+
+            <!-- Create user button -->
             <Button
                 android:id="@+id/btnCreateUser"
                 android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_marginTop="36dp"
-                android:text="Create User   ➜"
+                android:layout_height="52dp"
+                android:layout_marginTop="18dp"
+                android:text="Create User"
                 android:textAllCaps="false"
-                android:textSize="20sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
                 android:fontFamily="serif"
                 android:textColor="#1E1E1E"
                 android:background="@drawable/bg_login_button"
-                app:layout_constraintTop_toBottomOf="@id/newUserPill"
+                app:layout_constraintTop_toBottomOf="@id/optFemale"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
+            <!-- Cancel -->
             <TextView
                 android:id="@+id/tvCancel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 android:text="Cancel"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:textColor="#2E4A7A"
                 android:fontFamily="serif"
+                android:layout_marginTop="12dp"
+                android:padding="10dp"
                 android:clickable="true"
                 android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
                 app:layout_constraintTop_toBottomOf="@id/btnCreateUser"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintEnd_toEndOf="parent"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
