@@ -1,11 +1,11 @@
 package com.example.zenpath;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LanternReleaseActivity extends AppCompatActivity {
@@ -18,6 +18,16 @@ public class LanternReleaseActivity extends AppCompatActivity {
 
     // ✅ shared pause overlay helper
     private final GamePauseOverlay pause = new GamePauseOverlay();
+
+    // ✅ How-to overlay views
+    private View howToOverlay;
+    private View howToCard;
+    private View btnStart;
+    private View btnClose;
+
+    // prefs (show once)
+    private static final String PREFS = "zen_path_prefs";
+    private static final String KEY_LANTERN_HOWTO_SEEN = "lantern_howto_seen";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,15 +45,19 @@ public class LanternReleaseActivity extends AppCompatActivity {
         View btnCog = findViewById(R.id.menuIcon);
 
         // ✅ UI Listener updates
-        lanternView.setUiListener((total, badge, message) -> {
-            tvTotal.setText("Total: " + total);
-            tvBadge.setText("Badge: " + badge);
-            tvMessage.setText(message);
-        });
+        if (lanternView != null) {
+            lanternView.setUiListener((total, badge, message) -> {
+                if (tvTotal != null) tvTotal.setText("Total: " + total);
+                if (tvBadge != null) tvBadge.setText("Badge: " + badge);
+                if (tvMessage != null) tvMessage.setText(message);
+            });
+        }
 
         // ✅ PLAY button logic
         if (btnPlay != null) {
             btnPlay.setOnClickListener(v -> {
+                if (lanternView == null) return;
+
                 // Start releasing lanterns
                 if (!lanternView.isRunning()) {
                     lanternView.startRelease();
@@ -55,10 +69,77 @@ public class LanternReleaseActivity extends AppCompatActivity {
             });
         }
 
-        // ✅ Cog -> open overlay menu (Lantern-specific)
+        // ✅ Cog -> open overlay menu
         if (btnCog != null) {
             btnCog.setOnClickListener(v -> openLanternSettings());
         }
+
+        // ✅ Hook How-to overlay
+        bindHowToOverlay();
+
+        // ✅ Show once (first time only)
+        if (!hasSeenHowTo()) {
+            showHowToOverlay();
+            markSeenHowTo();
+        }
+    }
+
+    private void bindHowToOverlay() {
+        // This is the include root
+        howToOverlay = findViewById(R.id.includeLanternHowTo);
+
+        if (howToOverlay == null) return;
+
+        // Inside overlay_lantern_howto.xml
+        howToCard = howToOverlay.findViewById(R.id.card);
+        btnStart = howToOverlay.findViewById(R.id.btnStart);
+        btnClose = howToOverlay.findViewById(R.id.btnClose);
+
+        // tap outside card = close
+        howToOverlay.setOnClickListener(v -> hideHowToOverlay());
+        if (howToCard != null) howToCard.setOnClickListener(v -> { /* block closing */ });
+
+        if (btnStart != null) {
+            btnStart.setOnClickListener(v -> hideHowToOverlay());
+        }
+
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> {
+                hideHowToOverlay();
+                // go back to selection
+                startActivity(new Intent(LanternReleaseActivity.this, SelectionGamesActivity.class));
+                finish();
+            });
+        }
+    }
+
+    private void showHowToOverlay() {
+        if (howToOverlay == null) return;
+        howToOverlay.setVisibility(View.VISIBLE);
+        howToOverlay.setAlpha(0f);
+        howToOverlay.animate().alpha(1f).setDuration(160).start();
+    }
+
+    private void hideHowToOverlay() {
+        if (howToOverlay == null) return;
+        howToOverlay.animate()
+                .alpha(0f)
+                .setDuration(140)
+                .withEndAction(() -> {
+                    howToOverlay.setAlpha(1f);
+                    howToOverlay.setVisibility(View.GONE);
+                })
+                .start();
+    }
+
+    private boolean hasSeenHowTo() {
+        SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
+        return sp.getBoolean(KEY_LANTERN_HOWTO_SEEN, false);
+    }
+
+    private void markSeenHowTo() {
+        SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
+        sp.edit().putBoolean(KEY_LANTERN_HOWTO_SEEN, true).apply();
     }
 
     // ✅ Start tracking when activity becomes visible/active
@@ -91,14 +172,12 @@ public class LanternReleaseActivity extends AppCompatActivity {
 
                     @Override
                     public void onResume() {
-                        // no pause state here, just close
+                        // just close
                     }
 
                     @Override
                     public void onRestart() {
-                        // ✅ This replaces the old Reset button:
-                        // Clears lanterns + resets score/badge/message
-                        lanternView.resetToday();
+                        if (lanternView != null) lanternView.resetToday();
                     }
 
                     @Override
@@ -110,22 +189,9 @@ public class LanternReleaseActivity extends AppCompatActivity {
 
                     @Override
                     public void onExtra() {
-                        showLanternHowToPlay();
+                        showHowToOverlay(); // ✅ use the instruction card instead of AlertDialog
                     }
                 }
         );
-    }
-
-    private void showLanternHowToPlay() {
-        new AlertDialog.Builder(this)
-                .setTitle("How to play")
-                .setMessage(
-                        "• Tap anywhere to place a lantern\n" +
-                                "• Tap a lantern to write a message\n" +
-                                "• Press Play\n" +
-                                "• Tap a flying lantern to glow + reveal your message"
-                )
-                .setPositiveButton("Got it", null)
-                .show();
     }
 }
