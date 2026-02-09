@@ -3,9 +3,9 @@ package com.example.zenpath;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LanternReleaseActivity extends AppCompatActivity {
@@ -15,6 +15,9 @@ public class LanternReleaseActivity extends AppCompatActivity {
 
     // ✅ Play time tracker
     private GameTimeTracker playTracker;
+
+    // ✅ shared pause overlay helper
+    private final GamePauseOverlay pause = new GamePauseOverlay();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,7 +32,6 @@ public class LanternReleaseActivity extends AppCompatActivity {
 
         // ✅ Buttons
         View btnPlay = findViewById(R.id.btnLanternGame);
-        View btnReset = findViewById(R.id.btnResetToday);
         View btnCog = findViewById(R.id.menuIcon);
 
         // ✅ UI Listener updates
@@ -42,27 +44,20 @@ public class LanternReleaseActivity extends AppCompatActivity {
         // ✅ PLAY button logic
         if (btnPlay != null) {
             btnPlay.setOnClickListener(v -> {
-
                 // Start releasing lanterns
                 if (!lanternView.isRunning()) {
                     lanternView.startRelease();
                 }
-
-                // If finished, allow replay
+                // If finished, allow replay (replay keeps lanterns, just resets flight)
                 else if (lanternView.isFinished()) {
                     lanternView.playAgain();
                 }
             });
         }
 
-        // ✅ Reset button
-        if (btnReset != null) {
-            btnReset.setOnClickListener(v -> lanternView.resetToday());
-        }
-
-        // ✅ Cog popup menu
+        // ✅ Cog -> open overlay menu (Lantern-specific)
         if (btnCog != null) {
-            btnCog.setOnClickListener(v -> showPausePopup());
+            btnCog.setOnClickListener(v -> openLanternSettings());
         }
     }
 
@@ -81,57 +76,56 @@ public class LanternReleaseActivity extends AppCompatActivity {
         if (playTracker != null) playTracker.stopAndSave(this);
     }
 
-    // ✅ Pause Popup Overlay
-    private void showPausePopup() {
+    // =========================
+    // Lantern Settings Overlay
+    // =========================
+    private void openLanternSettings() {
+        pause.show(
+                this,
+                R.layout.dialog_game_pause,
+                "Lantern Release ⚙️",
+                "Write it. Release it. Let it float ✨",
+                "Restart lanterns",
+                "How to play",
+                new GamePauseOverlay.Actions() {
 
-        ViewGroup rootView = findViewById(android.R.id.content);
+                    @Override
+                    public void onResume() {
+                        // no pause state here, just close
+                    }
 
-        View overlay = getLayoutInflater()
-                .inflate(R.layout.dialog_lantern_pause, rootView, false);
+                    @Override
+                    public void onRestart() {
+                        // ✅ This replaces the old Reset button:
+                        // Clears lanterns + resets score/badge/message
+                        lanternView.resetToday();
+                    }
 
-        rootView.addView(overlay);
+                    @Override
+                    public void onBack() {
+                        if (playTracker != null) playTracker.stopAndSave(LanternReleaseActivity.this);
+                        startActivity(new Intent(LanternReleaseActivity.this, SelectionGamesActivity.class));
+                        finish();
+                    }
 
-        // Tap outside closes
-        overlay.setOnClickListener(v -> rootView.removeView(overlay));
+                    @Override
+                    public void onExtra() {
+                        showLanternHowToPlay();
+                    }
+                }
+        );
+    }
 
-        // Prevent closing when tapping the card
-        View card = overlay.findViewById(R.id.pauseCard);
-        if (card != null) card.setOnClickListener(v -> {});
-
-        // Buttons
-        View btnResume = overlay.findViewById(R.id.btnResume);
-        View btnRestart = overlay.findViewById(R.id.btnRestart);
-        View btnBack = overlay.findViewById(R.id.btnBackToSelection);
-
-        // ✅ Resume
-        if (btnResume != null) {
-            btnResume.setOnClickListener(v ->
-                    rootView.removeView(overlay)
-            );
-        }
-
-        // ✅ Restart
-        if (btnRestart != null) {
-            btnRestart.setOnClickListener(v -> {
-                lanternView.playAgain();
-                rootView.removeView(overlay);
-            });
-        }
-
-        // ✅ Back to Selection
-        if (btnBack != null) {
-            btnBack.setOnClickListener(v -> {
-                rootView.removeView(overlay);
-
-                // ✅ Save play time before leaving screen
-                if (playTracker != null) playTracker.stopAndSave(this);
-
-                startActivity(new Intent(
-                        LanternReleaseActivity.this,
-                        SelectionGamesActivity.class
-                ));
-                finish();
-            });
-        }
+    private void showLanternHowToPlay() {
+        new AlertDialog.Builder(this)
+                .setTitle("How to play")
+                .setMessage(
+                        "• Tap anywhere to place a lantern\n" +
+                                "• Tap a lantern to write a message\n" +
+                                "• Press Play\n" +
+                                "• Tap a flying lantern to glow + reveal your message"
+                )
+                .setPositiveButton("Got it", null)
+                .show();
     }
 }

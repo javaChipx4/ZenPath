@@ -33,8 +33,8 @@ public class StarSweepActivity extends AppCompatActivity
 
     private int goal = 1;
 
-    // ✅ Settings dialog ref
-    private AlertDialog settingsDialog;
+    // ✅ overlay helper
+    private final GamePauseOverlay pause = new GamePauseOverlay();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,25 +49,25 @@ public class StarSweepActivity extends AppCompatActivity
         tvBreath = findViewById(R.id.tvBreath);
         tvStarsLeft = findViewById(R.id.tvStarsLeft);
         tvStreakGame = findViewById(R.id.tvStreakGame);
-        tvFact = findViewById(R.id.tvFact); // ✅ IMPORTANT
+        tvFact = findViewById(R.id.tvFact);
         progressStars = findViewById(R.id.progressStars);
 
         btnSettings = findViewById(R.id.menuIcon);
         btnPlayAgain = findViewById(R.id.btnPlayAgain);
 
-        // ✅ Fact should be hidden until finished
+        // ✅ Fact hidden until finished
         tvFact.setVisibility(View.GONE);
 
         // ✅ Connect HUD
         starSweepView.setHudListener(this);
 
-        // ✅ Cog pauses + opens settings
-        btnSettings.setOnClickListener(v -> openSettingsPaused());
+        // ✅ Cog opens overlay pause/settings (Star-specific)
+        btnSettings.setOnClickListener(v -> openStarSettings());
 
         // ✅ Play again
         btnPlayAgain.setOnClickListener(v -> {
             btnPlayAgain.setVisibility(View.GONE);
-            tvFact.setVisibility(View.GONE); // ✅ hide fact again
+            tvFact.setVisibility(View.GONE);
             starSweepView.setPaused(false);
             starSweepView.resetGame();
         });
@@ -93,14 +93,12 @@ public class StarSweepActivity extends AppCompatActivity
         } else {
             tvFact.setText("Fact: " + fact);
         }
-        // keep it hidden until finished (we show it in onFinishedReady)
     }
 
     @Override
     public void onProgress(int selected, int goal) {
         this.goal = Math.max(1, goal);
-
-        tvStarsLeft.setText("Connect: " + selected + " / " + goal);
+        tvStarsLeft.setText("Connect: " + selected + " / " + this.goal);
 
         int pct = (int) ((selected * 100f) / this.goal);
         progressStars.setProgress(pct);
@@ -113,47 +111,61 @@ public class StarSweepActivity extends AppCompatActivity
 
     @Override
     public void onFinishedReady() {
-        // ✅ show play again + fact
         btnPlayAgain.setVisibility(View.VISIBLE);
         tvFact.setVisibility(View.VISIBLE);
 
-        // ✅ streak++
         int streak = prefs.getInt(KEY_STREAK, 0);
         streak++;
         prefs.edit().putInt(KEY_STREAK, streak).apply();
         updateStreakUI();
     }
 
-    // ================= SETTINGS (PAUSE) =================
+    // ================= SETTINGS (OVERLAY) =================
 
-    private void openSettingsPaused() {
+    private void openStarSettings() {
+        // pause game
         starSweepView.setPaused(true);
 
-        String[] options = {"Resume", "Restart Shape", "Back to Selection"};
+        pause.show(
+                this,
+                R.layout.dialog_game_pause,
+                "Star Sweep ⚙️",
+                "Slow breaths. Connect the stars 🌙",
+                "Restart shape",
+                "Breathing tip",
+                new GamePauseOverlay.Actions() {
+                    @Override
+                    public void onResume() {
+                        starSweepView.setPaused(false);
+                    }
 
-        settingsDialog = new AlertDialog.Builder(this)
-                .setTitle("Paused ⚙️")
-                .setItems(options, (dialog, which) -> {
-                    if (which == 0) {
-                        resumeGame();
-                    } else if (which == 1) {
+                    @Override
+                    public void onRestart() {
                         btnPlayAgain.setVisibility(View.GONE);
-                        tvFact.setVisibility(View.GONE); // ✅ hide
+                        tvFact.setVisibility(View.GONE);
                         starSweepView.resetGame();
                         starSweepView.setPaused(false);
-                    } else {
+                    }
+
+                    @Override
+                    public void onBack() {
                         goBackToSelection();
                     }
-                })
-                .setOnCancelListener(d -> resumeGame())
-                .show();
+
+                    @Override
+                    public void onExtra() {
+                        showBreathingTip();
+                    }
+                }
+        );
     }
 
-    private void resumeGame() {
-        if (settingsDialog != null && settingsDialog.isShowing()) {
-            settingsDialog.dismiss();
-        }
-        starSweepView.setPaused(false);
+    private void showBreathingTip() {
+        new AlertDialog.Builder(this)
+                .setTitle("Breathing tip")
+                .setMessage("Inhale slowly… exhale longer.\nRelax your jaw + shoulders.")
+                .setPositiveButton("Okay", null)
+                .show();
     }
 
     private void goBackToSelection() {
@@ -184,14 +196,5 @@ public class StarSweepActivity extends AppCompatActivity
         super.onResume();
         if (playTracker == null) playTracker = new GameTimeTracker("Star Sweep");
         playTracker.start();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (settingsDialog != null) {
-            settingsDialog.dismiss();
-            settingsDialog = null;
-        }
     }
 }

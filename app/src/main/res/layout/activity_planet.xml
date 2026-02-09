@@ -60,179 +60,175 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Canvas -->
     <com.example.zenpath.ZoomSpaceView
         android:id="@+id/spaceView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/bottomPanel"
+        app:layout_constraintBottom_toTopOf="@+id/bottomSheet"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- ✅ Bottom Sheet Container -->
     <LinearLayout
-        android:id="@+id/bottomPanel"
+        android:id="@+id/bottomSheet"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_margin="14dp"
         android:orientation="vertical"
         android:padding="14dp"
-        android:background="#1A1626"
+        android:background="@drawable/bg_planet_sheet"
+        android:elevation="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- ✅ Panel container -->
+        <!-- Row 1: main modes -->
         <LinearLayout
-            android:id="@+id/buttonPanelContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnMove"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:text="Move"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:textColor="#0E0E18"
+                android:background="@drawable/btn_soft_selector"
+                app:backgroundTint="@null"
+                android:includeFontPadding="false"/>
+
+            <Button
+                android:id="@+id/btnStars"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:text="Stars"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:textColor="#0E0E18"
+                android:background="@drawable/btn_soft_selector"
+                app:backgroundTint="@null"/>
+
+            <Button
+                android:id="@+id/btnUndo"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:text="Undo"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:textColor="#0E0E18"
+                android:background="@drawable/btn_soft_selector"
+                app:backgroundTint="@null"/>
+        </LinearLayout>
+
+        <!-- Row 2: planets + play + tools -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1">
+
+                <Button
+                    android:id="@+id/btnPlanets"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Planets"
+                    android:textAllCaps="false"
+                    android:textStyle="bold"
+                    android:textColor="#0E0E18"
+                    android:background="@drawable/btn_soft_selector"
+                    app:backgroundTint="@null"/>
+
+                <ImageView
+                    android:id="@+id/ivPlanetsDropdown"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:layout_marginEnd="10dp"
+                    android:src="@drawable/ic_triangle_down"
+                    android:contentDescription="Planets dropdown"
+                    android:clickable="false"
+                    android:focusable="false"/>
+            </FrameLayout>
+
+            <Button
+                android:id="@+id/btnPlayPlanets"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:text="Play"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:textColor="#0E0E18"
+                android:background="@drawable/btn_soft_selector"
+                app:backgroundTint="@null"/>
+
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp">
+
+                <Button
+                    android:id="@+id/btnTool"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Tools"
+                    android:textAllCaps="false"
+                    android:textStyle="bold"
+                    android:textColor="#0E0E18"
+                    android:background="@drawable/btn_soft_selector"
+                    app:backgroundTint="@null"/>
+
+                <ImageView
+                    android:id="@+id/ivToolsDropdown"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:layout_marginEnd="10dp"
+                    android:src="@drawable/ic_triangle_down"
+                    android:contentDescription="Tools dropdown"
+                    android:clickable="false"
+                    android:focusable="false"/>
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- Tools panel (dropdown card) -->
+        <LinearLayout
+            android:id="@+id/toolsPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
             android:orientation="vertical"
             android:padding="12dp"
-            android:background="@drawable/bg_instruction_panel"
-            android:elevation="8dp">
+            android:background="@drawable/bg_planet_tools_card"
+            android:visibility="gone">
 
-            <!-- Row 1 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnMove"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:text="Move"
-                    android:textAllCaps="false"
-                    android:textStyle="bold"
-                    android:textColor="#0E0E18"
-                    android:background="@drawable/btn_soft_selector"
-                    app:backgroundTint="@null"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="14dp"
-                    android:gravity="center"
-                    android:includeFontPadding="false"/>
-
-                <Button
-                    android:id="@+id/btnStars"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="10dp"
-                    android:text="Stars"
-                    android:textAllCaps="false"
-                    android:textStyle="bold"
-                    android:textColor="#0E0E18"
-                    android:background="@drawable/btn_soft_selector"
-                    app:backgroundTint="@null"/>
-
-                <Button
-                    android:id="@+id/btnUndo"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="10dp"
-                    android:text="Undo"
-                    android:textAllCaps="false"
-                    android:textStyle="bold"
-                    android:textColor="#0E0E18"
-                    android:background="@drawable/btn_soft_selector"
-                    app:backgroundTint="@null"/>
-
-                <!-- Tools -->
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="10dp">
-
-                    <Button
-                        android:id="@+id/btnTool"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="Tools"
-                        android:textAllCaps="false"
-                        android:textStyle="bold"
-                        android:textColor="#0E0E18"
-                        android:background="@drawable/btn_soft_selector"
-                        app:backgroundTint="@null"/>
-
-                    <ImageView
-                        android:id="@+id/ivToolsDropdown"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:layout_gravity="end|center_vertical"
-                        android:layout_marginEnd="10dp"
-                        android:src="@drawable/ic_triangle_down"
-                        android:contentDescription="Tools dropdown"
-                        android:clickable="false"
-                        android:focusable="false"/>
-                </FrameLayout>
-            </LinearLayout>
-
-            <!-- Row 2 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal">
-
-                <FrameLayout
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1">
-
-                    <Button
-                        android:id="@+id/btnPlanets"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:text="Planets"
-                        android:textAllCaps="false"
-                        android:textStyle="bold"
-                        android:textColor="#0E0E18"
-                        android:background="@drawable/btn_soft_selector"
-                        app:backgroundTint="@null"/>
-
-                    <ImageView
-                        android:id="@+id/ivPlanetsDropdown"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:layout_gravity="end|center_vertical"
-                        android:layout_marginEnd="10dp"
-                        android:src="@drawable/ic_triangle_down"
-                        android:contentDescription="Planets dropdown"
-                        android:clickable="false"
-                        android:focusable="false"/>
-                </FrameLayout>
-
-                <Button
-                    android:id="@+id/btnPlayPlanets"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="10dp"
-                    android:text="Play"
-                    android:textAllCaps="false"
-                    android:textStyle="bold"
-                    android:textColor="#0E0E18"
-                    android:background="@drawable/btn_soft_selector"
-                    app:backgroundTint="@null"/>
-            </LinearLayout>
-
-            <!-- Tools panel -->
-            <LinearLayout
-                android:id="@+id/toolsPanel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="vertical"
-                android:padding="12dp"
-                android:background="#201A30"
-                android:visibility="gone">
 
                 <Button
                     android:id="@+id/btnMarkerTool"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="42dp"
+                    android:layout_weight="1"
                     android:text="Marker"
                     android:textAllCaps="false"
                     android:textStyle="bold"
@@ -242,88 +238,106 @@
 
                 <Button
                     android:id="@+id/btnEraserTool"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="42dp"
-                    android:layout_marginTop="10dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="10dp"
                     android:text="Eraser"
                     android:textAllCaps="false"
                     android:textStyle="bold"
                     android:textColor="#0E0E18"
                     android:background="@drawable/btn_soft_selector"
                     app:backgroundTint="@null"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Color"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif-medium"/>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal">
-
-                    <View android:id="@+id/sw1" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" android:layout_marginEnd="8dp" />
-                    <View android:id="@+id/sw2" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" android:layout_marginEnd="8dp" />
-                    <View android:id="@+id/sw3" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" android:layout_marginEnd="8dp" />
-                    <View android:id="@+id/sw4" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" android:layout_marginEnd="8dp" />
-                    <View android:id="@+id/sw5" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" android:layout_marginEnd="8dp" />
-                    <View android:id="@+id/sw6" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" />
-                </LinearLayout>
-
-                <SeekBar android:id="@+id/sbR" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp"/>
-                <SeekBar android:id="@+id/sbG" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp"/>
-                <SeekBar android:id="@+id/sbB" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="Marker Size"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:fontFamily="sans-serif-medium"/>
-
-                <SeekBar android:id="@+id/sbMarkerSize" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp"/>
             </LinearLayout>
 
-            <!-- Bottom clear -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Color"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"/>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
-                <Button
-                    android:id="@+id/btnClearAll"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:text="Clear all"
-                    android:textAllCaps="false"
-                    android:textStyle="bold"
-                    android:textColor="#0E0E18"
-                    android:background="@drawable/btn_soft_selector"
-                    app:backgroundTint="@null"/>
-
-                <Button
-                    android:id="@+id/btnClearObject"
-                    android:layout_width="0dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="10dp"
-                    android:text="Clear Object"
-                    android:textAllCaps="false"
-                    android:textStyle="bold"
-                    android:textColor="#0E0E18"
-                    android:background="@drawable/btn_soft_selector"
-                    app:backgroundTint="@null"/>
+                <View android:id="@+id/sw1" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" android:layout_marginEnd="8dp" />
+                <View android:id="@+id/sw2" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" android:layout_marginEnd="8dp" />
+                <View android:id="@+id/sw3" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" android:layout_marginEnd="8dp" />
+                <View android:id="@+id/sw4" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" android:layout_marginEnd="8dp" />
+                <View android:id="@+id/sw5" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" android:layout_marginEnd="8dp" />
+                <View android:id="@+id/sw6" android:layout_width="0dp" android:layout_height="28dp" android:layout_weight="1" />
             </LinearLayout>
 
+            <SeekBar
+                android:id="@+id/sbR"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"/>
+
+            <SeekBar
+                android:id="@+id/sbG"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"/>
+
+            <SeekBar
+                android:id="@+id/sbB"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Marker Size"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"/>
+
+            <SeekBar
+                android:id="@+id/sbMarkerSize"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"/>
+        </LinearLayout>
+
+        <!-- Clear row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnClearAll"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:text="Clear all"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:textColor="#0E0E18"
+                android:background="@drawable/btn_soft_selector"
+                app:backgroundTint="@null"/>
+
+            <Button
+                android:id="@+id/btnClearObject"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:text="Clear object"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:textColor="#0E0E18"
+                android:background="@drawable/btn_soft_selector"
+                app:backgroundTint="@null"/>
         </LinearLayout>
 
     </LinearLayout>
@@ -359,7 +373,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <include layout="@layout/dialog_lantern_pause"/>
+        <!-- ✅ Use the generic pause overlay -->
+        <include layout="@layout/dialog_game_pause"/>
     </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

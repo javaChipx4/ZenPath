@@ -267,8 +267,8 @@ public class LanternReleaseView extends View {
         Lantern l = new Lantern();
 
         // Bigger so message fits (as you asked)
-        l.w = dp(78);
-        l.h = dp(110);
+        l.w = dp(72);
+        l.h = dp(120);
 
         l.x = clamp(x, l.w * 0.6f, getWidth() - l.w * 0.6f);
         l.y = clamp(y, l.h * 0.6f, getHeight() - l.h * 0.6f);
@@ -335,7 +335,7 @@ public class LanternReleaseView extends View {
 
         // ✅ Draw lanterns
         for (Lantern l : lanterns) {
-            drawLanternReal(c, l);
+            drawSkyLantern(c, l);
         }
     }
 
@@ -399,113 +399,124 @@ public class LanternReleaseView extends View {
      * ✅ Square lantern like your reference (frame + roof + glass grid + warm light).
      * No gameplay logic changed.
      */
-    private void drawLanternReal(Canvas c, Lantern l) {
+    // ✅ Real sky lantern (paper lantern + flame glow)
+    private void drawSkyLantern(Canvas c, Lantern l) {
         float x = l.x;
         float y = l.y;
         float w = l.w;
         float h = l.h;
 
-        // Body
-        RectF body = new RectF(x - w * 0.38f, y - h * 0.25f, x + w * 0.38f, y + h * 0.36f);
-        float r = Math.min(w, h) * 0.14f;
+        // Main paper body (rounded top)
+        RectF paper = new RectF(
+                x - w * 0.40f,
+                y - h * 0.48f,
+                x + w * 0.40f,
+                y + h * 0.35f
+        );
+        float rTop = w * 0.50f;
 
-        // roof trapezoid
-        Path roof = new Path();
-        roof.moveTo(x - w * 0.44f, y - h * 0.25f);
-        roof.lineTo(x - w * 0.22f, y - h * 0.42f);
-        roof.lineTo(x + w * 0.22f, y - h * 0.42f);
-        roof.lineTo(x + w * 0.44f, y - h * 0.25f);
-        roof.close();
+        // Bottom rim
+        RectF rim = new RectF(
+                x - w * 0.30f,
+                y + h * 0.25f,
+                x + w * 0.30f,
+                y + h * 0.38f
+        );
+        float rimR = w * 0.18f;
 
-        // small cap
-        RectF cap = new RectF(x - w * 0.18f, y - h * 0.52f, x + w * 0.18f, y - h * 0.42f);
-        float capR = w * 0.06f;
-
-        // base
-        RectF base = new RectF(x - w * 0.40f, y + h * 0.36f, x + w * 0.40f, y + h * 0.46f);
-        float baseR = w * 0.09f;
-
-        // shadow
+        // Shadow
         c.drawRoundRect(
-                new RectF(body.left + dp(3), body.top + dp(6), body.right + dp(3), body.bottom + dp(8)),
-                r, r, shadowPaint
+                new RectF(paper.left + dp(3), paper.top + dp(7), paper.right + dp(3), paper.bottom + dp(10)),
+                rTop, rTop, shadowPaint
         );
 
-        // glow halo when glowing
+        // Glow halo (only when glowing)
         if (l.glowing) {
-            float glowR = Math.max(w, h) * 0.72f;
+            float glowR = Math.max(w, h) * 0.90f;
             lanternGlow.setShader(new RadialGradient(
-                    x, y, glowR,
+                    x, y + h * 0.10f, glowR,
                     new int[]{
-                            Color.argb(210, 255, 215, 130),
-                            Color.argb(90, 255, 195, 90),
-                            Color.argb(0, 255, 195, 90)
+                            Color.argb(220, 255, 210, 130),
+                            Color.argb(90, 255, 170, 90),
+                            Color.argb(0, 255, 170, 90)
                     },
-                    new float[]{0f, 0.55f, 1f},
+                    new float[]{0f, 0.6f, 1f},
                     Shader.TileMode.CLAMP
             ));
             c.drawCircle(x, y, glowR, lanternGlow);
             lanternGlow.setShader(null);
         }
 
-        // black body parts
-        c.drawRoundRect(body, r, r, lanternBodyFill);
-        c.drawRoundRect(base, baseR, baseR, lanternBodyFill);
-        c.drawPath(roof, lanternBodyFill);
-        c.drawRoundRect(cap, capR, capR, lanternBodyFill);
+        // Paper fill (warm paper)
+        Paint paperFill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paperFill.setStyle(Paint.Style.FILL);
+        paperFill.setColor(Color.argb(235, 246, 234, 205));
 
-        // glass panel
-        RectF glass = new RectF(
-                body.left + w * 0.08f,
-                body.top + h * 0.08f,
-                body.right - w * 0.08f,
-                body.bottom - h * 0.08f
-        );
+        // Paper gradient shading
+        Paint paperShade = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paperShade.setShader(new LinearGradient(
+                paper.left, paper.top, paper.right, paper.top,
+                new int[]{
+                        Color.argb(240, 252, 244, 220),
+                        Color.argb(240, 235, 220, 190),
+                        Color.argb(240, 252, 244, 220)
+                },
+                new float[]{0f, 0.5f, 1f},
+                Shader.TileMode.CLAMP
+        ));
 
-        // warm inner light only if glowing
+        c.drawRoundRect(paper, rTop, rTop, paperFill);
+        c.drawRoundRect(paper, rTop, rTop, paperShade);
+        paperShade.setShader(null);
+
+        // Rim (a bit darker)
+        Paint rimFill = new Paint(Paint.ANTI_ALIAS_FLAG);
+        rimFill.setColor(Color.argb(255, 210, 195, 165));
+        c.drawRoundRect(rim, rimR, rimR, rimFill);
+
+        // Seams (paper lines)
+        Paint seam = new Paint(Paint.ANTI_ALIAS_FLAG);
+        seam.setStyle(Paint.Style.STROKE);
+        seam.setStrokeWidth(dp(1.4f));
+        seam.setColor(Color.argb(110, 90, 70, 45));
+
+        c.drawLine(x - w * 0.16f, paper.top + h * 0.10f, x - w * 0.11f, paper.bottom - h * 0.10f, seam);
+        c.drawLine(x + w * 0.16f, paper.top + h * 0.10f, x + w * 0.11f, paper.bottom - h * 0.10f, seam);
+
+        // Inner flame glow (only when glowing)
         if (l.glowing) {
-            Paint inner = new Paint(Paint.ANTI_ALIAS_FLAG);
-            inner.setShader(new RadialGradient(
-                    x, y + h * 0.05f, Math.max(w, h) * 0.35f,
+            Paint flame = new Paint(Paint.ANTI_ALIAS_FLAG);
+            flame.setShader(new RadialGradient(
+                    x, y + h * 0.22f, w * 0.55f,
                     new int[]{
-                            Color.argb(220, 255, 235, 170),
-                            Color.argb(90, 255, 210, 120),
-                            Color.argb(0, 255, 210, 120)
+                            Color.argb(230, 255, 245, 190),
+                            Color.argb(120, 255, 205, 120),
+                            Color.argb(0, 255, 205, 120)
                     },
-                    new float[]{0f, 0.62f, 1f},
+                    new float[]{0f, 0.65f, 1f},
                     Shader.TileMode.CLAMP
             ));
-            c.drawRoundRect(glass, r * 0.75f, r * 0.75f, inner);
-        } else {
-            c.drawRoundRect(glass, r * 0.75f, r * 0.75f, lanternGlass);
+            c.drawCircle(x, y + h * 0.20f, w * 0.52f, flame);
+            flame.setShader(null);
+
+            Paint flameDot = new Paint(Paint.ANTI_ALIAS_FLAG);
+            flameDot.setColor(Color.argb(230, 255, 175, 90));
+            c.drawCircle(x, y + h * 0.29f, dp(4.5f), flameDot);
         }
 
-        // frame outlines
-        c.drawRoundRect(body, r, r, lanternFrame);
-        c.drawRoundRect(base, baseR, baseR, lanternFrame);
-        c.drawPath(roof, lanternFrame);
-        c.drawRoundRect(cap, capR, capR, lanternFrame);
+        // Message area (hidden until glow)
+        RectF msgArea = new RectF(
+                paper.left + w * 0.12f,
+                paper.top + h * 0.20f,
+                paper.right - w * 0.12f,
+                paper.bottom - h * 0.22f
+        );
 
-        // grid lines
-        float gx1 = glass.left + glass.width() / 3f;
-        float gx2 = glass.left + (glass.width() * 2f / 3f);
-        c.drawLine(gx1, glass.top, gx1, glass.bottom, lanternBars);
-        c.drawLine(gx2, glass.top, gx2, glass.bottom, lanternBars);
-
-        float gy1 = glass.top + glass.height() / 3f;
-        float gy2 = glass.top + (glass.height() * 2f / 3f);
-        c.drawLine(glass.left, gy1, glass.right, gy1, lanternBars);
-        c.drawLine(glass.left, gy2, glass.right, gy2, lanternBars);
-
-        if (l.glowing) {
-            c.drawRoundRect(glass, r * 0.75f, r * 0.75f, lanternGlowStroke);
-        }
-
-        // message (HIDDEN until glow)
         if (l.messageVisible && l.message != null && !l.message.trim().isEmpty()) {
-            drawMessageInsideGlass(c, l.message.trim(), glass);
+            drawMessageInsideGlass(c, l.message.trim(), msgArea);
         }
     }
+
 
     // Draw wrapped message inside lantern glass
     private void drawMessageInsideGlass(Canvas c, String msg, RectF glass) {

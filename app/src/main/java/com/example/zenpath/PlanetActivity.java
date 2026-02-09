@@ -15,7 +15,10 @@ import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -64,62 +67,99 @@ public class PlanetActivity extends AppCompatActivity {
 
     // ✅ Play time tracker
     private GameTimeTracker playTracker;
+    private boolean playTimeSaved = false; // ✅ prevents double save
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_planet);
 
+        bindViews();
+        setupOverlays();
+        setupBackHandling();
+        setupTopButtons();
+        setupModeButtons();
+        setupToolButtons();
+        setupPlanetButtons();
+        setupSwatchesAndSeekBars();
+
+        loadStateFromPrefs();
+
+        // Show instructions first time
+        if (savedInstanceState == null && instructionsOverlay != null) {
+            if (spaceView != null) spaceView.postDelayed(() -> showInstructionsOverlay(false), 250);
+            else showInstructionsOverlay(false);
+        }
+    }
+
+    // =========================
+    // Bind + Setup
+    // =========================
+
+    private void bindViews() {
         spaceView = findViewById(R.id.spaceView);
 
+        // top buttons
         ImageButton btnInfo = findViewById(R.id.btnInfo);
         ImageButton btnSave = findViewById(R.id.btnSave);
-
-        // ✅ settings/pause icon
         ImageButton menuIcon = findViewById(R.id.menuIcon);
 
+        // modes
         btnMove = findViewById(R.id.btnMove);
         btnStars = findViewById(R.id.btnStars);
         btnUndo = findViewById(R.id.btnUndo);
         btnTool = findViewById(R.id.btnTool);
 
+        // planets + play
         btnPlanets = findViewById(R.id.btnPlanets);
         btnPlayPlanets = findViewById(R.id.btnPlayPlanets);
 
+        // clear
         btnClearAll = findViewById(R.id.btnClearAll);
         btnClearObject = findViewById(R.id.btnClearObject);
 
+        // tool panel
         toolsPanel = findViewById(R.id.toolsPanel);
         btnMarkerTool = findViewById(R.id.btnMarkerTool);
         btnEraserTool = findViewById(R.id.btnEraserTool);
 
+        // swatches
         sw1 = findViewById(R.id.sw1);
         sw2 = findViewById(R.id.sw2);
         sw3 = findViewById(R.id.sw3);
         sw4 = findViewById(R.id.sw4);
         sw5 = findViewById(R.id.sw5);
         sw6 = findViewById(R.id.sw6);
-
         swatches = new View[]{sw1, sw2, sw3, sw4, sw5, sw6};
 
+        // sliders
         sbR = findViewById(R.id.sbR);
         sbG = findViewById(R.id.sbG);
         sbB = findViewById(R.id.sbB);
         sbMarkerSize = findViewById(R.id.sbMarkerSize);
 
+        // overlays
         instructionsOverlay = findViewById(R.id.instructionsOverlay);
-
-        if (instructionsOverlay != null) {
-            btnStartPlay = instructionsOverlay.findViewById(R.id.btnStartPlay);
-        } else {
-            btnStartPlay = findViewById(R.id.btnStartPlay);
-        }
-        if (btnStartPlay != null) {
-            btnStartPlay.setOnClickListener(v -> hideInstructionsOverlay());
-        }
-
-        // ✅ pause overlay bindings (overlay_pause.xml ids)
         pauseOverlay = findViewById(R.id.pauseOverlay);
+
+        // instructions overlay button (inside include)
+        if (instructionsOverlay != null) btnStartPlay = instructionsOverlay.findViewById(R.id.btnStartPlay);
+        else btnStartPlay = findViewById(R.id.btnStartPlay);
+
+        // top button behavior
+        if (btnInfo != null) btnInfo.setOnClickListener(v -> showInstructionsOverlay(true));
+        if (btnSave != null) btnSave.setOnClickListener(v -> {
+            saveStateToPrefs(false);
+            saveDesignToGallery();
+        });
+        if (menuIcon != null) menuIcon.setOnClickListener(v -> showPause());
+    }
+
+    private void setupOverlays() {
+        // instructions close
+        if (btnStartPlay != null) btnStartPlay.setOnClickListener(v -> hideInstructionsOverlay());
+
+        // pause overlay bindings
         if (pauseOverlay != null) {
             View pauseCard = pauseOverlay.findViewById(R.id.pauseCard);
             btnResume = pauseOverlay.findViewById(R.id.btnResume);
@@ -133,11 +173,6 @@ public class PlanetActivity extends AppCompatActivity {
             if (pauseCard != null) pauseCard.setOnClickListener(v -> {});
         }
 
-        // open pause
-        if (menuIcon != null) {
-            menuIcon.setOnClickListener(v -> showPause());
-        }
-
         // pause buttons
         if (btnResume != null) btnResume.setOnClickListener(v -> hidePause());
         if (btnRestart != null) btnRestart.setOnClickListener(v -> {
@@ -146,33 +181,43 @@ public class PlanetActivity extends AppCompatActivity {
         });
         if (btnBackToSelection != null) btnBackToSelection.setOnClickListener(v -> {
             hidePause();
-
-            // ✅ Save play time before leaving
-            if (playTracker != null) playTracker.stopAndSave(this);
-
-            // ✅ Go back to Selection screen
-            startActivity(new Intent(PlanetActivity.this, SelectionGamesActivity.class)); // CHANGE if needed
+            savePlayTimeOnce();
+            startActivity(new Intent(PlanetActivity.this, SelectionGamesActivity.class));
             finish();
         });
+    }
 
-        refreshSwatchViews();
-        selectSwatch(0);
+    private void setupBackHandling() {
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (pauseOverlay != null && pauseOverlay.getVisibility() == View.VISIBLE) {
+                    hidePause();
+                    return;
+                }
+                if (instructionsOverlay != null && instructionsOverlay.getVisibility() == View.VISIBLE) {
+                    hideInstructionsOverlay();
+                    return;
+                }
+                setEnabled(false);
+                getOnBackPressedDispatcher().onBackPressed();
+            }
+        });
+    }
 
-        if (btnInfo != null) btnInfo.setOnClickListener(v -> showInstructionsOverlay(true));
-
-        if (btnSave != null) {
-            btnSave.setOnClickListener(v -> {
-                saveStateToPrefs(false);
-                saveDesignToGallery();
-            });
-        }
-
+    private void setupTopButtons() {
         setActive(btnMove);
         if (spaceView != null) spaceView.setMode(ZoomSpaceView.Mode.MOVE);
 
+        refreshSwatchViews();
+        selectSwatch(0);
+    }
+
+    private void setupModeButtons() {
         if (btnMove != null) {
             btnMove.setOnClickListener(v -> {
                 setActive(btnMove);
+                hideToolsPanel();
                 if (spaceView != null) spaceView.setMode(ZoomSpaceView.Mode.MOVE);
             });
         }
@@ -180,24 +225,24 @@ public class PlanetActivity extends AppCompatActivity {
         if (btnStars != null) {
             btnStars.setOnClickListener(v -> {
                 setActive(btnStars);
+                hideToolsPanel();
                 if (spaceView != null) spaceView.setMode(ZoomSpaceView.Mode.STARS);
             });
         }
 
         if (btnUndo != null) {
             btnUndo.setOnClickListener(v -> {
+                hideToolsPanel();
                 if (spaceView != null) spaceView.undo();
             });
         }
 
         if (btnTool != null) {
-            btnTool.setOnClickListener(v -> {
-                if (toolsPanel == null) return;
-                boolean show = toolsPanel.getVisibility() != View.VISIBLE;
-                toolsPanel.setVisibility(show ? View.VISIBLE : View.GONE);
-            });
+            btnTool.setOnClickListener(v -> toggleToolsPanel());
         }
+    }
 
+    private void setupToolButtons() {
         if (btnMarkerTool != null) {
             btnMarkerTool.setOnClickListener(v -> {
                 setActive(btnMarkerTool);
@@ -223,10 +268,10 @@ public class PlanetActivity extends AppCompatActivity {
                 if (spaceView != null) spaceView.clearAllObjects();
             });
         }
+    }
 
-        if (btnPlanets != null) {
-            btnPlanets.setOnClickListener(v -> showPlanetPickerDialog());
-        }
+    private void setupPlanetButtons() {
+        if (btnPlanets != null) btnPlanets.setOnClickListener(v -> showPlanetPickerDialog());
 
         planetsPlaying = false;
         if (spaceView != null) spaceView.setPlanetAnimationEnabled(false);
@@ -239,7 +284,9 @@ public class PlanetActivity extends AppCompatActivity {
                 btnPlayPlanets.setText(planetsPlaying ? R.string.stop : R.string.play);
             });
         }
+    }
 
+    private void setupSwatchesAndSeekBars() {
         if (sw1 != null) sw1.setOnClickListener(v -> selectSwatch(0));
         if (sw2 != null) sw2.setOnClickListener(v -> selectSwatch(1));
         if (sw3 != null) sw3.setOnClickListener(v -> selectSwatch(2));
@@ -278,59 +325,61 @@ public class PlanetActivity extends AppCompatActivity {
                 @Override public void onStopTrackingTouch(SeekBar seekBar) {}
             });
         }
+    }
 
-        loadStateFromPrefs();
-
-        if (savedInstanceState == null && instructionsOverlay != null) {
-            if (spaceView != null) spaceView.postDelayed(() -> showInstructionsOverlay(false), 250);
-            else showInstructionsOverlay(false);
-        }
+    // =========================
+    // Play time saving (avoid double count)
+    // =========================
+    private void savePlayTimeOnce() {
+        if (playTimeSaved) return;
+        playTimeSaved = true;
+        if (playTracker != null) playTracker.stopAndSave(this);
     }
 
     // ✅ start tracking when visible
     @Override
     protected void onResume() {
         super.onResume();
+        playTimeSaved = false;
         if (playTracker == null) playTracker = new GameTimeTracker("Planet");
         playTracker.start();
     }
 
     @Override
-    public void onBackPressed() {
-        // If pause overlay is open, close it first
-        if (pauseOverlay != null && pauseOverlay.getVisibility() == View.VISIBLE) {
-            hidePause();
-            return;
-        }
-        // If instructions overlay is open, close it
-        if (instructionsOverlay != null && instructionsOverlay.getVisibility() == View.VISIBLE) {
-            hideInstructionsOverlay();
-            return;
-        }
-        super.onBackPressed();
-    }
-
-    @Override
     protected void onPause() {
         super.onPause();
-
-        // ✅ keep your original behavior
         saveStateToPrefs(false);
-
-        // ✅ save play time too
-        if (playTracker != null) playTracker.stopAndSave(this);
+        savePlayTimeOnce();
     }
 
-    // ✅ Pause helpers
+    // =========================
+    // Pause + Instructions UX
+    // =========================
+    private void setUiEnabled(boolean enabled) {
+        if (btnMove != null) btnMove.setEnabled(enabled);
+        if (btnStars != null) btnStars.setEnabled(enabled);
+        if (btnUndo != null) btnUndo.setEnabled(enabled);
+        if (btnTool != null) btnTool.setEnabled(enabled);
+        if (btnMarkerTool != null) btnMarkerTool.setEnabled(enabled);
+        if (btnEraserTool != null) btnEraserTool.setEnabled(enabled);
+        if (btnPlanets != null) btnPlanets.setEnabled(enabled);
+        if (btnPlayPlanets != null) btnPlayPlanets.setEnabled(enabled);
+        if (btnClearAll != null) btnClearAll.setEnabled(enabled);
+        if (btnClearObject != null) btnClearObject.setEnabled(enabled);
+        if (toolsPanel != null) toolsPanel.setEnabled(enabled);
+    }
+
     private void showPause() {
         if (pauseOverlay == null) return;
 
-        // remember animation state then stop
         planetsPlayingBeforePause = planetsPlaying;
+
+        // stop animation while paused
         planetsPlaying = false;
         if (spaceView != null) spaceView.setPlanetAnimationEnabled(false);
         if (btnPlayPlanets != null) btnPlayPlanets.setText(R.string.play);
 
+        setUiEnabled(false);
         pauseOverlay.setVisibility(View.VISIBLE);
     }
 
@@ -338,6 +387,7 @@ public class PlanetActivity extends AppCompatActivity {
         if (pauseOverlay == null) return;
 
         pauseOverlay.setVisibility(View.GONE);
+        setUiEnabled(true);
 
         // restore animation state
         planetsPlaying = planetsPlayingBeforePause;
@@ -345,6 +395,69 @@ public class PlanetActivity extends AppCompatActivity {
         if (btnPlayPlanets != null) btnPlayPlanets.setText(planetsPlaying ? R.string.stop : R.string.play);
     }
 
+    private void showInstructionsOverlay(boolean fromInfo) {
+        if (instructionsOverlay == null) return;
+        setUiEnabled(false);
+        instructionsOverlay.setVisibility(View.VISIBLE);
+        if (btnStartPlay != null) btnStartPlay.setText(fromInfo ? R.string.close : R.string.play);
+    }
+
+    private void hideInstructionsOverlay() {
+        if (instructionsOverlay == null) return;
+        instructionsOverlay.setVisibility(View.GONE);
+        setUiEnabled(true);
+    }
+
+    // =========================
+    // Tools panel helpers
+    // =========================
+    private void toggleToolsPanel() {
+        if (toolsPanel == null) return;
+
+        if (toolsPanel.getVisibility() == View.VISIBLE) {
+            hideToolsPanel();
+        } else {
+            toolsPanel.clearAnimation();
+            toolsPanel.setVisibility(View.VISIBLE);
+
+            if (btnTool != null) {
+                btnTool.setEnabled(false);
+                btnTool.postDelayed(() -> btnTool.setEnabled(true), 180);
+            }
+
+            Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_down);
+            toolsPanel.startAnimation(anim);
+        }
+        if (btnTool != null) {
+            btnTool.setEnabled(false);
+            btnTool.postDelayed(() -> btnTool.setEnabled(true), 200);
+        }
+    }
+
+    private void hideToolsPanel() {
+        if (toolsPanel == null) return;
+        if (toolsPanel.getVisibility() != View.VISIBLE) return;
+
+        toolsPanel.clearAnimation();
+
+        Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_up);
+        anim.setAnimationListener(new Animation.AnimationListener() {
+            @Override public void onAnimationStart(Animation animation) {}
+
+            @Override public void onAnimationEnd(Animation animation) {
+                toolsPanel.setVisibility(View.GONE);
+            }
+
+            @Override public void onAnimationRepeat(Animation animation) {}
+        });
+
+        toolsPanel.startAnimation(anim);
+    }
+
+
+    // =========================
+    // Planet Picker
+    // =========================
     private void showPlanetPickerDialog() {
         final ZoomSpaceView.Body[] bodies = new ZoomSpaceView.Body[]{
                 ZoomSpaceView.Body.SUN,
@@ -385,17 +498,9 @@ public class PlanetActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void showInstructionsOverlay(boolean fromInfo) {
-        if (instructionsOverlay == null) return;
-        instructionsOverlay.setVisibility(View.VISIBLE);
-        if (btnStartPlay != null) btnStartPlay.setText(fromInfo ? R.string.close : R.string.play);
-    }
-
-    private void hideInstructionsOverlay() {
-        if (instructionsOverlay == null) return;
-        instructionsOverlay.setVisibility(View.GONE);
-    }
-
+    // =========================
+    // State persistence
+    // =========================
     private void saveStateToPrefs(boolean showToast) {
         try {
             if (spaceView == null) return;
@@ -420,6 +525,9 @@ public class PlanetActivity extends AppCompatActivity {
         }
     }
 
+    // =========================
+    // Selection states
+    // =========================
     private void setActive(Button active) {
         if (btnMove != null) btnMove.setSelected(false);
         if (btnStars != null) btnStars.setSelected(false);
@@ -466,6 +574,9 @@ public class PlanetActivity extends AppCompatActivity {
         }
     }
 
+    // =========================
+    // Save image
+    // =========================
     private void saveDesignToGallery() {
         try {
             if (spaceView == null) return;
@@ -485,15 +596,14 @@ public class PlanetActivity extends AppCompatActivity {
                 return;
             }
 
-            OutputStream os = getContentResolver().openOutputStream(uri);
-            if (os == null) {
-                Toast.makeText(this, R.string.save_failed, Toast.LENGTH_SHORT).show();
-                return;
+            try (OutputStream os = getContentResolver().openOutputStream(uri)) {
+                if (os == null) {
+                    Toast.makeText(this, R.string.save_failed, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, os);
+                os.flush();
             }
-
-            bmp.compress(Bitmap.CompressFormat.PNG, 100, os);
-            os.flush();
-            os.close();
 
             Toast.makeText(this, R.string.saved_to_gallery, Toast.LENGTH_LONG).show();
         } catch (Exception e) {

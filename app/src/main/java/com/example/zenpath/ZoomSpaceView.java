@@ -40,6 +40,7 @@ public class ZoomSpaceView extends View {
 
     private Bitmap sunBmp, moonBmp, starBmp;
 
+    // ✅ NOW: true orbit animation (revolve around sun)
     private boolean planetAnimationEnabled = false;
 
     private Bitmap mercuryBmp, venusBmp, earthBmp, marsBmp, jupiterBmp, saturnBmp, uranusBmp, neptuneBmp;
@@ -111,7 +112,7 @@ public class ZoomSpaceView extends View {
     }
 
     private void init() {
-        // ✅ SAFE bitmap loading by name (prevents missing drawable compile errors)
+        // ✅ SAFE bitmap loading by name
         sunBmp = loadBitmapByName("sun");
         moonBmp = loadBitmapByName("moon");
         mercuryBmp = loadBitmapByName("mercury");
@@ -220,8 +221,18 @@ public class ZoomSpaceView extends View {
         invalidate();
     }
 
+    // ✅ Orbit animation toggle
     public void setPlanetAnimationEnabled(boolean enabled) {
         planetAnimationEnabled = enabled;
+
+        if (enabled) {
+            // Initialize orbit parameters for all planets based on current sun position (or space center)
+            PointF c = getOrbitCenter();
+            for (int i = 0; i < planets.size(); i++) {
+                initOrbitForPlanet(planets.get(i), c, i);
+            }
+        }
+
         invalidate();
     }
 
@@ -279,6 +290,7 @@ public class ZoomSpaceView extends View {
         for (PlanetInstance p : planets) {
             JSONObject o = new JSONObject();
             o.put("body", p.body.name());
+            // Save the user's base position (not the animated orbital pose)
             o.put("x", p.pos.x);
             o.put("y", p.pos.y);
             planetArr.put(o);
@@ -439,6 +451,12 @@ public class ZoomSpaceView extends View {
         undo.clear();
         lastBrush = null;
 
+        // If play is ON, re-init orbits for loaded planets
+        if (planetAnimationEnabled) {
+            PointF c = getOrbitCenter();
+            for (int i = 0; i < planets.size(); i++) initOrbitForPlanet(planets.get(i), c, i);
+        }
+
         invalidate();
     }
 
@@ -469,6 +487,8 @@ public class ZoomSpaceView extends View {
 
             case SET_SUN:
                 sunPos = a.prevPos;
+                // If orbit is ON, re-init orbits because center changed
+                if (planetAnimationEnabled) reinitAllOrbits();
                 break;
 
             case SET_MOON:
@@ -564,6 +584,8 @@ public class ZoomSpaceView extends View {
 
         selectedStar = -1;
         lastBrush = null;
+
+        if (planetAnimationEnabled) reinitAllOrbits();
     }
 
     private Snapshot makeSnapshot(boolean includeMarker) {
@@ -709,6 +731,18 @@ public class ZoomSpaceView extends View {
         if (bgGrad != null) canvas.drawRect(0, 0, getWidth(), getHeight(), pBg);
         else canvas.drawColor(Color.parseColor("#070716"));
 
+        // ✅ update orbit angles
+        if (planetAnimationEnabled) {
+            PointF c = getOrbitCenter();
+            for (int i = 0; i < planets.size(); i++) {
+                PlanetInstance p = planets.get(i);
+                // If sun moved while animating, keep orbit around current sun
+                p.orbitCx = c.x;
+                p.orbitCy = c.y;
+                p.angleRad += p.angularSpeedRad * dt;
+            }
+        }
+
         canvas.save();
         canvas.concat(worldToScreen);
 
@@ -743,6 +777,7 @@ public class ZoomSpaceView extends View {
             }
         }
 
+        // ✅ draw planets (orbiting when Play is ON)
         for (int i = 0; i < planets.size(); i++) {
             PlanetInstance p = planets.get(i);
 
@@ -751,12 +786,24 @@ public class ZoomSpaceView extends View {
 
             float half = planetHalfSizeDp(p.body) / scale;
 
-            float driftRadius = dp(12) / scale;
-
             float px = p.pos.x;
             float py = p.pos.y;
 
             if (planetAnimationEnabled) {
+                // Elliptical orbit for nicer feel (more "solar system" vibes)
+                float ox = (float) Math.cos(p.angleRad) * p.orbitRx;
+                float oy = (float) Math.sin(p.angleRad) * p.orbitRy;
+
+                px = p.orbitCx + ox;
+                py = p.orbitCy + oy;
+
+                // subtle "float" wobble (small)
+                float drift = dp(6) / scale;
+                px += drift * (float) Math.sin(t * 0.7f + p.phaseA);
+                py += drift * (float) Math.cos(t * 0.6f + p.phaseB);
+            } else {
+                // old idle drift (tiny)
+                float driftRadius = dp(12) / scale;
                 float dx = driftRadius * (float) Math.sin(t * 0.18f + p.phaseA);
                 float dy = driftRadius * (float) Math.cos(t * 0.14f + p.phaseB);
                 px += dx;
@@ -765,8 +812,7 @@ public class ZoomSpaceView extends View {
 
             Paint planetPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             planetPaint.setFilterBitmap(true);
-            planetPaint.setShadowLayer(dp(4) / scale, 0, dp(2) / scale,
-                    Color.argb(70, 0, 0, 0));
+            planetPaint.setShadowLayer(dp(4) / scale, 0, dp(2) / scale, Color.argb(70, 0, 0, 0));
 
             drawBitmapCenteredKeepAspect(canvas, bmp, px, py, half, planetPaint);
         }
@@ -818,6 +864,8 @@ public class ZoomSpaceView extends View {
         }
 
         canvas.restore();
+
+        // ✅ keep animating (background twinkle + orbits)
         postInvalidateOnAnimation();
     }
 
@@ -893,13 +941,24 @@ public class ZoomSpaceView extends View {
 
                 if (mode == Mode.MOVE) {
                     if (dragTarget == DragTarget.SUN) {
-                        sunPos = w; invalidate(); return true;
+                        sunPos = w;
+                        if (planetAnimationEnabled) reinitAllOrbits();
+                        invalidate();
+                        return true;
                     }
                     if (dragTarget == DragTarget.MOON) {
                         moonPos = w; invalidate(); return true;
                     }
                     if (dragTarget == DragTarget.PLANET && activePlanetIndex >= 0 && activePlanetIndex < planets.size()) {
-                        planets.get(activePlanetIndex).pos = new PointF(w.x, w.y);
+                        PlanetInstance p = planets.get(activePlanetIndex);
+                        p.pos = new PointF(w.x, w.y);
+
+                        // If anim ON, update orbit params based on new position
+                        if (planetAnimationEnabled) {
+                            PointF c = getOrbitCenter();
+                            initOrbitForPlanet(p, c, activePlanetIndex);
+                        }
+
                         invalidate();
                         return true;
                     }
@@ -929,6 +988,7 @@ public class ZoomSpaceView extends View {
                     if (mode == Mode.SUN) {
                         undo.add(Action.setSun(sunPos));
                         sunPos = w;
+                        if (planetAnimationEnabled) reinitAllOrbits();
                         invalidate();
                         return true;
                     }
@@ -944,6 +1004,7 @@ public class ZoomSpaceView extends View {
                         if (selectedBody == Body.SUN) {
                             undo.add(Action.setSun(sunPos));
                             sunPos = w;
+                            if (planetAnimationEnabled) reinitAllOrbits();
                             invalidate();
                             return true;
                         }
@@ -954,8 +1015,15 @@ public class ZoomSpaceView extends View {
                             return true;
                         }
 
-                        planets.add(new PlanetInstance(selectedBody, new PointF(w.x, w.y)));
+                        PlanetInstance inst = new PlanetInstance(selectedBody, new PointF(w.x, w.y));
+                        planets.add(inst);
                         undo.add(Action.addPlanet(planets.size() - 1));
+
+                        if (planetAnimationEnabled) {
+                            PointF c = getOrbitCenter();
+                            initOrbitForPlanet(inst, c, planets.size() - 1);
+                        }
+
                         invalidate();
                         return true;
                     }
@@ -1036,9 +1104,9 @@ public class ZoomSpaceView extends View {
         int steps = Math.max(1, (int)(dist / step));
 
         for (int i = 1; i <= steps; i++) {
-            float t = i / (float) steps;
-            float px = lastBrush.x + dx * t;
-            float py = lastBrush.y + dy * t;
+            float tt = i / (float) steps;
+            float px = lastBrush.x + dx * tt;
+            float py = lastBrush.y + dy * tt;
 
             if (erase) stampEraser(px, py, false);
             else stampMarker(px, py, false);
@@ -1306,6 +1374,71 @@ public class ZoomSpaceView extends View {
         return Bitmap.createBitmap(src, minX, minY, (maxX - minX + 1), (maxY - minY + 1));
     }
 
+    // =========================
+    // ✅ ORBIT HELPERS
+    // =========================
+    private PointF getOrbitCenter() {
+        // Orbit around sun if placed. Otherwise orbit around space center (0,0 world).
+        if (sunPos != null) return sunPos;
+        return new PointF(0f, 0f);
+    }
+
+    private void reinitAllOrbits() {
+        PointF c = getOrbitCenter();
+        for (int i = 0; i < planets.size(); i++) {
+            initOrbitForPlanet(planets.get(i), c, i);
+        }
+    }
+
+    private void initOrbitForPlanet(PlanetInstance p, PointF center, int index) {
+        float dx = p.pos.x - center.x;
+        float dy = p.pos.y - center.y;
+
+        float r = (float) Math.sqrt(dx * dx + dy * dy);
+
+        // If user dropped planet too close to center, push it out to a nicer orbit
+        float minR = dp(220);
+        if (r < minR) {
+            r = minR + index * dp(70);
+            // keep original direction if possible
+            float ang = (float) Math.atan2(dy, dx);
+            if (Float.isNaN(ang)) ang = (float) (Math.random() * Math.PI * 2);
+            p.pos = new PointF(center.x + (float)Math.cos(ang) * r,
+                    center.y + (float)Math.sin(ang) * r);
+            dx = p.pos.x - center.x;
+            dy = p.pos.y - center.y;
+        }
+
+        p.orbitCx = center.x;
+        p.orbitCy = center.y;
+
+        p.angleRad = (float) Math.atan2(dy, dx);
+
+        // Ellipse (slightly flattened) so it looks more “solar system”
+        float ellipse = 0.78f + (index % 4) * 0.05f; // 0.78..0.93
+        p.orbitRx = r;
+        p.orbitRy = r * ellipse;
+
+        // Speed: inner faster, outer slower
+        // base ~ 0.65 rad/s then scaled down by radius
+        float rNorm = Math.max(dp(180), r);
+        float base = 0.75f; // rad/s-ish
+        float speed = base * (dp(280) / rNorm);
+        speed = clamp(speed, 0.10f, 0.90f);
+
+        // Alternate direction a bit (looks cute + less uniform)
+        if (index % 2 == 1) speed *= -1f;
+
+        p.angularSpeedRad = speed;
+
+        // keep subtle float phases
+        p.phaseA = (float) (Math.random() * 10f);
+        p.phaseB = (float) (Math.random() * 10f);
+    }
+
+    // =========================
+    // Models
+    // =========================
     private static class Line {
         int a, b;
         Line(int a, int b) { this.a = a; this.b = b; }
@@ -1323,14 +1456,29 @@ public class ZoomSpaceView extends View {
     private static class PlanetInstance {
         Body body;
         PointF pos;
+
+        // idle drift phases
         float phaseA;
         float phaseB;
+
+        // ✅ orbit state
+        float orbitCx, orbitCy;
+        float orbitRx, orbitRy;
+        float angleRad;
+        float angularSpeedRad;
 
         PlanetInstance(Body body, PointF pos) {
             this.body = body;
             this.pos = pos;
             phaseA = (float) (Math.random() * 10f);
             phaseB = (float) (Math.random() * 10f);
+
+            orbitCx = 0f;
+            orbitCy = 0f;
+            orbitRx = 0f;
+            orbitRy = 0f;
+            angleRad = 0f;
+            angularSpeedRad = 0f;
         }
     }
 
