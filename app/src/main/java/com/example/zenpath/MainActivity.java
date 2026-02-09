@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvWindDownSuggestion;
     private Button btnBrowseActivities;
 
-    // ✅ Latest recommendation cached (so we can pass to SelectionGames)
+    // ✅ Latest recommendation cached
     private GameRecommender.Recommendation currentRec;
 
     // Quote pool
@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         fortuneOverlay = findViewById(R.id.fortuneOverlay);
         fortuneCard = findViewById(R.id.fortuneCard);
 
-        // ✅ Today Check-in bindings (Panel A now)
+        // ✅ Today Check-in bindings
         tvCheckInMood = findViewById(R.id.tvCheckInMood);
         tvCheckInStress = findViewById(R.id.tvCheckInStress);
         btnCheckInNow = findViewById(R.id.btnCheckInNow);
@@ -131,9 +131,10 @@ public class MainActivity extends AppCompatActivity {
             btnBrowseActivities.setOnClickListener(v -> {
                 Intent i = new Intent(MainActivity.this, SelectionGamesActivity.class);
 
-                // ✅ pass suggestion title if available
+                // ✅ pass a SOFT sentence, not a specific game name
                 if (currentRec != null && !TextUtils.isEmpty(currentRec.title)) {
-                    i.putExtra(SelectionGamesActivity.EXTRA_SUGGESTION_TITLE, currentRec.title);
+                    String softLine = "If you want something gentle, try something that suits your mood right now.";
+                    i.putExtra(SelectionGamesActivity.EXTRA_SUGGESTION_TITLE, softLine);
                 }
 
                 startActivity(i);
@@ -295,13 +296,16 @@ public class MainActivity extends AppCompatActivity {
                 installSwipe();
             });
         }
+
+        // ✅ IMPORTANT: compute currentRec right away (not only onResume)
+        refreshWindDownSuggestion();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         refreshTodayCheckInCard();
-        refreshWindDownSuggestion(); // updates Panel B suggestion + currentRec
+        refreshWindDownSuggestion();
     }
 
     // =========================
@@ -505,7 +509,7 @@ public class MainActivity extends AppCompatActivity {
         if (tvWindDownSuggestion == null) return;
 
         if (userId <= 0 || repo == null) {
-            tvWindDownSuggestion.setText("Suggestion: Check in to get a personalized pick.");
+            tvWindDownSuggestion.setText("Suggestion: Check in whenever you can — even a quick one helps.");
             currentRec = null;
             return;
         }
@@ -514,7 +518,7 @@ public class MainActivity extends AppCompatActivity {
         String moodText = (moodData != null) ? moodData[0] : "";
 
         if (TextUtils.isEmpty(moodText)) {
-            tvWindDownSuggestion.setText("Suggestion: Check in to get a personalized pick.");
+            tvWindDownSuggestion.setText("Suggestion: If you have energy, do a quick check-in first. If not, it’s okay.");
             currentRec = null;
             return;
         }
@@ -522,13 +526,14 @@ public class MainActivity extends AppCompatActivity {
         int moodLevel = moodTextToLevel(moodText);
         int stress = getStressLevel(userId, key);
 
-        SharedPreferences sp = getSharedPreferences("zenpath", MODE_PRIVATE);
+        // ✅ Use same prefs file (no mixing)
+        SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
         String lastGame = sp.getString("last_game", null);
 
         GameRecommender.Recommendation rec = GameRecommender.recommend(moodLevel, stress, lastGame);
 
-        // ✅ update UI + cache so Browse button can pass it
-        tvWindDownSuggestion.setText("Suggestion: " + rec.title);
+        // ✅ softer + less specific (still based on rec)
+        tvWindDownSuggestion.setText("Suggestion: If you want something gentle, try something that suits your mood right now.");
         currentRec = rec;
     }
 

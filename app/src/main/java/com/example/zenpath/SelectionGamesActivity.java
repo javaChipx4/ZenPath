@@ -3,13 +3,11 @@ package com.example.zenpath;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -23,15 +21,6 @@ public class SelectionGamesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_selection_games);
 
         // ✅ Suggestion pill text (soft suggestion, not forcing)
-        TextView tvSuggestion = findViewById(R.id.tvSuggestion);
-        if (tvSuggestion != null) {
-            String suggestion = getIntent().getStringExtra(EXTRA_SUGGESTION_TITLE);
-            if (TextUtils.isEmpty(suggestion)) {
-                tvSuggestion.setText("Suggested: Pick whatever feels right today.");
-            } else {
-                tvSuggestion.setText("Suggested: " + suggestion);
-            }
-        }
 
         // OPTIONAL: reuse your popup settings menu (inflate overlay method)
         ViewGroup rootView = findViewById(android.R.id.content);
@@ -45,7 +34,7 @@ public class SelectionGamesActivity extends AppCompatActivity {
         }
         settingsPopup.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
 
-        // Prevent closing when tapping card itself (optional but recommended)
+        // Prevent closing when tapping card itself
         View settingsCard = settingsPopup.findViewById(R.id.settingsCard);
         if (settingsCard != null) {
             settingsCard.setOnClickListener(v -> {});
@@ -124,7 +113,7 @@ public class SelectionGamesActivity extends AppCompatActivity {
                     view.animate().scaleX(1f).scaleY(1f).setDuration(90).start();
                     break;
             }
-            return false; // keep click working
+            return false;
         });
     }
 }

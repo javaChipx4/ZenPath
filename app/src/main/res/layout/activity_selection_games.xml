@@ -78,20 +78,6 @@
         app:layout_constraintTop_toBottomOf="@id/tvSubtitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
-        <TextView
-            android:id="@+id/tvSuggestion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Suggested: Pick whatever feels right today."
-            android:textColor="#1E1E1E"
-            android:textSize="12sp"
-            android:fontFamily="serif"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:gravity="center"/>
     </androidx.cardview.widget.CardView>
 
     <!-- SCROLL CONTENT -->
@@ -103,6 +89,7 @@
         android:overScrollMode="never"
         android:layout_marginTop="18dp"
         android:layout_marginBottom="14dp"
+        android:background="@drawable/bg_blue_gradient_diary"
         app:layout_constraintTop_toBottomOf="@id/pillSuggestion"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -116,7 +103,8 @@
             android:gravity="center_horizontal"
             android:paddingStart="24dp"
             android:paddingEnd="24dp"
-            android:paddingBottom="22dp">
+            android:paddingBottom="22dp"
+            android:background="@drawable/bg_blue_gradient_diary">
 
             <!-- GAME 1 -->
             <androidx.cardview.widget.CardView
@@ -136,7 +124,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
-                    <!-- background image -->
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -145,7 +132,6 @@
                         android:tint="#77FFFFFF"
                         tools:ignore="UseAppTint"/>
 
-                    <!-- content row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -179,7 +165,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
-                                android:text="Stargaze when overwhelmed."
+                                android:text="Feeling overwhelmed? Let’s slow down. Stargaze a bit and spot constellations."
                                 android:textColor="#1E1E1E"
                                 android:textSize="12sp"
                                 android:alpha="0.8"
@@ -248,7 +234,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
-                                android:text="Write it out, let it go."
+                                android:text="Got stuff on your chest? Write it out, send it off, and let that weight leave with the lantern."
                                 android:textColor="#1E1E1E"
                                 android:textSize="12sp"
                                 android:alpha="0.8"
@@ -317,7 +303,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="3dp"
-                                android:text="Get creative, no pressure."
+                                android:text="In a creative mood? Build something fun and chill—no pressure, just vibes."
                                 android:textColor="#1E1E1E"
                                 android:textSize="12sp"
                                 android:alpha="0.8"
