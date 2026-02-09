@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -38,7 +39,7 @@ public class MoodActivity extends AppCompatActivity {
     private View bottomSheet;
     private BottomSheetBehavior<View> sheetBehavior;
 
-    private TextView tvSelectedDate;
+    private TextView tvSelectedDate; // (optional in your XML; safe if null)
 
     private TextView[] moodViews;
     private int selectedMoodIndex = -1;
@@ -48,19 +49,12 @@ public class MoodActivity extends AppCompatActivity {
     private TextView tvStressValue;
     private SeekBar seekStress;
 
-    // Sun..Sat circles
-    private TextView[] dayCircles;
-    private int selectedCircleIndex = -1;
-
     private String selectedDateKey = ""; // yyyyMMdd
     private boolean isLoading = false;
 
-    // swipe-week vars
+    // swipe-week vars (kept)
     private float weekDownX = 0f;
     private boolean weekDragging = false;
-
-    // ✅ reduce visual noise: only highlight circles after user taps
-    private boolean hasCircleInteracted = false;
 
     // ✅ DB repo
     private ZenPathRepository repo;
@@ -72,13 +66,16 @@ public class MoodActivity extends AppCompatActivity {
     private static final String PREFS = "zen_path_prefs";
     private static final String KEY_CURRENT_USER = "current_user";
 
-    // ✅ soft saved feedback
+    // ✅ Saved feedback (stronger + refresh dots)
     private TextView tvSaved;
     private final Handler ui = new Handler(Looper.getMainLooper());
     private Runnable hideSavedRunnable;
-
-    // ✅ reflection debounce
     private Runnable reflectionSaveRunnable;
+
+    // ✅ Week dots (same behavior as MoodHistoryFragment)
+    private View[] dots = new View[7];      // Mon..Sun
+    private Calendar weekStartMon;
+    private int selectedIndex = 0;          // 0..6 (Mon..Sun)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,7 +120,6 @@ public class MoodActivity extends AppCompatActivity {
 
         sheetScrim = findViewById(R.id.sheetScrim);
         bottomSheet = findViewById(R.id.moodBottomSheet);
-        tvSelectedDate = findViewById(R.id.tvSelectedDate);
 
         etReflection = findViewById(R.id.etReflection);
 
@@ -139,26 +135,60 @@ public class MoodActivity extends AppCompatActivity {
         TextView tvMood4 = findViewById(R.id.tvMood4);
         moodViews = new TextView[]{tvMood0, tvMood1, tvMood2, tvMood3, tvMood4};
 
-        dayCircles = new TextView[]{
-                findViewById(R.id.circleSun),
-                findViewById(R.id.circleMon),
-                findViewById(R.id.circleTue),
-                findViewById(R.id.circleWed),
-                findViewById(R.id.circleThu),
-                findViewById(R.id.circleFri),
-                findViewById(R.id.circleSat)
-        };
+        // ✅ Dots (Mon..Sun) EXACT like fragment IDs
+        dots[0] = findViewById(R.id.dot0);
+        dots[1] = findViewById(R.id.dot1);
+        dots[2] = findViewById(R.id.dot2);
+        dots[3] = findViewById(R.id.dot3);
+        dots[4] = findViewById(R.id.dot4);
+        dots[5] = findViewById(R.id.dot5);
+        dots[6] = findViewById(R.id.dot6);
 
         setupBottomSheet();
         setupCalendar();
         setupMoodClicks();
-        setupCircleClicks();
-        installWeekSwipe();
+        installWeekSwipe();     // swipe left/right on the dot row to change week
         setupStressSaver();
         setupReflectionSaver();
 
         hideSheet(false);
 
+        // init week state (same as fragment)
+        Calendar today = Calendar.getInstance();
+        weekStartMon = getMonday(today);
+        selectedIndex = mondayIndex(today);
+
+        // dot clicks: jump to that date, load, show sheet
+        for (int i = 0; i < 7; i++) {
+            final int idx = i;
+            if (dots[i] == null) continue;
+            dots[i].setOnClickListener(vv -> {
+                selectedIndex = idx;
+                String dk = dateKey(idx);
+
+                Calendar c = parseDateKey(dk);
+                if (calendarView != null && c != null) {
+                    calendarView.setDate(c.getTimeInMillis(), false, true);
+                }
+
+                onDateSelected(dk);
+                showSheetHalf();
+            });
+        }
+
+        // week nav buttons
+        View prev = findViewById(R.id.btnPrevWeek);
+        View next = findViewById(R.id.btnNextWeek);
+        if (prev != null) prev.setOnClickListener(v -> {
+            weekStartMon.add(Calendar.DAY_OF_MONTH, -7);
+            refreshWeekDots();
+        });
+        if (next != null) next.setOnClickListener(v -> {
+            weekStartMon.add(Calendar.DAY_OF_MONTH, 7);
+            refreshWeekDots();
+        });
+
+        // open from history
         String fromHistory = getIntent().getStringExtra(EXTRA_DATE_KEY);
         if (!TextUtils.isEmpty(fromHistory)) {
             Calendar cal = parseDateKey(fromHistory);
@@ -171,6 +201,7 @@ public class MoodActivity extends AppCompatActivity {
         }
 
         selectTodayWithoutOpeningSheet();
+        refreshWeekDots();
     }
 
     // ===================== USER ID =====================
@@ -189,9 +220,7 @@ public class MoodActivity extends AppCompatActivity {
         sheetBehavior.setHideable(true);
         sheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
 
-        if (sheetScrim != null) {
-            sheetScrim.setOnClickListener(v -> hideSheet(true));
-        }
+        if (sheetScrim != null) sheetScrim.setOnClickListener(v -> hideSheet(true));
 
         sheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -261,9 +290,7 @@ public class MoodActivity extends AppCompatActivity {
         Calendar today = Calendar.getInstance();
         selectedDateKey = formatDateKey(today);
 
-        if (calendarView != null) {
-            calendarView.setDate(today.getTimeInMillis(), false, true);
-        }
+        if (calendarView != null) calendarView.setDate(today.getTimeInMillis(), false, true);
 
         onDateSelected(selectedDateKey);
     }
@@ -273,18 +300,28 @@ public class MoodActivity extends AppCompatActivity {
 
         selectedDateKey = dateKey;
 
+        // keep week/dots synced to selected date (like fragment)
+        Calendar selected = parseDateKey(dateKey);
+        if (selected != null) {
+            weekStartMon = getMonday(selected);
+            selectedIndex = mondayIndex(selected);
+        }
+
         if (tvSelectedDate != null) tvSelectedDate.setText(prettyDate(dateKey));
 
         long userId = currentUserId();
-        if (userId <= 0) return;
+        if (userId <= 0) {
+            refreshWeekDots();
+            return;
+        }
 
-        // ✅ LOAD MOOD
+        // LOAD MOOD
         String[] moodData = repo.getMoodByDate(userId, dateKey);
         String moodText = moodData != null ? moodData[0] : "";
         String reflection = moodData != null ? moodData[1] : "";
         selectedMoodIndex = moodTextToIndex(moodText);
 
-        // ✅ LOAD STRESS
+        // LOAD STRESS
         StressRow sr = getStressRow(userId, dateKey);
 
         isLoading = true;
@@ -297,13 +334,10 @@ public class MoodActivity extends AppCompatActivity {
         isLoading = false;
 
         updateMoodUI();
-
-        // ✅ update week circles but don't highlight until user taps
-        Calendar selected = parseDateKey(dateKey);
-        if (selected != null) updateWeekCircles(selected);
-
-        // hide saved label when switching dates
         hideSavedInstant();
+
+        // refresh dot states (selected / filled / empty)
+        refreshWeekDots();
     }
 
     // ===================== MOOD =====================
@@ -317,6 +351,7 @@ public class MoodActivity extends AppCompatActivity {
                 updateMoodUI();
                 saveMoodAndReflection();
                 showSavedSoft();
+                maybeSuggestGameAfterMoodSave(selectedMoodIndex);
             });
         }
     }
@@ -352,64 +387,15 @@ public class MoodActivity extends AppCompatActivity {
 
         String moodText = indexToMoodText(selectedMoodIndex);
         String reflection = etReflection != null ? etReflection.getText().toString() : "";
-
         repo.upsertMood(userId, selectedDateKey, moodText, reflection);
+
+        // make dot become filled immediately
+        refreshWeekDots();
     }
 
-    // ===================== WEEK CIRCLES =====================
-    private void setupCircleClicks() {
-        for (int i = 0; i < dayCircles.length; i++) {
-            final int idx = i;
-            if (dayCircles[i] == null) continue;
-            dayCircles[i].setOnClickListener(v -> {
-                hasCircleInteracted = true;
-                selectedCircleIndex = idx;
-                updateCircleUI();
-            });
-        }
-    }
-
-    private void updateWeekCircles(Calendar selectedDate) {
-        Calendar start = (Calendar) selectedDate.clone();
-        int dow = start.get(Calendar.DAY_OF_WEEK);
-        int diffToSun = dow - Calendar.SUNDAY;
-        start.add(Calendar.DAY_OF_MONTH, -diffToSun);
-
-        for (int i = 0; i < 7; i++) {
-            Calendar day = (Calendar) start.clone();
-            day.add(Calendar.DAY_OF_MONTH, i);
-            if (dayCircles[i] != null) {
-                dayCircles[i].setText(String.valueOf(day.get(Calendar.DAY_OF_MONTH)));
-            }
-        }
-
-        // ✅ don't highlight automatically (less noise)
-        if (!hasCircleInteracted) selectedCircleIndex = -1;
-
-        updateCircleUI();
-    }
-
-    private void updateCircleUI() {
-        for (int i = 0; i < dayCircles.length; i++) {
-            if (dayCircles[i] == null) continue;
-
-            boolean selected = (i == selectedCircleIndex);
-
-            dayCircles[i].setScaleX(selected ? 1.20f : 1.0f);
-            dayCircles[i].setScaleY(selected ? 1.20f : 1.0f);
-            dayCircles[i].setAlpha(selected ? 1.0f : 0.70f);
-
-            dayCircles[i].setTextColor(selected ? 0xFF1E1E1E : 0xFF3A3A3A);
-        }
-    }
-
-    // ===================== SWIPE WEEK =====================
+    // ===================== SWIPE WEEK (on dot row) =====================
     private void installWeekSwipe() {
-        if (dayCircles == null || dayCircles.length == 0 || dayCircles[0] == null) return;
-
-        View parent1 = (View) dayCircles[0].getParent();
-        if (parent1 == null) return;
-        View weekRow = (View) parent1.getParent();
+        View weekRow = findViewById(R.id.weekDotsRow);
         if (weekRow == null) return;
 
         weekRow.setOnTouchListener((v, event) -> {
@@ -431,34 +417,16 @@ public class MoodActivity extends AppCompatActivity {
                     float threshold = dp(60);
                     if (Math.abs(dx) < threshold) return true;
 
-                    // swiping week is a user interaction -> allow highlight after this
-                    hasCircleInteracted = true;
-
-                    if (dx < 0) shiftSelectedDateByDays(+7);
-                    else shiftSelectedDateByDays(-7);
+                    if (dx < 0) {
+                        weekStartMon.add(Calendar.DAY_OF_MONTH, 7);
+                    } else {
+                        weekStartMon.add(Calendar.DAY_OF_MONTH, -7);
+                    }
+                    refreshWeekDots();
                     return true;
             }
             return false;
         });
-    }
-
-    private void shiftSelectedDateByDays(int days) {
-        if (TextUtils.isEmpty(selectedDateKey)) {
-            selectTodayWithoutOpeningSheet();
-            return;
-        }
-
-        Calendar current = parseDateKey(selectedDateKey);
-        if (current == null) return;
-
-        current.add(Calendar.DAY_OF_MONTH, days);
-        String newKey = formatDateKey(current);
-
-        if (calendarView != null) {
-            calendarView.setDate(current.getTimeInMillis(), false, true);
-        }
-
-        onDateSelected(newKey);
     }
 
     private int dp(int dp) {
@@ -498,6 +466,18 @@ public class MoodActivity extends AppCompatActivity {
         }
     }
 
+    private void saveStressForSelectedDate(int stress) {
+        if (TextUtils.isEmpty(selectedDateKey)) return;
+
+        long userId = currentUserId();
+        if (userId <= 0) return;
+
+        StressRow sr = getStressRow(userId, selectedDateKey);
+        repo.upsertStress(userId, selectedDateKey, stress, sr.starSec, sr.lanternSec, sr.planetSec);
+
+        refreshWeekDots();
+    }
+
     // ===================== REFLECTION =====================
     private void setupReflectionSaver() {
         if (etReflection == null) return;
@@ -509,7 +489,6 @@ public class MoodActivity extends AppCompatActivity {
             @Override public void afterTextChanged(Editable s) {
                 if (isLoading) return;
 
-                // ✅ debounce: save after user pauses typing
                 if (reflectionSaveRunnable != null) ui.removeCallbacks(reflectionSaveRunnable);
 
                 reflectionSaveRunnable = () -> {
@@ -522,40 +501,41 @@ public class MoodActivity extends AppCompatActivity {
         });
     }
 
-    private void saveStressForSelectedDate(int stress) {
-        if (TextUtils.isEmpty(selectedDateKey)) return;
-
-        long userId = currentUserId();
-        if (userId <= 0) return;
-
-        StressRow sr = getStressRow(userId, selectedDateKey);
-        repo.upsertStress(userId, selectedDateKey, stress, sr.starSec, sr.lanternSec, sr.planetSec);
-    }
-
-    // ===================== SAVED FEEDBACK =====================
+    // ===================== SAVED FEEDBACK (stronger) =====================
     private void showSavedSoft() {
         if (tvSaved == null) return;
 
-        // cancel hide if already scheduled
         if (hideSavedRunnable != null) ui.removeCallbacks(hideSavedRunnable);
 
         tvSaved.setVisibility(View.VISIBLE);
         tvSaved.animate().cancel();
+
         tvSaved.setAlpha(0f);
-        tvSaved.animate().alpha(1f).setDuration(130).start();
+        tvSaved.setScaleX(0.92f);
+        tvSaved.setScaleY(0.92f);
+
+        tvSaved.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(160)
+                .start();
 
         hideSavedRunnable = () -> {
             if (tvSaved == null) return;
             tvSaved.animate()
                     .alpha(0f)
-                    .setDuration(220)
+                    .setDuration(260)
                     .withEndAction(() -> {
                         if (tvSaved != null) tvSaved.setVisibility(View.GONE);
                     })
                     .start();
         };
 
-        ui.postDelayed(hideSavedRunnable, 1200);
+        ui.postDelayed(hideSavedRunnable, 1700);
+
+        // ✅ show dot_filled immediately after any save
+        refreshWeekDots();
     }
 
     private void hideSavedInstant() {
@@ -564,6 +544,79 @@ public class MoodActivity extends AppCompatActivity {
         tvSaved.animate().cancel();
         tvSaved.setAlpha(0f);
         tvSaved.setVisibility(View.GONE);
+    }
+
+    private void maybeSuggestGameAfterMoodSave(int moodIndex) {
+        if (moodIndex > 1) return;
+
+        SharedPreferences sp = getSharedPreferences(PREFS, MODE_PRIVATE);
+        String key = "game_suggested_" + selectedDateKey;
+        if (sp.getBoolean(key, false)) return;
+        sp.edit().putBoolean(key, true).apply();
+
+        new AlertDialog.Builder(this)
+                .setTitle("Gentle suggestion")
+                .setMessage("Feeling tense today? Try a 1-minute calming game.")
+                .setPositiveButton("Try now", (d, w) -> {
+                    startActivity(new Intent(this, SelectionGamesActivity.class));
+                })
+                .setNegativeButton("Later", null)
+                .show();
+    }
+
+    // ===================== WEEK DOTS (same behavior as MoodHistoryFragment) =====================
+    private void refreshWeekDots() {
+        if (weekStartMon == null) weekStartMon = getMonday(Calendar.getInstance());
+
+        TextView tvWeekLabel = findViewById(R.id.tvWeekLabel);
+        Calendar end = (Calendar) weekStartMon.clone();
+        end.add(Calendar.DAY_OF_MONTH, 6);
+        if (tvWeekLabel != null) tvWeekLabel.setText(shortDate(weekStartMon) + " – " + shortDate(end));
+
+        for (int i = 0; i < 7; i++) {
+            String dk = dateKey(i);
+            boolean hasData = hasMoodOrNote(dk);
+            boolean sel = (i == selectedIndex);
+
+            if (dots[i] == null) continue;
+
+            if (sel) dots[i].setBackgroundResource(R.drawable.dot_selected);
+            else if (hasData) dots[i].setBackgroundResource(R.drawable.dot_filled);
+            else dots[i].setBackgroundResource(R.drawable.dot_empty);
+        }
+    }
+
+    private boolean hasMoodOrNote(String dk) {
+        long userId = currentUserId();
+        if (userId > 0) {
+            String[] data = repo.getMoodByDate(userId, dk);
+            boolean hasMood = data != null && !TextUtils.isEmpty(data[0]);
+            boolean hasNote = data != null && data.length > 1 && !TextUtils.isEmpty(data[1]);
+            return hasMood || hasNote;
+        }
+        return false;
+    }
+
+    private Calendar getMonday(Calendar c) {
+        Calendar cal = (Calendar) c.clone();
+        int d = cal.get(Calendar.DAY_OF_WEEK);
+        cal.add(Calendar.DAY_OF_MONTH, d == Calendar.SUNDAY ? -6 : Calendar.MONDAY - d);
+        return cal;
+    }
+
+    private int mondayIndex(Calendar c) {
+        int d = c.get(Calendar.DAY_OF_WEEK);
+        return d == Calendar.SUNDAY ? 6 : d - Calendar.MONDAY;
+    }
+
+    private String dateKey(int idx) {
+        Calendar c = (Calendar) weekStartMon.clone();
+        c.add(Calendar.DAY_OF_MONTH, idx);
+        return new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(c.getTime());
+    }
+
+    private String shortDate(Calendar c) {
+        return new SimpleDateFormat("MMM dd", Locale.getDefault()).format(c.getTime());
     }
 
     // ===================== STRESS ROW LOADER =====================

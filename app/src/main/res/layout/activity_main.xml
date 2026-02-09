@@ -14,7 +14,7 @@
         android:layout_height="match_parent"
         android:background="@drawable/bg_ripple">
 
-        <!-- ✅ NEW: glowing overlay (behind content) -->
+        <!-- ✅ glowing overlay (behind content) -->
         <View
             android:id="@+id/glowOverlay"
             android:layout_width="match_parent"
@@ -39,7 +39,6 @@
                 android:layout_height="match_parent"
                 android:padding="18dp">
 
-                <!-- APP TITLE -->
                 <TextView
                     android:id="@+id/tvTopTitle"
                     android:layout_width="wrap_content"
@@ -64,7 +63,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <!-- HAMBURGER -->
                 <ImageButton
                     android:id="@+id/btnMenu"
                     android:layout_width="30dp"
@@ -78,7 +76,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     tools:ignore="UseAppTint" />
 
-                <!-- PROFILE (left) -->
                 <FrameLayout
                     android:id="@+id/profileWrap"
                     android:layout_width="118dp"
@@ -87,7 +84,6 @@
                     app:layout_constraintTop_toBottomOf="@id/topDivider"
                     app:layout_constraintStart_toStartOf="parent">
 
-                    <!-- inner gray circle -->
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -95,7 +91,6 @@
                         android:background="@drawable/circle_fill_light" />
                 </FrameLayout>
 
-                <!-- USERNAME -->
                 <TextView
                     android:id="@+id/tvUsername"
                     android:layout_width="wrap_content"
@@ -109,7 +104,6 @@
                     app:layout_constraintTop_toTopOf="@id/profileWrap"
                     app:layout_constraintStart_toEndOf="@id/profileWrap" />
 
-                <!-- DATE + QUOTE PILL -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/dateQuotePill"
                     android:layout_width="0dp"
@@ -167,7 +161,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <!-- JOURNAL -->
                 <TextView
                     android:id="@+id/tvJournal"
                     android:layout_width="wrap_content"
@@ -184,7 +177,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"/>
 
-                <!-- OVAL BUTTON -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/ovalCard"
                     android:layout_width="0dp"
@@ -214,7 +206,6 @@
                         android:background="@drawable/oval_outline" />
                 </androidx.cardview.widget.CardView>
 
-                <!-- ✅ TODAY CHECK-IN CARD -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardTodayCheckIn"
                     android:layout_width="0dp"
@@ -263,6 +254,28 @@
                             android:textSize="12sp"
                             android:fontFamily="serif"/>
 
+                        <TextView
+                            android:id="@+id/tvStreak"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="🔥 0-day check-in streak"
+                            android:textColor="#1E1E1E"
+                            android:textSize="12sp"
+                            android:alpha="0.85"
+                            android:fontFamily="serif"/>
+
+                        <TextView
+                            android:id="@+id/tvWeeklyReflection"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="📝 You reflected 0x this week"
+                            android:textColor="#1E1E1E"
+                            android:textSize="12sp"
+                            android:alpha="0.85"
+                            android:fontFamily="serif"/>
+
                         <Button
                             android:id="@+id/btnCheckInNow"
                             android:layout_width="match_parent"
@@ -277,7 +290,6 @@
 
                 </androidx.cardview.widget.CardView>
 
-                <!-- SWIPE UP -->
                 <TextView
                     android:id="@+id/tvSlideHint"
                     android:layout_width="wrap_content"
@@ -366,6 +378,21 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     android:layout_marginTop="16dp"/>
 
+                <TextView
+                    android:id="@+id/tvIdentity"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Track your mood, reflect, and reset — one day at a time."
+                    android:textColor="#1E1E1E"
+                    android:textSize="12sp"
+                    android:alpha="0.75"
+                    android:fontFamily="serif"
+                    android:gravity="center"
+                    android:layout_marginTop="6dp"
+                    app:layout_constraintTop_toBottomOf="@id/tvHelloUser"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
+
                 <View
                     android:id="@+id/topCircle"
                     android:layout_width="0dp"
@@ -438,7 +465,6 @@
                         android:weekSeparatorLineColor="#E0E0E0"/>
                 </androidx.cardview.widget.CardView>
 
-                <!-- ✅ WIND DOWN CARD -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardWindDown"
                     android:layout_width="0dp"
@@ -477,7 +503,6 @@
                             android:textSize="12sp"
                             android:fontFamily="serif"/>
 
-                        <!-- ✅ suggestion line -->
                         <TextView
                             android:id="@+id/tvWindDownSuggestion"
                             android:layout_width="match_parent"

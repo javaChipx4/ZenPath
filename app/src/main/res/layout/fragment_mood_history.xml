@@ -29,9 +29,13 @@
             <!-- ===== Week navigation ===== -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="36dp"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:background="#E9E2FF"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:layout_marginBottom="10dp">
 
                 <TextView
                     android:id="@+id/btnPrevWeek"
@@ -45,13 +49,16 @@
                 <TextView
                     android:id="@+id/tvWeekLabel"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="28dp"
                     android:layout_weight="1"
+                    android:gravity="center"
                     android:text="This week"
                     android:textSize="12sp"
                     android:textColor="#1E1E1E"
                     android:fontFamily="serif"
-                    android:gravity="center"/>
+                    android:background="#DCD3FF"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"/>
 
                 <TextView
                     android:id="@+id/btnNextWeek"
@@ -66,18 +73,23 @@
             <!-- ===== Days + dots aligned ===== -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
                 android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginTop="10dp">
+                android:background="#E9E2FF"
+                android:padding="6dp"
+                android:layout_marginBottom="14dp">
 
-                <!-- MON -->
+            <!-- MON -->
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -95,10 +107,14 @@
                 <!-- TUE -->
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -116,10 +132,14 @@
                 <!-- WED -->
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -137,10 +157,14 @@
                 <!-- THU -->
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -158,10 +182,14 @@
                 <!-- FRI -->
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -179,10 +207,14 @@
                 <!-- SAT -->
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -200,10 +232,14 @@
                 <!-- SUN -->
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:gravity="center">
+                    android:gravity="center"
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"

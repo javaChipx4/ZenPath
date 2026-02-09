@@ -28,23 +28,17 @@
             android:padding="16dp">
 
             <!-- Date label -->
-            <TextView
-                android:id="@+id/tvDateTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:fontFamily="serif"
-                android:text="Date"
-                android:textColor="#1E1E1E"
-                android:textSize="13sp"
-                android:textStyle="bold" />
 
             <!-- Week navigation -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_height="36dp"
+                android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:background="#E9E2FF"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:layout_marginBottom="10dp">
 
                 <TextView
                     android:id="@+id/btnPrevWeek"
@@ -58,13 +52,16 @@
                 <TextView
                     android:id="@+id/tvWeekLabel"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="28dp"
                     android:layout_weight="1"
-                    android:fontFamily="serif"
                     android:gravity="center"
                     android:text="This week"
+                    android:textSize="12sp"
                     android:textColor="#1E1E1E"
-                    android:textSize="12sp" />
+                    android:fontFamily="serif"
+                    android:background="#DCD3FF"
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"/>
 
                 <TextView
                     android:id="@+id/btnNextWeek"
@@ -78,19 +75,23 @@
 
             <!-- Days + dots aligned (Mon..Sun) -->
             <LinearLayout
-                android:id="@+id/weekRow"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:gravity="center"
-                android:orientation="horizontal">
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:background="#E9E2FF"
+                android:padding="6dp"
+                android:layout_marginBottom="14dp">
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:orientation="vertical"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -107,10 +108,14 @@
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:orientation="vertical"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -127,10 +132,14 @@
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:orientation="vertical"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -147,10 +156,14 @@
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:orientation="vertical"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -167,10 +180,14 @@
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:orientation="vertical"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -187,10 +204,14 @@
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:orientation="vertical"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -207,10 +228,14 @@
 
                 <LinearLayout
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
+                    android:orientation="vertical"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:background="#DCD3FF"
+                    android:layout_marginEnd="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
                         android:layout_width="wrap_content"

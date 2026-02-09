@@ -60,6 +60,11 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvCheckInMood, tvCheckInStress;
     private Button btnCheckInNow;
 
+    // ✅ NEW: identity + progress widgets
+    private TextView tvIdentity;
+    private TextView tvStreak;
+    private TextView tvWeeklyReflection;
+
     // ✅ Repo
     private ZenPathRepository repo;
 
@@ -117,6 +122,11 @@ public class MainActivity extends AppCompatActivity {
         tvCheckInMood = findViewById(R.id.tvCheckInMood);
         tvCheckInStress = findViewById(R.id.tvCheckInStress);
         btnCheckInNow = findViewById(R.id.btnCheckInNow);
+
+        // ✅ NEW: identity + progress
+        tvIdentity = findViewById(R.id.tvIdentity);
+        tvStreak = findViewById(R.id.tvStreak);
+        tvWeeklyReflection = findViewById(R.id.tvWeeklyReflection);
 
         if (btnCheckInNow != null) {
             btnCheckInNow.setOnClickListener(v -> openMoodForDate(todayDateKey()));
@@ -184,6 +194,11 @@ public class MainActivity extends AppCompatActivity {
 
         if (tvUsername != null) tvUsername.setText(displayName.toUpperCase());
         if (tvHelloUser != null) tvHelloUser.setText("Hello, " + displayName + "!");
+
+        // ✅ Identity line (Panel B)
+        if (tvIdentity != null) {
+            tvIdentity.setText("Track your mood, reflect, and reset — one day at a time.");
+        }
 
         // ✅ Quote for the day
         String todayQuote = getOrCreateDailyQuote();
@@ -299,6 +314,10 @@ public class MainActivity extends AppCompatActivity {
 
         // ✅ IMPORTANT: compute currentRec right away (not only onResume)
         refreshWindDownSuggestion();
+
+        // ✅ Also refresh progress widgets once immediately
+        refreshProgressWidgets();
+        refreshTodayCheckInCard();
     }
 
     @Override
@@ -306,6 +325,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         refreshTodayCheckInCard();
         refreshWindDownSuggestion();
+        refreshProgressWidgets();
     }
 
     // =========================
@@ -496,6 +516,44 @@ public class MainActivity extends AppCompatActivity {
         if (t.contains("happy") || t.contains("great") || t.contains("amazing") || t.contains("excited")) return 5;
 
         return 3;
+    }
+
+    // =========================
+    // ✅ NEW: streak + weekly reflection
+    // =========================
+
+    private void refreshProgressWidgets() {
+        long userId = currentUserId();
+        if (userId <= 0 || repo == null) {
+            if (tvStreak != null) tvStreak.setText("🔥 0-day check-in streak");
+            if (tvWeeklyReflection != null) tvWeeklyReflection.setText("📝 You reflected 0x this week");
+            return;
+        }
+
+        int streak = computeMoodStreak(userId);
+        int reflections = repo.getWeeklyReflectionCount(userId);
+
+        if (tvStreak != null) tvStreak.setText("🔥 " + streak + "-day check-in streak");
+        if (tvWeeklyReflection != null) tvWeeklyReflection.setText("📝 You reflected " + reflections + "x this week");
+    }
+
+    private int computeMoodStreak(long userId) {
+        if (repo == null) return 0;
+
+        Calendar cal = Calendar.getInstance();
+        int streak = 0;
+
+        for (int i = 0; i < 365; i++) { // safe cap
+            String key = new SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(cal.getTime());
+
+            if (repo.hasMoodOnDate(userId, key)) {
+                streak++;
+                cal.add(Calendar.DAY_OF_MONTH, -1);
+            } else {
+                break;
+            }
+        }
+        return streak;
     }
 
     // =========================

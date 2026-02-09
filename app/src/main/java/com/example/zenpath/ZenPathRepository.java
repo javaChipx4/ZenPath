@@ -288,6 +288,49 @@ public class ZenPathRepository {
         return clean;
     }
 
+    // ✅ used for streak calculation (checks if a mood exists for that date)
+    public boolean hasMoodOnDate(long userId, String dateKey) {
+        if (userId <= 0) return false;
+
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor c = db.query(
+                ZenPathDbHelper.T_MOOD,
+                new String[]{ ZenPathDbHelper.M_ID },
+                ZenPathDbHelper.COL_USER_ID + "=? AND " + ZenPathDbHelper.M_DATE + "=? AND " +
+                        ZenPathDbHelper.M_TEXT + " IS NOT NULL AND length(trim(" + ZenPathDbHelper.M_TEXT + "))>0",
+                new String[]{ String.valueOf(userId), dateKey },
+                null, null,
+                ZenPathDbHelper.M_CREATED_AT + " DESC",
+                "1"
+        );
+
+        boolean ok = c.moveToFirst();
+        c.close();
+        return ok;
+    }
+
+    // ✅ weekly reflection count (last 7 days), based on created_at so date format won't break it
+    public int getWeeklyReflectionCount(long userId) {
+        if (userId <= 0) return 0;
+
+        long since = System.currentTimeMillis() - (7L * 24 * 60 * 60 * 1000);
+
+        SQLiteDatabase db = helper.getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT COUNT(*) FROM " + ZenPathDbHelper.T_JOURNAL +
+                        " WHERE " + ZenPathDbHelper.COL_USER_ID + "=? " +
+                        " AND " + ZenPathDbHelper.J_CREATED_AT + ">=? " +
+                        " AND " + ZenPathDbHelper.J_TEXT + " IS NOT NULL AND length(trim(" + ZenPathDbHelper.J_TEXT + "))>0",
+                new String[]{ String.valueOf(userId), String.valueOf(since) }
+        );
+
+        int count = 0;
+        if (c.moveToFirst()) count = c.getInt(0);
+        c.close();
+        return count;
+    }
+
+
     // =========================
     // ===== MOOD (PER USER) ====
     // =========================

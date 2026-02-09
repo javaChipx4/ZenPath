@@ -7,13 +7,16 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_blue_gradient_diary">
 
-    <!-- MAIN CONTENT (Calendar only) -->
+    <!-- MAIN CONTENT -->
     <LinearLayout
         android:id="@+id/mainContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="12dp">
 
         <View
             android:layout_width="match_parent"
@@ -25,12 +28,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end"
-            android:paddingTop="8dp">
+            android:paddingTop="10dp"
+            android:paddingBottom="6dp">
 
             <ImageView
                 android:id="@+id/menuIcon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:padding="10dp"
                 android:src="@drawable/ic_menu"
                 android:contentDescription="Menu" />
         </LinearLayout>
@@ -38,8 +43,8 @@
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            app:cardCornerRadius="10dp"
+            android:layout_marginTop="4dp"
+            app:cardCornerRadius="12dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="#FFFFFF">
 
@@ -55,9 +60,18 @@
                 android:unfocusedMonthDateColor="#8A8A8A"
                 android:selectedWeekBackgroundColor="#D6C9F2"
                 android:weekSeparatorLineColor="#E0E0E0"
-                android:padding="6dp"/>
+                android:padding="8dp"/>
         </androidx.cardview.widget.CardView>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tap a date to check in. Your data saves automatically."
+            android:textSize="12sp"
+            android:textColor="#33000000"
+            android:layout_marginTop="10dp"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"/>
     </LinearLayout>
 
     <!-- DIM OVERLAY -->
@@ -75,143 +89,283 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@drawable/bg_panel_purple_mt"
-        android:padding="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
         app:behavior_hideable="true"
         app:behavior_fitToContents="true"
         app:behavior_halfExpandedRatio="0.55"
         app:behavior_skipCollapsed="false">
 
+        <!-- Handle -->
         <View
-            android:layout_width="44dp"
+            android:layout_width="54dp"
             android:layout_height="5dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="10dp"
             android:background="@drawable/bg_sheet_handle"/>
 
-        <!-- Date label (now visible) -->
+        <!-- Small cue -->
         <TextView
-            android:id="@+id/tvSelectedDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Today"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="14sp"
+            android:text="Swipe down to close"
+            android:textSize="11sp"
+            android:textColor="#CCFFFFFF"
+            android:alpha="0.75"
+            android:gravity="center"
             android:layout_marginBottom="10dp"/>
 
-        <!-- Week header: SUN - SAT -->
-        <LinearLayout
-            android:layout_width="match_parent"
+        <!-- ✅ STICKY SAVED PILL -->
+        <TextView
+            android:id="@+id/tvSaved"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="7">
+            android:text="Saved ✓"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:background="@drawable/pill_saved_mt"
+            android:layout_gravity="end"
+            android:alpha="0"
+            android:visibility="gone"
+            android:layout_marginBottom="8dp" />
 
-            <TextView style="@style/DotLabel" android:text="SUN"/>
-            <TextView style="@style/DotLabel" android:text="MON"/>
-            <TextView style="@style/DotLabel" android:text="TUE"/>
-            <TextView style="@style/DotLabel" android:text="WED"/>
-            <TextView style="@style/DotLabel" android:text="THU"/>
-            <TextView style="@style/DotLabel" android:text="FRI"/>
-            <TextView style="@style/DotLabel" android:text="SAT"/>
-        </LinearLayout>
-
-        <!-- Circles row -->
+        <!-- Week navigation -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="44dp"
+            android:layout_height="36dp"
             android:orientation="horizontal"
-            android:weightSum="7"
             android:gravity="center_vertical"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="12dp">
+            android:background="#E9E2FF"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:layout_marginBottom="10dp">
 
-            <FrameLayout style="@style/DotCircleSlot">
-                <TextView
-                    android:id="@+id/circleSun"
-                    style="@style/DotCircle"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text=""
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#1E1E1E"/>
-            </FrameLayout>
+            <TextView
+                android:id="@+id/btnPrevWeek"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:text="‹"
+                android:textColor="#1E1E1E"
+                android:textSize="22sp" />
 
-            <FrameLayout style="@style/DotCircleSlot">
-                <TextView
-                    android:id="@+id/circleMon"
-                    style="@style/DotCircle"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text=""
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#1E1E1E"/>
-            </FrameLayout>
+            <TextView
+                android:id="@+id/tvWeekLabel"
+                android:layout_width="0dp"
+                android:layout_height="28dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="This week"
+                android:textSize="12sp"
+                android:textColor="#1E1E1E"
+                android:fontFamily="serif"
+                android:background="#DCD3FF"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"/>
 
-            <FrameLayout style="@style/DotCircleSlot">
-                <TextView
-                    android:id="@+id/circleTue"
-                    style="@style/DotCircle"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text=""
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#1E1E1E"/>
-            </FrameLayout>
-
-            <FrameLayout style="@style/DotCircleSlot">
-                <TextView
-                    android:id="@+id/circleWed"
-                    style="@style/DotCircle"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text=""
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#1E1E1E"/>
-            </FrameLayout>
-
-            <FrameLayout style="@style/DotCircleSlot">
-                <TextView
-                    android:id="@+id/circleThu"
-                    style="@style/DotCircle"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text=""
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#1E1E1E"/>
-            </FrameLayout>
-
-            <FrameLayout style="@style/DotCircleSlot">
-                <TextView
-                    android:id="@+id/circleFri"
-                    style="@style/DotCircle"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text=""
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#1E1E1E"/>
-            </FrameLayout>
-
-            <FrameLayout style="@style/DotCircleSlot">
-                <TextView
-                    android:id="@+id/circleSat"
-                    style="@style/DotCircle"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text=""
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:textColor="#1E1E1E"/>
-            </FrameLayout>
+            <TextView
+                android:id="@+id/btnNextWeek"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:text="›"
+                android:textColor="#1E1E1E"
+                android:textSize="22sp" />
         </LinearLayout>
 
-        <!-- Mood (PRIMARY) -->
+        <!-- ✅ Days + DOTS (Mon..Sun) EXACT like fragment -->
+        <LinearLayout
+            android:id="@+id/weekDotsRow"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:orientation="horizontal"
+            android:background="#E9E2FF"
+            android:padding="6dp"
+            android:layout_marginBottom="14dp">
+
+            <!-- MON -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#DCD3FF"
+                android:layout_marginEnd="4dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="M"
+                    android:textColor="#4A4A4A"
+                    android:textSize="10sp" />
+
+                <View
+                    android:id="@+id/dot0"
+                    style="@style/WeekDot"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+
+            <!-- TUE -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#DCD3FF"
+                android:layout_marginEnd="4dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="T"
+                    android:textColor="#4A4A4A"
+                    android:textSize="10sp" />
+
+                <View
+                    android:id="@+id/dot1"
+                    style="@style/WeekDot"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+
+            <!-- WED -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#DCD3FF"
+                android:layout_marginEnd="4dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="W"
+                    android:textColor="#4A4A4A"
+                    android:textSize="10sp" />
+
+                <View
+                    android:id="@+id/dot2"
+                    style="@style/WeekDot"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+
+            <!-- THU -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#DCD3FF"
+                android:layout_marginEnd="4dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TH"
+                    android:textColor="#4A4A4A"
+                    android:textSize="10sp" />
+
+                <View
+                    android:id="@+id/dot3"
+                    style="@style/WeekDot"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+
+            <!-- FRI -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#DCD3FF"
+                android:layout_marginEnd="4dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="F"
+                    android:textColor="#4A4A4A"
+                    android:textSize="10sp" />
+
+                <View
+                    android:id="@+id/dot4"
+                    style="@style/WeekDot"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+
+            <!-- SAT -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#DCD3FF"
+                android:layout_marginEnd="4dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SAT"
+                    android:textColor="#4A4A4A"
+                    android:textSize="10sp" />
+
+                <View
+                    android:id="@+id/dot5"
+                    style="@style/WeekDot"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+
+            <!-- SUN -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#DCD3FF"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SUN"
+                    android:textColor="#4A4A4A"
+                    android:textSize="10sp" />
+
+                <View
+                    android:id="@+id/dot6"
+                    style="@style/WeekDot"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Mood -->
         <TextView
             android:id="@+id/tvMoodTitle"
             android:layout_width="match_parent"
@@ -219,88 +373,129 @@
             android:text="How are you feeling today?"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:layout_marginTop="2dp"/>
+            android:textSize="15sp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pick one — you can always change it."
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:alpha="0.85"
+            android:layout_marginTop="4dp"/>
 
         <LinearLayout
             android:id="@+id/moodRow"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="56dp"
             android:orientation="horizontal"
-            android:weightSum="5"
-            android:layout_marginTop="8dp">
+            android:background="#E9E2FF"
+            android:padding="6dp"
+            android:layout_marginTop="10dp">
 
             <TextView
                 android:id="@+id/tvMood0"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="😭"
                 android:textSize="22sp"
                 android:clickable="true"
-                android:focusable="true"/>
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:background="#DCD3FF"/>
 
             <TextView
                 android:id="@+id/tvMood1"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:layout_marginStart="4dp"
                 android:gravity="center"
                 android:text="😠"
                 android:textSize="22sp"
                 android:clickable="true"
-                android:focusable="true"/>
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:background="#DCD3FF"/>
 
             <TextView
                 android:id="@+id/tvMood2"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:layout_marginStart="4dp"
                 android:gravity="center"
                 android:text="🫤"
                 android:textSize="22sp"
                 android:clickable="true"
-                android:focusable="true"/>
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:background="#DCD3FF"/>
 
             <TextView
                 android:id="@+id/tvMood3"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:layout_marginStart="4dp"
                 android:gravity="center"
                 android:text="🙂"
                 android:textSize="22sp"
                 android:clickable="true"
-                android:focusable="true"/>
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:background="#DCD3FF"/>
 
             <TextView
                 android:id="@+id/tvMood4"
                 android:layout_width="0dp"
-                android:layout_height="48dp"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:layout_marginStart="4dp"
                 android:gravity="center"
                 android:text="😊"
                 android:textSize="22sp"
                 android:clickable="true"
-                android:focusable="true"/>
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:background="#DCD3FF"/>
         </LinearLayout>
 
-        <!-- Stress (SECONDARY) -->
-        <TextView
-            android:id="@+id/tvStressTitle"
+        <!-- Stress -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:text="How heavy does today feel?"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp" />
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvStressTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="How heavy does today feel?"
+                android:textStyle="bold"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tvStressValue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="50%"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="13sp" />
+        </LinearLayout>
 
         <androidx.appcompat.widget.AppCompatSeekBar
             android:id="@+id/seekStress"
             android:layout_width="match_parent"
             android:layout_height="20dp"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:max="100"
             android:progress="50"
             android:progressDrawable="@drawable/progress_stress"
@@ -309,16 +504,7 @@
             android:paddingLeft="0dp"
             android:paddingRight="0dp"/>
 
-        <TextView
-            android:id="@+id/tvStressValue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:text="50%"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp" />
-
-        <!-- Reflection (OPTIONAL) -->
+        <!-- Reflection -->
         <TextView
             android:id="@+id/tvReflectionTitle"
             android:layout_width="match_parent"
@@ -326,32 +512,31 @@
             android:text="Want to share a thought?"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:layout_marginTop="14dp"/>
+            android:textSize="14sp"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Optional — but helps you notice patterns later."
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:alpha="0.85"
+            android:layout_marginTop="4dp"/>
 
         <EditText
             android:id="@+id/etReflection"
             android:layout_width="match_parent"
-            android:layout_height="110dp"
-            android:layout_marginTop="6dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="8dp"
             android:background="@drawable/bg_reflection_box_mt"
-            android:padding="10dp"
+            android:padding="12dp"
             android:gravity="top"
             android:hint="Type here… (optional)"
             android:textColor="#FFFFFF"
             android:textColorHint="#CCFFFFFF"
-            android:inputType="textMultiLine"/>
-
-        <!-- ✅ Soft saved feedback -->
-        <TextView
-            android:id="@+id/tvSaved"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Saved for today"
-            android:textColor="#CCFFFFFF"
-            android:textSize="12sp"
-            android:alpha="0"
-            android:visibility="gone"/>
+            android:inputType="textMultiLine"
+            android:lineSpacingExtra="2dp"/>
 
     </LinearLayout>
 
