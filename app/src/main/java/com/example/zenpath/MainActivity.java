@@ -4,6 +4,8 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.MotionEvent;
@@ -25,7 +27,6 @@ import java.util.Random;
 public class MainActivity extends AppCompatActivity {
 
     private ImageButton btnMenu;
-    private Button btnPlay;
     private CalendarView calendarView;
 
     private Calendar selectedCalendar;
@@ -42,27 +43,40 @@ public class MainActivity extends AppCompatActivity {
     private View bookContainer, pageLeft, pageRight, bookShadow;
     private boolean isBookAnimating = false;
 
-    // existing quote views (Panel B still uses them)
+    // existing quote views
     private TextView tvQuote, tvCenterQuote, tvSubQuote;
 
-    // NEW: top pill quote
+    // top pill quote
     private TextView tvPillQuote;
 
-    // NEW: fortune overlay
+    // fortune overlay
     private View fortuneOverlay;
     private View fortuneCard;
 
     // glow overlay
     private View glowOverlay;
 
-    // prefs keys
+    // ✅ Today Check-in card
+    private TextView tvCheckInMood, tvCheckInStress;
+    private Button btnCheckInNow;
+
+    // ✅ Repo
+    private ZenPathRepository repo;
+
+    // prefs
     private static final String PREFS = "zen_path_prefs";
     private static final String KEY_QUOTE_DATE = "daily_quote_date";
     private static final String KEY_QUOTE_TEXT = "daily_quote_text";
-
     private static final String KEY_FORTUNE_REVEAL_DATE = "fortune_reveal_date";
 
-    // Quote pool (general/positive)
+    // ✅ Wind down panel B
+    private TextView tvWindDownSuggestion;
+    private Button btnBrowseActivities;
+
+    // ✅ Latest recommendation cached (so we can pass to SelectionGames)
+    private GameRecommender.Recommendation currentRec;
+
+    // Quote pool
     private static final String[] QUOTES_DAILY = new String[]{
             "Take today slowly. Calm is still progress.",
             "You are doing better than you think.",
@@ -80,6 +94,52 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // ✅ Repo
+        repo = new ZenPathRepository(this);
+
+        // ===== Bind views =====
+        btnMenu = findViewById(R.id.btnMenu);
+        calendarView = findViewById(R.id.calendarView);
+        selectedCalendar = Calendar.getInstance();
+
+        tvQuote = findViewById(R.id.tvQuote);
+        tvCenterQuote = findViewById(R.id.tvCenterQuote);
+        tvSubQuote = findViewById(R.id.tvSubQuote);
+        glowOverlay = findViewById(R.id.glowOverlay);
+
+        // pill + fortune
+        tvPillQuote = findViewById(R.id.tvPillQuote);
+        fortuneOverlay = findViewById(R.id.fortuneOverlay);
+        fortuneCard = findViewById(R.id.fortuneCard);
+
+        // ✅ Today Check-in bindings (Panel A now)
+        tvCheckInMood = findViewById(R.id.tvCheckInMood);
+        tvCheckInStress = findViewById(R.id.tvCheckInStress);
+        btnCheckInNow = findViewById(R.id.btnCheckInNow);
+
+        if (btnCheckInNow != null) {
+            btnCheckInNow.setOnClickListener(v -> openMoodForDate(todayDateKey()));
+            installPressAnim(btnCheckInNow);
+        }
+
+        // ✅ Wind Down bindings (Panel B)
+        tvWindDownSuggestion = findViewById(R.id.tvWindDownSuggestion);
+        btnBrowseActivities = findViewById(R.id.btnBrowseActivities);
+
+        if (btnBrowseActivities != null) {
+            btnBrowseActivities.setOnClickListener(v -> {
+                Intent i = new Intent(MainActivity.this, SelectionGamesActivity.class);
+
+                // ✅ pass suggestion title if available
+                if (currentRec != null && !TextUtils.isEmpty(currentRec.title)) {
+                    i.putExtra(SelectionGamesActivity.EXTRA_SUGGESTION_TITLE, currentRec.title);
+                }
+
+                startActivity(i);
+            });
+            installPressAnim(btnBrowseActivities);
+        }
 
         // date in pill
         TextView tvDate = findViewById(R.id.tvDate);
@@ -103,37 +163,17 @@ public class MainActivity extends AppCompatActivity {
             bookContainer.setOnClickListener(v -> playOpenBookThenGoDiary());
         }
 
-        // ===== Bind views =====
-        btnMenu = findViewById(R.id.btnMenu);
-        btnPlay = findViewById(R.id.btnPlay);
-        calendarView = findViewById(R.id.calendarView);
-        selectedCalendar = Calendar.getInstance();
-
-        tvQuote = findViewById(R.id.tvQuote);              // (maybe hidden in panelA, ok)
-        tvCenterQuote = findViewById(R.id.tvCenterQuote);  // Panel B
-        tvSubQuote = findViewById(R.id.tvSubQuote);        // Panel B (optional)
-        glowOverlay = findViewById(R.id.glowOverlay);
-
-        // NEW bindings
-        tvPillQuote = findViewById(R.id.tvPillQuote);
-        fortuneOverlay = findViewById(R.id.fortuneOverlay);
-        fortuneCard = findViewById(R.id.fortuneCard);
-
         // ===== Username =====
         SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
-
-// current_user now stores userId as String (ex: "1")
         String current = prefs.getString("current_user", null);
 
         String displayName = "User";
         if (!TextUtils.isEmpty(current)) {
             try {
                 long userId = Long.parseLong(current);
-                ZenPathRepository repo = new ZenPathRepository(this);
                 String nameFromDb = repo.getUsernameById(userId);
                 if (!TextUtils.isEmpty(nameFromDb)) displayName = nameFromDb;
             } catch (NumberFormatException ignored) {
-                // fallback: if somehow current_user is a username string
                 displayName = current;
             }
         }
@@ -144,22 +184,18 @@ public class MainActivity extends AppCompatActivity {
         if (tvUsername != null) tvUsername.setText(displayName.toUpperCase());
         if (tvHelloUser != null) tvHelloUser.setText("Hello, " + displayName + "!");
 
-
-        // ✅ Generate quote for the day (always, once per day)
+        // ✅ Quote for the day
         String todayQuote = getOrCreateDailyQuote();
 
-        // ✅ If revealed today -> show it in pill immediately
-        // ✅ If not revealed -> show "Tap to reveal" and pop fortune overlay
         if (isFortuneRevealedToday()) {
             setPillQuote(todayQuote);
         } else {
             setPillQuote("Tap to reveal");
-            showFortuneOverlay(); // appears on open
+            showFortuneOverlay();
         }
 
-        // ✅ Still show quote on Panel B (optional — keep or remove)
-        // If you only want it in the top pill, comment these out:
-        setQuotesToUI(todayQuote, ""); // sub quote not used now
+        // Panel B quote
+        setQuotesToUI(todayQuote, "");
 
         // glow
         startGlowAnimation();
@@ -215,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
         if (btnMood != null) {
             btnMood.setOnClickListener(v -> {
                 settingsPopup.setVisibility(View.GONE);
-                startActivity(new Intent(MainActivity.this, MoodActivity.class));
+                openMoodForDate(todayDateKey());
             });
         }
 
@@ -226,20 +262,14 @@ public class MainActivity extends AppCompatActivity {
             installPressAnim(ovalCard);
         }
 
-        // ===== Calendar -> Mood =====
+        // ✅ Calendar -> Mood (send dateKey)
         if (calendarView != null) {
             calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
                 selectedCalendar.set(year, month, dayOfMonth);
-                startActivity(new Intent(MainActivity.this, MoodActivity.class));
+                String dateKey = new SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+                        .format(selectedCalendar.getTime());
+                openMoodForDate(dateKey);
             });
-        }
-
-        // ===== Play =====
-        if (btnPlay != null) {
-            btnPlay.setOnClickListener(v ->
-                    startActivity(new Intent(MainActivity.this, SelectionGamesActivity.class))
-            );
-            installPressAnim(btnPlay);
         }
 
         if (btnMenu != null) installPressAnim(btnMenu);
@@ -267,8 +297,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshTodayCheckInCard();
+        refreshWindDownSuggestion(); // updates Panel B suggestion + currentRec
+    }
+
     // =========================
-    // ✅ Quote of the day (no mood)
+    // ✅ Quote of the day
     // =========================
 
     private String getOrCreateDailyQuote() {
@@ -322,15 +359,13 @@ public class MainActivity extends AppCompatActivity {
         fortuneOverlay.setAlpha(0f);
         fortuneOverlay.animate().alpha(1f).setDuration(180).start();
 
-        // Tap card to reveal
         if (fortuneCard != null) {
             fortuneCard.setOnClickListener(v -> revealFortune());
             installPressAnim(fortuneCard);
         }
 
-        // Optional: block clicks behind overlay
         fortuneOverlay.setOnClickListener(v -> {
-            // do nothing (force reveal)
+            // force reveal (no dismiss)
         });
     }
 
@@ -351,7 +386,6 @@ public class MainActivity extends AppCompatActivity {
         String quote = getSharedPreferences(PREFS, MODE_PRIVATE).getString(KEY_QUOTE_TEXT, "");
         if (TextUtils.isEmpty(quote)) quote = getOrCreateDailyQuote();
 
-        // small pop animation
         if (fortuneCard != null) {
             fortuneCard.animate()
                     .scaleX(1.06f).scaleY(1.06f)
@@ -362,31 +396,140 @@ public class MainActivity extends AppCompatActivity {
 
         markFortuneRevealedToday();
         setPillQuote(quote);
-
-        // also update Panel B quote if you want it synced
         setQuotesToUI(quote, "");
 
-        // close
         if (fortuneOverlay != null) {
             fortuneOverlay.postDelayed(this::hideFortuneOverlay, 280);
         }
     }
 
+    private void setQuotesToUI(String quote, String sub) {
+        if (tvQuote != null && !TextUtils.isEmpty(quote)) tvQuote.setText(quote);
+        if (tvCenterQuote != null && !TextUtils.isEmpty(quote)) tvCenterQuote.setText(quote);
+        if (tvSubQuote != null) tvSubQuote.setText(sub);
+    }
+
     // =========================
-    // ✅ Keep your existing UI quote setters
+    // ✅ Today Check-in card logic
     // =========================
 
-    private void setQuotesToUI(String quote, String sub) {
-        if (tvQuote != null && !TextUtils.isEmpty(quote)) {
-            tvQuote.setText(quote);
+    private void openMoodForDate(String dateKey) {
+        Intent i = new Intent(this, MoodActivity.class);
+        i.putExtra(MoodActivity.EXTRA_DATE_KEY, dateKey);
+        startActivity(i);
+    }
+
+    private long currentUserId() {
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        String s = prefs.getString("current_user", null);
+        if (TextUtils.isEmpty(s)) return -1;
+        try { return Long.parseLong(s); } catch (Exception e) { return -1; }
+    }
+
+    private void refreshTodayCheckInCard() {
+        String key = todayDateKey();
+        long userId = currentUserId();
+
+        if (userId <= 0) {
+            if (tvCheckInMood != null) tvCheckInMood.setText("Mood: —");
+            if (tvCheckInStress != null) tvCheckInStress.setText("Stress: —");
+            if (btnCheckInNow != null) btnCheckInNow.setText("Check in");
+            return;
         }
-        if (tvCenterQuote != null && !TextUtils.isEmpty(quote)) {
-            tvCenterQuote.setText(quote);
+
+        String[] moodData = (repo != null) ? repo.getMoodByDate(userId, key) : null;
+        String moodText = (moodData != null) ? moodData[0] : "";
+
+        if (tvCheckInMood != null) {
+            tvCheckInMood.setText(TextUtils.isEmpty(moodText)
+                    ? "Mood: Not checked in yet"
+                    : "Mood: " + moodText);
         }
-        if (tvSubQuote != null) {
-            // you can hide/remove this if you want
-            tvSubQuote.setText(sub);
+
+        int stress = getStressLevel(userId, key);
+        if (tvCheckInStress != null) tvCheckInStress.setText("Stress: " + stress + "%");
+
+        if (btnCheckInNow != null) {
+            btnCheckInNow.setText(TextUtils.isEmpty(moodText) ? "Check in" : "Edit check-in");
         }
+    }
+
+    private int getStressLevel(long userId, String dateKey) {
+        int out = 50;
+
+        ZenPathDbHelper helper = new ZenPathDbHelper(this);
+        try (SQLiteDatabase db = helper.getReadableDatabase()) {
+
+            String sql =
+                    "SELECT " + ZenPathDbHelper.S_LEVEL +
+                            " FROM " + ZenPathDbHelper.T_STRESS +
+                            " WHERE " + ZenPathDbHelper.COL_USER_ID + "=? AND " + ZenPathDbHelper.S_DATE + "=? " +
+                            " ORDER BY " + ZenPathDbHelper.S_CREATED_AT + " DESC LIMIT 1";
+
+            try (Cursor c = db.rawQuery(sql, new String[]{String.valueOf(userId), dateKey})) {
+                if (c.moveToFirst()) out = c.getInt(0);
+            }
+
+        } catch (Exception ignored) { }
+
+        return out;
+    }
+
+    private int moodTextToLevel(String moodText) {
+        if (TextUtils.isEmpty(moodText)) return 3;
+
+        String t = moodText.trim().toLowerCase();
+
+        try {
+            int n = Integer.parseInt(t);
+            if (n >= 1 && n <= 5) return n;
+        } catch (Exception ignored) {}
+
+        if (t.contains("sad") || t.contains("down") || t.contains("depress") || t.contains("low")) return 1;
+        if (t.contains("anx") || t.contains("stressed") || t.contains("overwhelm") || t.contains("upset")) return 2;
+        if (t.contains("okay") || t.contains("neutral") || t.contains("meh") || t.contains("fine")) return 3;
+        if (t.contains("good") || t.contains("calm") || t.contains("better") || t.contains("content")) return 4;
+        if (t.contains("happy") || t.contains("great") || t.contains("amazing") || t.contains("excited")) return 5;
+
+        return 3;
+    }
+
+    // =========================
+    // ✅ Wind down suggestion (Panel B)
+    // =========================
+
+    private void refreshWindDownSuggestion() {
+        String key = todayDateKey();
+        long userId = currentUserId();
+
+        if (tvWindDownSuggestion == null) return;
+
+        if (userId <= 0 || repo == null) {
+            tvWindDownSuggestion.setText("Suggestion: Check in to get a personalized pick.");
+            currentRec = null;
+            return;
+        }
+
+        String[] moodData = repo.getMoodByDate(userId, key);
+        String moodText = (moodData != null) ? moodData[0] : "";
+
+        if (TextUtils.isEmpty(moodText)) {
+            tvWindDownSuggestion.setText("Suggestion: Check in to get a personalized pick.");
+            currentRec = null;
+            return;
+        }
+
+        int moodLevel = moodTextToLevel(moodText);
+        int stress = getStressLevel(userId, key);
+
+        SharedPreferences sp = getSharedPreferences("zenpath", MODE_PRIVATE);
+        String lastGame = sp.getString("last_game", null);
+
+        GameRecommender.Recommendation rec = GameRecommender.recommend(moodLevel, stress, lastGame);
+
+        // ✅ update UI + cache so Browse button can pass it
+        tvWindDownSuggestion.setText("Suggestion: " + rec.title);
+        currentRec = rec;
     }
 
     // =========================
@@ -437,7 +580,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // =========================
-    // Existing book + swipe code (UNCHANGED)
+    // Book overlay
     // =========================
 
     private void showBookOverlay() {
@@ -556,6 +699,10 @@ public class MainActivity extends AppCompatActivity {
             }, 360);
         });
     }
+
+    // =========================
+    // Swipe panels
+    // =========================
 
     private void setExactHeight(View v, int h) {
         ViewGroup.LayoutParams lp = v.getLayoutParams();

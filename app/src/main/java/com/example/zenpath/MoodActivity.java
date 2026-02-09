@@ -1,8 +1,11 @@
+// java/com/example/zenpath/MoodActivity.java
 package com.example.zenpath;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -42,7 +45,6 @@ public class MoodActivity extends AppCompatActivity {
 
     private EditText etReflection;
 
-    // ✅ stress percent label (if you added it)
     private TextView tvStressValue;
     private SeekBar seekStress;
 
@@ -57,6 +59,9 @@ public class MoodActivity extends AppCompatActivity {
     private float weekDownX = 0f;
     private boolean weekDragging = false;
 
+    // ✅ reduce visual noise: only highlight circles after user taps
+    private boolean hasCircleInteracted = false;
+
     // ✅ DB repo
     private ZenPathRepository repo;
 
@@ -66,6 +71,14 @@ public class MoodActivity extends AppCompatActivity {
 
     private static final String PREFS = "zen_path_prefs";
     private static final String KEY_CURRENT_USER = "current_user";
+
+    // ✅ soft saved feedback
+    private TextView tvSaved;
+    private final Handler ui = new Handler(Looper.getMainLooper());
+    private Runnable hideSavedRunnable;
+
+    // ✅ reflection debounce
+    private Runnable reflectionSaveRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +128,9 @@ public class MoodActivity extends AppCompatActivity {
         etReflection = findViewById(R.id.etReflection);
 
         seekStress = findViewById(R.id.seekStress);
-        tvStressValue = findViewById(R.id.tvStressValue); // if exists in your XML
+        tvStressValue = findViewById(R.id.tvStressValue);
+
+        tvSaved = findViewById(R.id.tvSaved);
 
         TextView tvMood0 = findViewById(R.id.tvMood0);
         TextView tvMood1 = findViewById(R.id.tvMood1);
@@ -275,7 +290,7 @@ public class MoodActivity extends AppCompatActivity {
         isLoading = true;
 
         if (seekStress != null) seekStress.setProgress(sr.level);
-        updateStressUI(sr.level); // ✅ sets % text + drawable color
+        updateStressUI(sr.level);
 
         if (etReflection != null) etReflection.setText(reflection == null ? "" : reflection);
 
@@ -283,8 +298,12 @@ public class MoodActivity extends AppCompatActivity {
 
         updateMoodUI();
 
+        // ✅ update week circles but don't highlight until user taps
         Calendar selected = parseDateKey(dateKey);
         if (selected != null) updateWeekCircles(selected);
+
+        // hide saved label when switching dates
+        hideSavedInstant();
     }
 
     // ===================== MOOD =====================
@@ -297,6 +316,7 @@ public class MoodActivity extends AppCompatActivity {
                 selectedMoodIndex = idx;
                 updateMoodUI();
                 saveMoodAndReflection();
+                showSavedSoft();
             });
         }
     }
@@ -342,6 +362,7 @@ public class MoodActivity extends AppCompatActivity {
             final int idx = i;
             if (dayCircles[i] == null) continue;
             dayCircles[i].setOnClickListener(v -> {
+                hasCircleInteracted = true;
                 selectedCircleIndex = idx;
                 updateCircleUI();
             });
@@ -362,7 +383,9 @@ public class MoodActivity extends AppCompatActivity {
             }
         }
 
-        selectedCircleIndex = diffToSun;
+        // ✅ don't highlight automatically (less noise)
+        if (!hasCircleInteracted) selectedCircleIndex = -1;
+
         updateCircleUI();
     }
 
@@ -374,7 +397,7 @@ public class MoodActivity extends AppCompatActivity {
 
             dayCircles[i].setScaleX(selected ? 1.20f : 1.0f);
             dayCircles[i].setScaleY(selected ? 1.20f : 1.0f);
-            dayCircles[i].setAlpha(selected ? 1.0f : 0.55f);
+            dayCircles[i].setAlpha(selected ? 1.0f : 0.70f);
 
             dayCircles[i].setTextColor(selected ? 0xFF1E1E1E : 0xFF3A3A3A);
         }
@@ -407,6 +430,9 @@ public class MoodActivity extends AppCompatActivity {
                     float dx = event.getRawX() - weekDownX;
                     float threshold = dp(60);
                     if (Math.abs(dx) < threshold) return true;
+
+                    // swiping week is a user interaction -> allow highlight after this
+                    hasCircleInteracted = true;
 
                     if (dx < 0) shiftSelectedDateByDays(+7);
                     else shiftSelectedDateByDays(-7);
@@ -448,15 +474,17 @@ public class MoodActivity extends AppCompatActivity {
 
         seekStress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                updateStressUI(progress); // ✅ updates drawable + percent text
-                if (fromUser && !isLoading) saveStressForSelectedDate(progress);
+                updateStressUI(progress);
+                if (fromUser && !isLoading) {
+                    saveStressForSelectedDate(progress);
+                    showSavedSoft();
+                }
             }
             @Override public void onStartTrackingTouch(SeekBar seekBar) {}
             @Override public void onStopTrackingTouch(SeekBar seekBar) {}
         });
     }
 
-    // ✅ This matches StressHistoryFragment logic (low/med/high)
     private void updateStressUI(int stress) {
         if (tvStressValue != null) tvStressValue.setText(stress + "%");
 
@@ -477,8 +505,19 @@ public class MoodActivity extends AppCompatActivity {
         etReflection.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
             @Override public void afterTextChanged(Editable s) {
-                if (!isLoading) saveMoodAndReflection();
+                if (isLoading) return;
+
+                // ✅ debounce: save after user pauses typing
+                if (reflectionSaveRunnable != null) ui.removeCallbacks(reflectionSaveRunnable);
+
+                reflectionSaveRunnable = () -> {
+                    saveMoodAndReflection();
+                    showSavedSoft();
+                };
+
+                ui.postDelayed(reflectionSaveRunnable, 450);
             }
         });
     }
@@ -491,6 +530,40 @@ public class MoodActivity extends AppCompatActivity {
 
         StressRow sr = getStressRow(userId, selectedDateKey);
         repo.upsertStress(userId, selectedDateKey, stress, sr.starSec, sr.lanternSec, sr.planetSec);
+    }
+
+    // ===================== SAVED FEEDBACK =====================
+    private void showSavedSoft() {
+        if (tvSaved == null) return;
+
+        // cancel hide if already scheduled
+        if (hideSavedRunnable != null) ui.removeCallbacks(hideSavedRunnable);
+
+        tvSaved.setVisibility(View.VISIBLE);
+        tvSaved.animate().cancel();
+        tvSaved.setAlpha(0f);
+        tvSaved.animate().alpha(1f).setDuration(130).start();
+
+        hideSavedRunnable = () -> {
+            if (tvSaved == null) return;
+            tvSaved.animate()
+                    .alpha(0f)
+                    .setDuration(220)
+                    .withEndAction(() -> {
+                        if (tvSaved != null) tvSaved.setVisibility(View.GONE);
+                    })
+                    .start();
+        };
+
+        ui.postDelayed(hideSavedRunnable, 1200);
+    }
+
+    private void hideSavedInstant() {
+        if (tvSaved == null) return;
+        if (hideSavedRunnable != null) ui.removeCallbacks(hideSavedRunnable);
+        tvSaved.animate().cancel();
+        tvSaved.setAlpha(0f);
+        tvSaved.setVisibility(View.GONE);
     }
 
     // ===================== STRESS ROW LOADER =====================

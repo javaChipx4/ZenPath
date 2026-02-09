@@ -248,11 +248,11 @@
                 android:gravity="center"
                 android:layout_marginTop="10dp">
 
-                <TextView android:id="@+id/emoji0" style="@style/EmojiItem" android:text="😁"/>
-                <TextView android:id="@+id/emoji1" style="@style/EmojiItem" android:text="😌"/>
-                <TextView android:id="@+id/emoji2" style="@style/EmojiItem" android:text="😐"/>
-                <TextView android:id="@+id/emoji3" style="@style/EmojiItem" android:text="🥰"/>
-                <TextView android:id="@+id/emoji4" style="@style/EmojiItem" android:text="😭"/>
+                <TextView android:id="@+id/emoji0" style="@style/EmojiItem" android:text="😭"/>
+                <TextView android:id="@+id/emoji1" style="@style/EmojiItem" android:text="😠"/>
+                <TextView android:id="@+id/emoji2" style="@style/EmojiItem" android:text="🫤"/>
+                <TextView android:id="@+id/emoji3" style="@style/EmojiItem" android:text="🙂"/>
+                <TextView android:id="@+id/emoji4" style="@style/EmojiItem" android:text="😊"/>
             </LinearLayout>
 
             <!-- ✅ NEW: Mood Quote (above note card) -->

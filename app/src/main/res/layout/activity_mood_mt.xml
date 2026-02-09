@@ -89,12 +89,12 @@
             android:layout_marginBottom="12dp"
             android:background="@drawable/bg_sheet_handle"/>
 
-        <!-- optional label (hidden) -->
+        <!-- Date label (now visible) -->
         <TextView
             android:id="@+id/tvSelectedDate"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:visibility="gone"
+            android:text="Today"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
             android:textSize="14sp"
@@ -124,7 +124,7 @@
             android:weightSum="7"
             android:gravity="center_vertical"
             android:layout_marginTop="6dp"
-            android:layout_marginBottom="10dp">
+            android:layout_marginBottom="12dp">
 
             <FrameLayout style="@style/DotCircleSlot">
                 <TextView
@@ -211,14 +211,15 @@
             </FrameLayout>
         </LinearLayout>
 
-        <!-- Mood -->
+        <!-- Mood (PRIMARY) -->
         <TextView
+            android:id="@+id/tvMoodTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="MOOD:"
+            android:text="How are you feeling today?"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:layout_marginTop="4dp"/>
+            android:layout_marginTop="2dp"/>
 
         <LinearLayout
             android:id="@+id/moodRow"
@@ -226,7 +227,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:weightSum="5"
-            android:layout_marginTop="6dp">
+            android:layout_marginTop="8dp">
 
             <TextView
                 android:id="@+id/tvMood0"
@@ -234,7 +235,7 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="😁"
+                android:text="😭"
                 android:textSize="22sp"
                 android:clickable="true"
                 android:focusable="true"/>
@@ -245,7 +246,7 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="🙂"
+                android:text="😠"
                 android:textSize="22sp"
                 android:clickable="true"
                 android:focusable="true"/>
@@ -256,7 +257,7 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="😐"
+                android:text="🫤"
                 android:textSize="22sp"
                 android:clickable="true"
                 android:focusable="true"/>
@@ -267,7 +268,7 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="🥰"
+                android:text="🙂"
                 android:textSize="22sp"
                 android:clickable="true"
                 android:focusable="true"/>
@@ -278,38 +279,19 @@
                 android:layout_height="48dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="😭"
+                android:text="😊"
                 android:textSize="22sp"
                 android:clickable="true"
                 android:focusable="true"/>
         </LinearLayout>
 
-        <!-- Reflection -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="REFLECTION:"
-            android:textStyle="bold"
-            android:textColor="#FFFFFF"
-            android:layout_marginTop="14dp"/>
-
-        <EditText
-            android:id="@+id/etReflection"
-            android:layout_width="match_parent"
-            android:layout_height="110dp"
-            android:layout_marginTop="6dp"
-            android:background="@drawable/bg_reflection_box_mt"
-            android:padding="10dp"
-            android:gravity="top"
-            android:inputType="textMultiLine"/>
-
-        <!-- ✅ NEW STRESS BAR (looks like your screenshot but draggable) -->
+        <!-- Stress (SECONDARY) -->
         <TextView
             android:id="@+id/tvStressTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
-            android:text="Stress Level"
+            android:text="How heavy does today feel?"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
             android:textSize="14sp" />
@@ -335,6 +317,41 @@
             android:text="50%"
             android:textColor="#FFFFFF"
             android:textSize="12sp" />
+
+        <!-- Reflection (OPTIONAL) -->
+        <TextView
+            android:id="@+id/tvReflectionTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Want to share a thought?"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            android:layout_marginTop="14dp"/>
+
+        <EditText
+            android:id="@+id/etReflection"
+            android:layout_width="match_parent"
+            android:layout_height="110dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_reflection_box_mt"
+            android:padding="10dp"
+            android:gravity="top"
+            android:hint="Type here… (optional)"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#CCFFFFFF"
+            android:inputType="textMultiLine"/>
+
+        <!-- ✅ Soft saved feedback -->
+        <TextView
+            android:id="@+id/tvSaved"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Saved for today"
+            android:textColor="#CCFFFFFF"
+            android:textSize="12sp"
+            android:alpha="0"
+            android:visibility="gone"/>
 
     </LinearLayout>
 

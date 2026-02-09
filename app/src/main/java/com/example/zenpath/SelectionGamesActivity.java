@@ -3,21 +3,35 @@ package com.example.zenpath;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class SelectionGamesActivity extends AppCompatActivity {
 
+    public static final String EXTRA_SUGGESTION_TITLE = "extra_suggestion_title";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_selection_games);
+
+        // ✅ Suggestion pill text (soft suggestion, not forcing)
+        TextView tvSuggestion = findViewById(R.id.tvSuggestion);
+        if (tvSuggestion != null) {
+            String suggestion = getIntent().getStringExtra(EXTRA_SUGGESTION_TITLE);
+            if (TextUtils.isEmpty(suggestion)) {
+                tvSuggestion.setText("Suggested: Pick whatever feels right today.");
+            } else {
+                tvSuggestion.setText("Suggested: " + suggestion);
+            }
+        }
 
         // OPTIONAL: reuse your popup settings menu (inflate overlay method)
         ViewGroup rootView = findViewById(android.R.id.content);
@@ -37,7 +51,7 @@ public class SelectionGamesActivity extends AppCompatActivity {
             settingsCard.setOnClickListener(v -> {});
         }
 
-// Buttons inside popup
+        // Buttons inside popup
         ImageButton btnHome = settingsPopup.findViewById(R.id.btnHome);
         ImageButton btnBack = settingsPopup.findViewById(R.id.btnBack);
         ImageButton btnHistory = settingsPopup.findViewById(R.id.btnHistory);
@@ -65,13 +79,13 @@ public class SelectionGamesActivity extends AppCompatActivity {
             });
         }
 
-
         if (btnMood != null) {
             btnMood.setOnClickListener(v -> {
                 settingsPopup.setVisibility(View.GONE);
                 startActivity(new Intent(SelectionGamesActivity.this, MoodActivity.class));
             });
         }
+
         View cardConstella = findViewById(R.id.cardConstella);
         View cardLantelle = findViewById(R.id.cardLantelle);
         View cardAsthera = findViewById(R.id.cardAsthera);
@@ -80,15 +94,20 @@ public class SelectionGamesActivity extends AppCompatActivity {
         installPressAnim(cardLantelle);
         installPressAnim(cardAsthera);
 
-        cardConstella.setOnClickListener(v ->
-                startActivity(new Intent(this, StarSweepIntroActivity.class)));
+        if (cardConstella != null) {
+            cardConstella.setOnClickListener(v ->
+                    startActivity(new Intent(this, StarSweepIntroActivity.class)));
+        }
 
-        cardLantelle.setOnClickListener(v ->
-                startActivity(new Intent(this, LanternReleaseActivity.class)));
+        if (cardLantelle != null) {
+            cardLantelle.setOnClickListener(v ->
+                    startActivity(new Intent(this, LanternReleaseActivity.class)));
+        }
 
-        cardAsthera.setOnClickListener(v ->
-                startActivity(new Intent(this, PlanetActivity.class)));
-
+        if (cardAsthera != null) {
+            cardAsthera.setOnClickListener(v ->
+                    startActivity(new Intent(this, PlanetActivity.class)));
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -98,15 +117,14 @@ public class SelectionGamesActivity extends AppCompatActivity {
         v.setOnTouchListener((view, event) -> {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
-                    view.animate().scaleX(0.98f).scaleY(0.98f).setDuration(70).start();
+                    view.animate().scaleX(0.985f).scaleY(0.985f).setDuration(70).start();
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
                     view.animate().scaleX(1f).scaleY(1f).setDuration(90).start();
                     break;
             }
-            // return false so click still works
-            return false;
+            return false; // keep click working
         });
     }
 }
