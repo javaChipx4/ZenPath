@@ -32,6 +32,12 @@
             android:orientation="vertical"
             android:background="@drawable/bg_blue_gradient_diary">
 
+            <!-- ✅ OPEN BOOK OVERLAY should be above everything -->
+            <include
+                android:id="@+id/includeOpenBook"
+                layout="@layout/overlay_open_book" />
+
+
             <!-- PANEL A -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/panelA"
