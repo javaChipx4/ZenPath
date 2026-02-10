@@ -14,10 +14,9 @@ public class StarSweepIntroActivity extends AppCompatActivity {
         setContentView(R.layout.activity_star_sweep_intro);
 
         Button btnStart = findViewById(R.id.btnStart);
-        Button btnSkip = findViewById(R.id.btnSkip);
+
 
         btnStart.setOnClickListener(v -> openGame());
-        btnSkip.setOnClickListener(v -> openGame());
     }
 
     private void openGame() {

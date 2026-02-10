@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
@@ -50,6 +51,10 @@ public class PlanetActivity extends AppCompatActivity {
     private View pauseOverlay;
     private TextView btnResume, btnRestart, btnBackToSelection;
 
+    // ✅ Volume (inside pauseOverlay if present)
+    private SeekBar seekVolume;
+    private ImageView imgVolume;
+
     private final int[] swatchColors = new int[]{
             Color.parseColor("#BFD6FF"),
             Color.parseColor("#C6B7E2"),
@@ -67,7 +72,7 @@ public class PlanetActivity extends AppCompatActivity {
 
     // ✅ Play time tracker
     private GameTimeTracker playTracker;
-    private boolean playTimeSaved = false; // ✅ prevents double save
+    private boolean playTimeSaved = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,38 +97,28 @@ public class PlanetActivity extends AppCompatActivity {
         }
     }
 
-    // =========================
-    // Bind + Setup
-    // =========================
-
     private void bindViews() {
         spaceView = findViewById(R.id.spaceView);
 
-        // top buttons
         ImageButton btnInfo = findViewById(R.id.btnInfo);
         ImageButton btnSave = findViewById(R.id.btnSave);
         ImageButton menuIcon = findViewById(R.id.menuIcon);
 
-        // modes
         btnMove = findViewById(R.id.btnMove);
         btnStars = findViewById(R.id.btnStars);
         btnUndo = findViewById(R.id.btnUndo);
         btnTool = findViewById(R.id.btnTool);
 
-        // planets + play
         btnPlanets = findViewById(R.id.btnPlanets);
         btnPlayPlanets = findViewById(R.id.btnPlayPlanets);
 
-        // clear
         btnClearAll = findViewById(R.id.btnClearAll);
         btnClearObject = findViewById(R.id.btnClearObject);
 
-        // tool panel
         toolsPanel = findViewById(R.id.toolsPanel);
         btnMarkerTool = findViewById(R.id.btnMarkerTool);
         btnEraserTool = findViewById(R.id.btnEraserTool);
 
-        // swatches
         sw1 = findViewById(R.id.sw1);
         sw2 = findViewById(R.id.sw2);
         sw3 = findViewById(R.id.sw3);
@@ -132,21 +127,17 @@ public class PlanetActivity extends AppCompatActivity {
         sw6 = findViewById(R.id.sw6);
         swatches = new View[]{sw1, sw2, sw3, sw4, sw5, sw6};
 
-        // sliders
         sbR = findViewById(R.id.sbR);
         sbG = findViewById(R.id.sbG);
         sbB = findViewById(R.id.sbB);
         sbMarkerSize = findViewById(R.id.sbMarkerSize);
 
-        // overlays
         instructionsOverlay = findViewById(R.id.instructionsOverlay);
         pauseOverlay = findViewById(R.id.pauseOverlay);
 
-        // instructions overlay button (inside include)
         if (instructionsOverlay != null) btnStartPlay = instructionsOverlay.findViewById(R.id.btnStartPlay);
         else btnStartPlay = findViewById(R.id.btnStartPlay);
 
-        // top button behavior
         if (btnInfo != null) btnInfo.setOnClickListener(v -> showInstructionsOverlay(true));
         if (btnSave != null) btnSave.setOnClickListener(v -> {
             saveStateToPrefs(false);
@@ -156,24 +147,23 @@ public class PlanetActivity extends AppCompatActivity {
     }
 
     private void setupOverlays() {
-        // instructions close
         if (btnStartPlay != null) btnStartPlay.setOnClickListener(v -> hideInstructionsOverlay());
 
-        // pause overlay bindings
         if (pauseOverlay != null) {
             View pauseCard = pauseOverlay.findViewById(R.id.pauseCard);
             btnResume = pauseOverlay.findViewById(R.id.btnResume);
             btnRestart = pauseOverlay.findViewById(R.id.btnRestart);
             btnBackToSelection = pauseOverlay.findViewById(R.id.btnBackToSelection);
 
-            // tap outside -> close
-            pauseOverlay.setOnClickListener(v -> hidePause());
+            // ✅ Volume controls (optional if your pause overlay xml includes them)
+            seekVolume = pauseOverlay.findViewById(R.id.seekVolume);
+            imgVolume = pauseOverlay.findViewById(R.id.imgVolume);
+            setupVolumeSeekIfPresent();
 
-            // tap inside card -> do nothing
+            pauseOverlay.setOnClickListener(v -> hidePause());
             if (pauseCard != null) pauseCard.setOnClickListener(v -> {});
         }
 
-        // pause buttons
         if (btnResume != null) btnResume.setOnClickListener(v -> hidePause());
         if (btnRestart != null) btnRestart.setOnClickListener(v -> {
             hidePause();
@@ -182,9 +172,38 @@ public class PlanetActivity extends AppCompatActivity {
         if (btnBackToSelection != null) btnBackToSelection.setOnClickListener(v -> {
             hidePause();
             savePlayTimeOnce();
+            playMusic(MusicService.TRACK_MAIN);
             startActivity(new Intent(PlanetActivity.this, SelectionGamesActivity.class));
             finish();
         });
+    }
+
+    private void setupVolumeSeekIfPresent() {
+        if (seekVolume == null) return;
+
+        // init from saved volume
+        float vol = MusicController.loadVolume(this); // 0..1
+        int progress = (int) (vol * 100f);
+        seekVolume.setMax(100);
+        seekVolume.setProgress(progress);
+        updateVolumeIcon(progress);
+
+        seekVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(SeekBar seekBar, int p, boolean fromUser) {
+                float v = p / 100f;
+                setMusicVolume(v);
+                updateVolumeIcon(p);
+            }
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+    }
+
+    private void updateVolumeIcon(int p) {
+        if (imgVolume == null) return;
+        // simple icon swap (optional)
+        if (p <= 1) imgVolume.setImageResource(android.R.drawable.ic_lock_silent_mode);
+        else imgVolume.setImageResource(android.R.drawable.ic_lock_silent_mode_off);
     }
 
     private void setupBackHandling() {
@@ -328,7 +347,7 @@ public class PlanetActivity extends AppCompatActivity {
     }
 
     // =========================
-    // Play time saving (avoid double count)
+    // Play time saving
     // =========================
     private void savePlayTimeOnce() {
         if (playTimeSaved) return;
@@ -336,13 +355,14 @@ public class PlanetActivity extends AppCompatActivity {
         if (playTracker != null) playTracker.stopAndSave(this);
     }
 
-    // ✅ start tracking when visible
     @Override
     protected void onResume() {
         super.onResume();
         playTimeSaved = false;
         if (playTracker == null) playTracker = new GameTimeTracker("Planet");
         playTracker.start();
+
+        playMusic(MusicService.TRACK_ASTHERA);
     }
 
     @Override
@@ -350,10 +370,14 @@ public class PlanetActivity extends AppCompatActivity {
         super.onPause();
         saveStateToPrefs(false);
         savePlayTimeOnce();
+
+        // ⚠️ don’t always force main here if you're just opening overlays.
+        // But onPause means you're leaving the activity, so OK:
+        playMusic(MusicService.TRACK_MAIN);
     }
 
     // =========================
-    // Pause + Instructions UX
+    // Pause UX
     // =========================
     private void setUiEnabled(boolean enabled) {
         if (btnMove != null) btnMove.setEnabled(enabled);
@@ -374,10 +398,17 @@ public class PlanetActivity extends AppCompatActivity {
 
         planetsPlayingBeforePause = planetsPlaying;
 
-        // stop animation while paused
         planetsPlaying = false;
         if (spaceView != null) spaceView.setPlanetAnimationEnabled(false);
         if (btnPlayPlanets != null) btnPlayPlanets.setText(R.string.play);
+
+        // refresh volume UI each open
+        if (seekVolume != null) {
+            float vol = MusicController.loadVolume(this);
+            int progress = (int) (vol * 100f);
+            seekVolume.setProgress(progress);
+            updateVolumeIcon(progress);
+        }
 
         setUiEnabled(false);
         pauseOverlay.setVisibility(View.VISIBLE);
@@ -389,7 +420,6 @@ public class PlanetActivity extends AppCompatActivity {
         pauseOverlay.setVisibility(View.GONE);
         setUiEnabled(true);
 
-        // restore animation state
         planetsPlaying = planetsPlayingBeforePause;
         if (spaceView != null) spaceView.setPlanetAnimationEnabled(planetsPlaying);
         if (btnPlayPlanets != null) btnPlayPlanets.setText(planetsPlaying ? R.string.stop : R.string.play);
@@ -443,17 +473,14 @@ public class PlanetActivity extends AppCompatActivity {
         Animation anim = AnimationUtils.loadAnimation(this, R.anim.slide_up);
         anim.setAnimationListener(new Animation.AnimationListener() {
             @Override public void onAnimationStart(Animation animation) {}
-
             @Override public void onAnimationEnd(Animation animation) {
                 toolsPanel.setVisibility(View.GONE);
             }
-
             @Override public void onAnimationRepeat(Animation animation) {}
         });
 
         toolsPanel.startAnimation(anim);
     }
-
 
     // =========================
     // Planet Picker
@@ -613,5 +640,22 @@ public class PlanetActivity extends AppCompatActivity {
 
     private int dp(int v) {
         return (int) (v * getResources().getDisplayMetrics().density);
+    }
+
+    // =========================
+    // ✅ Music controls (match MusicService)
+    // =========================
+    private void playMusic(int track) {
+        Intent i = new Intent(this, MusicService.class);
+        i.setAction(MusicService.ACTION_PLAY);
+        i.putExtra(MusicService.EXTRA_TRACK, track);
+        startService(i);
+    }
+
+    private void setMusicVolume(float volume0to1) {
+        Intent i = new Intent(this, MusicService.class);
+        i.setAction(MusicService.ACTION_SET_VOLUME);
+        i.putExtra(MusicService.EXTRA_VOLUME, volume0to1);
+        startService(i);
     }
 }

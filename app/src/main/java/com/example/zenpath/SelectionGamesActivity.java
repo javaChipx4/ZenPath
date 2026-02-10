@@ -46,6 +46,40 @@ public class SelectionGamesActivity extends AppCompatActivity {
         ImageButton btnHistory = settingsPopup.findViewById(R.id.btnHistory);
         ImageButton btnMood = settingsPopup.findViewById(R.id.btnMood);
 
+        // ===== Volume control =====
+        android.widget.SeekBar seekVolume = settingsPopup.findViewById(R.id.seekVolume);
+        android.widget.ImageView imgVolume = settingsPopup.findViewById(R.id.imgVolume);
+
+        if (seekVolume != null) {
+            // set initial progress from saved volume
+            int saved = MusicController.getVolumePercent(SelectionGamesActivity.this);
+            seekVolume.setProgress(saved);
+
+            if (imgVolume != null) {
+                imgVolume.setImageResource(saved == 0
+                        ? android.R.drawable.ic_lock_silent_mode
+                        : android.R.drawable.ic_lock_silent_mode_off);
+            }
+
+            seekVolume.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(android.widget.SeekBar seekBar, int progress, boolean fromUser) {
+                    if (!fromUser) return;
+
+                    MusicController.setVolumePercent(SelectionGamesActivity.this, progress);
+
+                    if (imgVolume != null) {
+                        imgVolume.setImageResource(progress == 0
+                                ? android.R.drawable.ic_lock_silent_mode
+                                : android.R.drawable.ic_lock_silent_mode_off);
+                    }
+                }
+
+                @Override public void onStartTrackingTouch(android.widget.SeekBar seekBar) {}
+                @Override public void onStopTrackingTouch(android.widget.SeekBar seekBar) {}
+            });
+        }
+
         if (btnHome != null) {
             btnHome.setOnClickListener(v -> {
                 settingsPopup.setVisibility(View.GONE);

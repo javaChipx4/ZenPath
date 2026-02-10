@@ -33,7 +33,6 @@ public class HomeLoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         // ✅ IMPORTANT: this id must exist in activity_login.xml
-        ambientBg = findViewById(R.id.ambientBg);
 
         // OPTIONAL: Delay before going to Login screen (visual effect)
         // Set to 0 if you want instant navigation

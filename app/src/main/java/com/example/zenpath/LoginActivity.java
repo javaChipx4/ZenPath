@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -16,8 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText etUsername;
-    private LinearLayout btnLogin;
-    private TextView tvAddUser;
+    private Button btnLogin;              // ✅ FIX: Button (not LinearLayout)
+    private LinearLayout tvAddUser;       // ✅ FIX: tvAddUser is a LinearLayout in XML
     private ImageView imgAvatarLogin;
 
     private ZenPathRepository repo;
@@ -26,6 +27,10 @@ public class LoginActivity extends AppCompatActivity {
     private static final String PREF_NAME = "zenpath_user";
     private static final String KEY_USERNAME = "username";
     private static final String KEY_GENDER = "gender";
+
+    // ✅ 1-time welcome
+    private static final String APP_PREFS = "zen_path_prefs";
+    private static final String KEY_FIRST_TIME_USER = "first_time_user";
 
     private static final int REQ_ADD_USER = 2001;
 
@@ -37,8 +42,8 @@ public class LoginActivity extends AppCompatActivity {
         repo = new ZenPathRepository(this);
 
         etUsername = findViewById(R.id.etUsername);
-        btnLogin = findViewById(R.id.btnLogin);
-        tvAddUser = findViewById(R.id.tvAddUser);
+        btnLogin = findViewById(R.id.btnLogin);       // ✅ matches <Button>
+        tvAddUser = findViewById(R.id.tvAddUser);     // ✅ matches <LinearLayout>
         imgAvatarLogin = findViewById(R.id.imgAvatarLogin);
 
         prefs = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
@@ -65,7 +70,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void autoLoginIfRemembered() {
-        SharedPreferences sessionPrefs = getSharedPreferences("zen_path_prefs", MODE_PRIVATE);
+        SharedPreferences sessionPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
         String s = sessionPrefs.getString("current_user", null);
         if (TextUtils.isEmpty(s)) return;
 
@@ -73,7 +78,8 @@ public class LoginActivity extends AppCompatActivity {
         try { userId = Long.parseLong(s); } catch (Exception ignored) {}
 
         if (userId > 0 && repo != null && repo.userIdExists(userId)) {
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            // ✅ GO: WelcomeActivity once, else MainActivity
+            goNextAfterLogin(null, null);
             finish();
         } else {
             // invalid session, clear it
@@ -122,20 +128,35 @@ public class LoginActivity extends AppCompatActivity {
         long userId = repo.getUserIdByUsername(username);
 
         // ✅ Save session so app remembers user
-        getSharedPreferences("zen_path_prefs", MODE_PRIVATE)
+        getSharedPreferences(APP_PREFS, MODE_PRIVATE)
                 .edit()
                 .putString("current_user", String.valueOf(userId))
                 .apply();
 
-        // ✅ OPTIONAL: try saving gender to DB (won’t crash if column missing)
+        // ✅ OPTIONAL: try saving gender to DB
         String gender = prefs.getString(KEY_GENDER, "Male");
         repo.updateUserGender(userId, gender);
 
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        intent.putExtra("username", username);
-        intent.putExtra("gender", gender);
-        startActivity(intent);
+        // ✅ GO: WelcomeActivity once, else MainActivity
+        goNextAfterLogin(username, gender);
         finish();
+    }
+
+    // ✅ decides whether to show WelcomeActivity or MainActivity
+    private void goNextAfterLogin(@Nullable String username, @Nullable String gender) {
+        SharedPreferences appPrefs = getSharedPreferences(APP_PREFS, MODE_PRIVATE);
+        boolean first = appPrefs.getBoolean(KEY_FIRST_TIME_USER, true);
+
+        Intent intent = new Intent(
+                LoginActivity.this,
+                first ? WelcomeActivity.class : MainActivity.class
+        );
+
+        // pass extras (MainActivity uses gender sometimes)
+        if (!TextUtils.isEmpty(username)) intent.putExtra("username", username);
+        if (!TextUtils.isEmpty(gender)) intent.putExtra("gender", gender);
+
+        startActivity(intent);
     }
 
     private void saveLastUsername(String username) {

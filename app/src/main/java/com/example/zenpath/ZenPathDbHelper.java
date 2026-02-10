@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class ZenPathDbHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "zenpath.db";
-    public static final int DB_VERSION = 5; // ✅ bumped
+    public static final int DB_VERSION = 5;
 
     // ===== USERS TABLE =====
     public static final String T_USERS = "users";
@@ -113,7 +113,7 @@ public class ZenPathDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        // Ensure users table exists (older db)
+        // ✅ 1) Ensure users table exists (very old db)
         if (oldVersion < 2) {
             db.execSQL(
                     "CREATE TABLE IF NOT EXISTS " + T_USERS + " (" +
@@ -124,7 +124,12 @@ public class ZenPathDbHelper extends SQLiteOpenHelper {
             );
         }
 
-        // v2 -> v3 add user_id to journal/mood/stress (safe)
+        // ✅ 2) VERY IMPORTANT: ensure profile columns exist EARLY
+        // so createGuestIfNeeded() will never crash during later migrations
+        safeAddColumn(db, T_USERS, U_GENDER, "TEXT DEFAULT 'Male'");
+        safeAddColumn(db, T_USERS, U_AVATAR_RES, "INTEGER DEFAULT 0");
+
+        // ✅ 3) If upgrading to v3+ and tables may need user_id defaults
         if (oldVersion < 3) {
             createGuestIfNeeded(db);
             long guestId = getGuestId(db);
@@ -139,7 +144,7 @@ public class ZenPathDbHelper extends SQLiteOpenHelper {
             db.execSQL("UPDATE " + T_STRESS + " SET " + COL_USER_ID + "=" + guestId + " WHERE " + COL_USER_ID + " IS NULL");
         }
 
-        // v3 -> v4 replace mood + stress schemas (your existing logic)
+        // ✅ 4) v3 -> v4 replace mood + stress schemas (your existing logic)
         if (oldVersion < 4) {
             createGuestIfNeeded(db);
             long guestId = getGuestId(db);
@@ -207,27 +212,46 @@ public class ZenPathDbHelper extends SQLiteOpenHelper {
             db.execSQL("DROP TABLE stress_old");
         }
 
-        // ✅ v4 -> v5 add user profile columns (gender/avatar)
-        if (oldVersion < 5) {
-            safeAddColumn(db, T_USERS, U_GENDER, "TEXT DEFAULT 'Male'");
-            safeAddColumn(db, T_USERS, U_AVATAR_RES, "INTEGER DEFAULT 0");
-        }
-
+        // ✅ Always ensure guest exists at end
         createGuestIfNeeded(db);
     }
 
     private void safeAddColumn(SQLiteDatabase db, String table, String col, String typeSql) {
         try {
-            db.execSQL("ALTER TABLE " + table + " ADD COLUMN " + col + " " + typeSql);
+            if (!hasColumn(db, table, col)) {
+                db.execSQL("ALTER TABLE " + table + " ADD COLUMN " + col + " " + typeSql);
+            }
         } catch (Exception ignored) {}
+    }
+
+    private boolean hasColumn(SQLiteDatabase db, String table, String col) {
+        Cursor c = null;
+        try {
+            c = db.rawQuery("PRAGMA table_info(" + table + ")", null);
+            if (c == null) return false;
+            int nameIdx = c.getColumnIndex("name");
+            while (c.moveToNext()) {
+                String name = c.getString(nameIdx);
+                if (col.equalsIgnoreCase(name)) return true;
+            }
+        } catch (Exception ignored) {
+        } finally {
+            if (c != null) c.close();
+        }
+        return false;
     }
 
     private void createGuestIfNeeded(SQLiteDatabase db) {
         ContentValues cv = new ContentValues();
+
+        // ✅ Always safe columns
         cv.put(U_USERNAME, "Guest");
         cv.put(U_CREATED_AT, System.currentTimeMillis());
-        cv.put(U_GENDER, "Male");
-        cv.put(U_AVATAR_RES, 0);
+
+        // ✅ Only add these if they exist (prevents crash on older DBs)
+        if (hasColumn(db, T_USERS, U_GENDER)) cv.put(U_GENDER, "Male");
+        if (hasColumn(db, T_USERS, U_AVATAR_RES)) cv.put(U_AVATAR_RES, 0);
+
         db.insertWithOnConflict(T_USERS, null, cv, SQLiteDatabase.CONFLICT_IGNORE);
     }
 

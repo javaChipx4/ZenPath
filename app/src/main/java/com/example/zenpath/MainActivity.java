@@ -239,7 +239,11 @@ public class MainActivity extends AppCompatActivity {
             setPillQuote(todayQuote);
         } else {
             setPillQuote("Tap to reveal");
-            showFortuneOverlay();
+
+            // ✅ show overlay AFTER layout is ready
+            if (fortuneOverlay != null) {
+                fortuneOverlay.post(this::showFortuneOverlay);
+            }
         }
 
         // Panel B quote
@@ -266,6 +270,41 @@ public class MainActivity extends AppCompatActivity {
         ImageButton btnMood = settingsPopup.findViewById(R.id.btnMood);
         ImageButton btnSwitchProfile = settingsPopup.findViewById(R.id.btnSwitchProfile);
         TextView tvSwitchProfile = settingsPopup.findViewById(R.id.tvSwitchProfile);
+
+        // ===== Volume control =====
+        android.widget.SeekBar seekVolume = settingsPopup.findViewById(R.id.seekVolume);
+        android.widget.ImageView imgVolume = settingsPopup.findViewById(R.id.imgVolume);
+
+        if (seekVolume != null) {
+            // set initial progress from saved volume
+            int saved = MusicController.getVolumePercent(MainActivity.this);
+            seekVolume.setProgress(saved);
+
+            if (imgVolume != null) {
+                imgVolume.setImageResource(saved == 0
+                        ? android.R.drawable.ic_lock_silent_mode
+                        : android.R.drawable.ic_lock_silent_mode_off);
+            }
+
+            seekVolume.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(android.widget.SeekBar seekBar, int progress, boolean fromUser) {
+                    if (!fromUser) return;
+
+                    MusicController.setVolumePercent(MainActivity.this, progress);
+
+                    if (imgVolume != null) {
+                        imgVolume.setImageResource(progress == 0
+                                ? android.R.drawable.ic_lock_silent_mode
+                                : android.R.drawable.ic_lock_silent_mode_off);
+                    }
+                }
+
+                @Override public void onStartTrackingTouch(android.widget.SeekBar seekBar) {}
+                @Override public void onStopTrackingTouch(android.widget.SeekBar seekBar) {}
+            });
+        }
+
 
         if (btnHome != null) btnHome.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
         if (btnBack != null) btnBack.setOnClickListener(v -> settingsPopup.setVisibility(View.GONE));
@@ -359,6 +398,7 @@ public class MainActivity extends AppCompatActivity {
         refreshTodayCheckInCard();
         refreshWindDownSuggestion();
         refreshProgressWidgets();
+        MusicController.play(this, MusicService.TRACK_MAIN);
     }
 
     // ✅ NEW: avatar logic
@@ -437,18 +477,22 @@ public class MainActivity extends AppCompatActivity {
     private void showFortuneOverlay() {
         if (fortuneOverlay == null) return;
 
+        // ✅ guarantee it's visible
         fortuneOverlay.setVisibility(View.VISIBLE);
-        fortuneOverlay.setAlpha(0f);
-        fortuneOverlay.animate().alpha(1f).setDuration(180).start();
+        fortuneOverlay.setAlpha(1f);
+
+        // ✅ guarantee it sits on top of everything in panelA
+        fortuneOverlay.bringToFront();
+        fortuneOverlay.requestLayout();
+        fortuneOverlay.invalidate();
 
         if (fortuneCard != null) {
             fortuneCard.setOnClickListener(v -> revealFortune());
             installPressAnim(fortuneCard);
         }
 
-        fortuneOverlay.setOnClickListener(v -> {
-            // force reveal (no dismiss)
-        });
+        // optional: block outside tap
+        fortuneOverlay.setOnClickListener(v -> { /* do nothing */ });
     }
 
     private void hideFortuneOverlay() {

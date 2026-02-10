@@ -128,6 +128,40 @@ public class MoodActivity extends AppCompatActivity {
 
         tvSaved = findViewById(R.id.tvSaved);
 
+        // ===== Volume control =====
+        android.widget.SeekBar seekVolume = settingsPopup.findViewById(R.id.seekVolume);
+        android.widget.ImageView imgVolume = settingsPopup.findViewById(R.id.imgVolume);
+
+        if (seekVolume != null) {
+            // set initial progress from saved volume
+            int saved = MusicController.getVolumePercent(MoodActivity.this);
+            seekVolume.setProgress(saved);
+
+            if (imgVolume != null) {
+                imgVolume.setImageResource(saved == 0
+                        ? android.R.drawable.ic_lock_silent_mode
+                        : android.R.drawable.ic_lock_silent_mode_off);
+            }
+
+            seekVolume.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(android.widget.SeekBar seekBar, int progress, boolean fromUser) {
+                    if (!fromUser) return;
+
+                    MusicController.setVolumePercent(MoodActivity.this, progress);
+
+                    if (imgVolume != null) {
+                        imgVolume.setImageResource(progress == 0
+                                ? android.R.drawable.ic_lock_silent_mode
+                                : android.R.drawable.ic_lock_silent_mode_off);
+                    }
+                }
+
+                @Override public void onStartTrackingTouch(android.widget.SeekBar seekBar) {}
+                @Override public void onStopTrackingTouch(android.widget.SeekBar seekBar) {}
+            });
+        }
+
         TextView tvMood0 = findViewById(R.id.tvMood0);
         TextView tvMood1 = findViewById(R.id.tvMood1);
         TextView tvMood2 = findViewById(R.id.tvMood2);

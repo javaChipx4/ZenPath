@@ -1,9 +1,12 @@
 package com.example.zenpath;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 public class GamePauseOverlay {
@@ -30,13 +33,11 @@ public class GamePauseOverlay {
         overlay = LayoutInflater.from(act).inflate(layoutRes, root, false);
         root.addView(overlay);
 
-        // Tap outside closes (resume)
         overlay.setOnClickListener(v -> {
             if (actions != null) actions.onResume();
             dismiss(act);
         });
 
-        // Prevent closing when tapping the card
         View card = overlay.findViewById(R.id.pauseCard);
         if (card != null) card.setOnClickListener(v -> {});
 
@@ -60,6 +61,42 @@ public class GamePauseOverlay {
                 btnExtra.setVisibility(View.VISIBLE);
                 btnExtra.setText(extraLabel);
             }
+        }
+
+        // ✅ Volume wiring
+        ImageView imgVolume = overlay.findViewById(R.id.imgVolume);
+        SeekBar seekVolume = overlay.findViewById(R.id.seekVolume);
+
+        if (seekVolume != null) {
+            float vol = MusicController.loadVolume(act); // 0..1
+            int p = (int) (vol * 100f);
+            seekVolume.setMax(100);
+            seekVolume.setProgress(p);
+
+            if (imgVolume != null) {
+                imgVolume.setImageResource(p <= 1
+                        ? android.R.drawable.ic_lock_silent_mode
+                        : android.R.drawable.ic_lock_silent_mode_off);
+            }
+
+            seekVolume.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    float v = progress / 100f;
+
+                    Intent i = new Intent(act, MusicService.class);
+                    i.setAction(MusicService.ACTION_SET_VOLUME);
+                    i.putExtra(MusicService.EXTRA_VOLUME, v);
+                    act.startService(i);
+
+                    if (imgVolume != null) {
+                        imgVolume.setImageResource(progress <= 1
+                                ? android.R.drawable.ic_lock_silent_mode
+                                : android.R.drawable.ic_lock_silent_mode_off);
+                    }
+                }
+                @Override public void onStartTrackingTouch(SeekBar seekBar) {}
+                @Override public void onStopTrackingTouch(SeekBar seekBar) {}
+            });
         }
 
         if (btnResume != null) {

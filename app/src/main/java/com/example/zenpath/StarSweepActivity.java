@@ -9,7 +9,6 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class StarSweepActivity extends AppCompatActivity
@@ -77,6 +76,9 @@ public class StarSweepActivity extends AppCompatActivity
         // ✅ Start play time tracking
         playTracker = new GameTimeTracker("Star Sweep");
         playTracker.start();
+
+        // ✅ Start game music immediately (so no silent moment)
+        playMusic(MusicService.TRACK_CONSTELLA);
     }
 
     // ================= HUD CALLBACKS =================
@@ -132,7 +134,7 @@ public class StarSweepActivity extends AppCompatActivity
                 "Star Sweep ⚙️",
                 "Slow breaths. Connect the stars 🌙",
                 "Restart shape",
-                "Breathing tip",
+                null, // ✅ REMOVE extra button (Breathing tip)
                 new GamePauseOverlay.Actions() {
                     @Override
                     public void onResume() {
@@ -154,18 +156,10 @@ public class StarSweepActivity extends AppCompatActivity
 
                     @Override
                     public void onExtra() {
-                        showBreathingTip();
+                        // hidden anyway
                     }
                 }
         );
-    }
-
-    private void showBreathingTip() {
-        new AlertDialog.Builder(this)
-                .setTitle("Breathing tip")
-                .setMessage("Inhale slowly… exhale longer.\nRelax your jaw + shoulders.")
-                .setPositiveButton("Okay", null)
-                .show();
     }
 
     private void goBackToSelection() {
@@ -173,9 +167,21 @@ public class StarSweepActivity extends AppCompatActivity
 
         starSweepView.setPaused(false);
 
+        // ✅ switch back to main background music
+        playMusic(MusicService.TRACK_MAIN);
+
         Intent i = new Intent(StarSweepActivity.this, SelectionGamesActivity.class);
         startActivity(i);
         finish();
+    }
+
+    // ================= MUSIC HELPERS =================
+
+    private void playMusic(int track) {
+        Intent i = new Intent(this, MusicService.class);
+        i.setAction(MusicService.ACTION_PLAY);
+        i.putExtra(MusicService.EXTRA_TRACK, track);
+        startService(i);
     }
 
     // ================= STREAK UI =================
@@ -189,6 +195,10 @@ public class StarSweepActivity extends AppCompatActivity
     protected void onPause() {
         super.onPause();
         if (playTracker != null) playTracker.stopAndSave(this);
+
+        // ⚠️ Don't force TRACK_MAIN here.
+        // If user just opened the pause overlay or went multitask, you'll accidentally switch music.
+        // We'll switch music only when leaving to Selection (goBackToSelection).
     }
 
     @Override
@@ -196,5 +206,8 @@ public class StarSweepActivity extends AppCompatActivity
         super.onResume();
         if (playTracker == null) playTracker = new GameTimeTracker("Star Sweep");
         playTracker.start();
+
+        // ✅ ensure Constella music is playing when returning
+        playMusic(MusicService.TRACK_CONSTELLA);
     }
 }
