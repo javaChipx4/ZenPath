@@ -18,18 +18,33 @@
         android:paddingTop="16dp"
         android:paddingBottom="12dp">
 
+        <!-- Top thin line -->
         <View
             android:layout_width="match_parent"
             android:layout_height="2dp"
-            android:alpha="0.35"
+            android:alpha="0.22"
             android:background="#2A2A2A" />
 
-        <LinearLayout
+        <!-- Top bar: title + menu -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end"
-            android:paddingTop="10dp"
-            android:paddingBottom="6dp">
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvMoodHeader"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Mood Tracker"
+                android:textColor="#111111"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:fontFamily="serif"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/menuIcon"
+                android:layout_marginEnd="10dp"/>
 
             <ImageView
                 android:id="@+id/menuIcon"
@@ -37,14 +52,33 @@
                 android:layout_height="44dp"
                 android:padding="10dp"
                 android:src="@drawable/ic_menu"
-                android:contentDescription="Menu" />
-        </LinearLayout>
+                android:contentDescription="Menu"
+                android:alpha="0.90"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- Subtitle / supportive line -->
+        <TextView
+            android:id="@+id/tvMoodSub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tap a date to check in. Keep it simple — one tap is enough."
+            android:textSize="12sp"
+            android:textColor="#1E1E1E"
+            android:alpha="0.70"
+            android:fontFamily="sans-serif"
+            android:layout_marginTop="2dp"
+            android:layout_marginBottom="12dp"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"/>
+
+        <!-- Calendar card (same ID calendarView) -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            app:cardCornerRadius="12dp"
+            android:layout_marginTop="2dp"
+            app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
             app:cardBackgroundColor="#FFFFFF">
 
@@ -63,15 +97,37 @@
                 android:padding="8dp"/>
         </androidx.cardview.widget.CardView>
 
+        <!-- Helper text (more intentional) -->
         <TextView
+            android:id="@+id/tvMoodHint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Tap a date to check in. Your data saves automatically."
+            android:text="No pressure. Check-in can be quick, messy, or even just “meh.”"
             android:textSize="12sp"
-            android:textColor="#33000000"
+            android:textColor="#1E1E1E"
+            android:alpha="0.45"
             android:layout_marginTop="10dp"
             android:paddingStart="2dp"
             android:paddingEnd="2dp"/>
+
+        <!-- Tiny “fills the emptiness” text -->
+        <TextView
+            android:id="@+id/tvMoodExtra"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Your future self will thank you for these tiny notes."
+            android:textSize="12sp"
+            android:textColor="#1E1E1E"
+            android:alpha="0.35"
+            android:layout_marginTop="6dp"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"/>
+
+        <!-- Spacer so the bottom sheet peek feels clean -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
     </LinearLayout>
 
     <!-- DIM OVERLAY -->
@@ -82,7 +138,7 @@
         android:background="#80000000"
         android:visibility="gone"/>
 
-    <!-- BOTTOM SHEET -->
+    <!-- BOTTOM SHEET (PURPLE PANEL) - UNTOUCHED -->
     <LinearLayout
         android:id="@+id/moodBottomSheet"
         android:layout_width="match_parent"
@@ -533,8 +589,10 @@
             android:padding="12dp"
             android:gravity="top"
             android:hint="Type here… (optional)"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#CCFFFFFF"
+            android:textColor="#1E1E1E"
+            android:textColorHint="#8A8A8A"
+            android:cursorVisible="true"
+            android:textCursorDrawable="@drawable/cursor_dark"
             android:inputType="textMultiLine"
             android:lineSpacingExtra="2dp"/>
 

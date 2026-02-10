@@ -80,16 +80,6 @@
             android:textColor="#1E1B3A"
             android:padding="14dp"/>
 
-        <Button
-            android:id="@+id/btnSkip"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Skip"
-            android:layout_marginTop="10dp"
-            android:backgroundTint="#FFFFFF"
-            android:textColor="#1E1B3A"
-            android:padding="14dp"/>
-
     </LinearLayout>
 
 </FrameLayout>

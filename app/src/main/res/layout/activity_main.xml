@@ -29,6 +29,7 @@
             android:id="@+id/homePagerContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginBottom="0dp"
             android:background="@drawable/bg_blue_gradient_diary"
             android:orientation="vertical">
 
@@ -42,7 +43,7 @@
                 android:paddingTop="14dp"
                 android:paddingBottom="14dp">
 
-                <!-- header -->
+                <!-- Top title -->
                 <TextView
                     android:id="@+id/tvTopTitle"
                     android:layout_width="wrap_content"
@@ -61,31 +62,33 @@
                     android:layout_width="0dp"
                     android:layout_height="1dp"
                     android:layout_marginTop="10dp"
-                    android:alpha="0.30"
+                    android:alpha="0.18"
                     android:background="#2E2E2E"
                     app:layout_constraintTop_toBottomOf="@id/tvTopTitle"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
+                <!-- Menu -->
                 <ImageButton
                     android:id="@+id/btnMenu"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="12dp"
                     android:background="@android:color/transparent"
                     android:contentDescription="Menu"
+                    android:padding="6dp"
                     android:src="@drawable/ic_menu"
                     android:tint="#000000"
                     app:layout_constraintTop_toBottomOf="@id/topDivider"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="10dp"
                     tools:ignore="UseAppTint" />
 
-                <!-- profile -->
+                <!-- Profile avatar -->
                 <FrameLayout
                     android:id="@+id/profileWrap"
-                    android:layout_width="108dp"
-                    android:layout_height="108dp"
-                    android:layout_marginTop="12dp"
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:layout_marginTop="14dp"
                     app:layout_constraintTop_toBottomOf="@id/topDivider"
                     app:layout_constraintStart_toStartOf="parent">
 
@@ -99,7 +102,7 @@
                         android:id="@+id/imgProfileAvatar"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:layout_margin="18dp"
+                        android:layout_margin="16dp"
                         android:background="@drawable/bg_avatar_border_selector"
                         android:clipToOutline="true"
                         android:clickable="true"
@@ -111,30 +114,29 @@
                         android:src="@drawable/boy" />
                 </FrameLayout>
 
-                <!-- PRIMARY username -->
+                <!-- Primary username -->
                 <TextView
                     android:id="@+id/tvUsername"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
-                    android:layout_marginTop="10dp"
                     android:text="USERNAME"
                     android:textColor="#111111"
-                    android:textSize="20sp"
+                    android:textSize="22sp"
                     android:textStyle="bold"
                     android:fontFamily="serif"
                     app:layout_constraintTop_toTopOf="@id/profileWrap"
                     app:layout_constraintStart_toEndOf="@id/profileWrap"
                     app:layout_constraintEnd_toStartOf="@id/btnMenu" />
 
-                <!-- date / quote pill -->
+                <!-- Date / quote pill -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/dateQuotePill"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="14dp"
-                    android:layout_marginEnd="6dp"
                     android:layout_marginTop="8dp"
+                    android:layout_marginEnd="6dp"
                     app:cardCornerRadius="22dp"
                     app:cardElevation="0dp"
                     app:cardBackgroundColor="@android:color/transparent"
@@ -160,7 +162,7 @@
                             android:text="January 21"
                             android:textColor="#1E1E1E"
                             android:textSize="12sp"
-                            android:fontFamily="serif" />
+                            android:fontFamily="sans-serif-medium" />
 
                         <TextView
                             android:id="@+id/tvPillQuote"
@@ -171,10 +173,11 @@
                             android:text="Tap to reveal"
                             android:textColor="#1E1E1E"
                             android:textSize="12sp"
-                            android:fontFamily="serif" />
+                            android:fontFamily="sans-serif" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
+                <!-- kept for Java compatibility -->
                 <TextView
                     android:id="@+id/tvQuote"
                     android:layout_width="0dp"
@@ -185,52 +188,71 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <!-- JOURNAL title (better spacing + hierarchy) -->
+                <!-- Journal title -->
                 <TextView
                     android:id="@+id/tvJournal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="18dp"
                     android:text="JOURNAL"
-                    android:textSize="32sp"
+                    android:textSize="34sp"
                     android:textStyle="bold"
                     android:textColor="#0F0F0F"
                     android:letterSpacing="0.02"
                     android:fontFamily="serif"
-                    android:clickable="false"
-                    android:focusable="false"
                     app:layout_constraintTop_toBottomOf="@id/profileWrap"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <!-- write thoughts pill -->
+                <!-- ✅ NEW: Beautiful Journal Card (like your image!) -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/ovalCard"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="14dp"
+                    android:layout_marginTop="16dp"
                     android:clickable="true"
                     android:focusable="true"
                     android:foreground="?attr/selectableItemBackground"
                     app:cardCornerRadius="999dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="#F6F1FF"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#CFC9FF"
                     app:layout_constraintTop_toBottomOf="@id/tvJournal"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
 
-                    <TextView
-                        android:id="@+id/tvNoteText"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/oval_outline"
+                        android:orientation="vertical"
                         android:gravity="center"
-                        android:paddingTop="22dp"
-                        android:paddingBottom="22dp"
-                        android:text="Write today’s thoughts"
-                        android:textColor="#1E1E1E"
-                        android:textSize="14sp"
-                        android:fontFamily="serif" />
+                        android:paddingTop="32dp"
+                        android:paddingBottom="32dp"
+                        android:paddingStart="24dp"
+                        android:paddingEnd="24dp">
+
+                        <TextView
+                            android:id="@+id/tvNoteText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Write something here."
+                            android:textStyle="bold"
+                            android:textColor="#1E1E1E"
+                            android:textSize="15sp"
+                            android:fontFamily="sans-serif"
+                            android:gravity="center"
+                            android:layout_marginBottom="2dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="I'm here to listen."
+                            android:textColor="#1E1E1E"
+                            android:textStyle="italic"
+                            android:textSize="13sp"
+                            android:alpha="0.65"
+                            android:fontFamily="sans-serif"
+                            android:gravity="center"/>
+                    </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
                 <!-- Today check-in card -->
@@ -239,7 +261,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp"
-                    app:cardCornerRadius="16dp"
+                    app:cardCornerRadius="18dp"
                     app:cardElevation="2dp"
                     app:cardBackgroundColor="#F6F1FF"
                     app:layout_constraintTop_toBottomOf="@id/ovalCard"
@@ -260,7 +282,7 @@
                             android:textStyle="bold"
                             android:textColor="#1E1E1E"
                             android:textSize="14sp"
-                            android:fontFamily="serif" />
+                            android:fontFamily="sans-serif-medium" />
 
                         <TextView
                             android:id="@+id/tvCheckInMood"
@@ -270,7 +292,7 @@
                             android:text="Mood: —"
                             android:textColor="#1E1E1E"
                             android:textSize="12sp"
-                            android:fontFamily="serif" />
+                            android:fontFamily="sans-serif" />
 
                         <TextView
                             android:id="@+id/tvCheckInStress"
@@ -280,18 +302,25 @@
                             android:text="Stress: —"
                             android:textColor="#1E1E1E"
                             android:textSize="12sp"
-                            android:fontFamily="serif" />
+                            android:fontFamily="sans-serif" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginBottom="10dp"
+                            android:alpha="0.12"
+                            android:background="#000000"/>
 
                         <TextView
                             android:id="@+id/tvStreak"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
                             android:text="🔥 0-day check-in streak"
                             android:textColor="#1E1E1E"
                             android:textSize="12sp"
                             android:alpha="0.85"
-                            android:fontFamily="serif" />
+                            android:fontFamily="sans-serif" />
 
                         <TextView
                             android:id="@+id/tvWeeklyReflection"
@@ -302,7 +331,7 @@
                             android:textColor="#1E1E1E"
                             android:textSize="12sp"
                             android:alpha="0.85"
-                            android:fontFamily="serif" />
+                            android:fontFamily="sans-serif" />
 
                         <Button
                             android:id="@+id/btnCheckInNow"
@@ -318,20 +347,59 @@
 
                 </androidx.cardview.widget.CardView>
 
-                <!-- swipe hint -->
-                <TextView
-                    android:id="@+id/tvSlideHint"
-                    android:layout_width="wrap_content"
+                <!-- After check-in filler card -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cardMicroReset"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:text="SWIPE UP"
-                    android:textColor="#1E1E1E"
-                    android:textSize="10sp"
-                    android:alpha="0.55"
-                    android:fontFamily="serif"
-                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginTop="14dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="#F6F1FF"
+                    app:layout_constraintTop_toBottomOf="@id/cardTodayCheckIn"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:id="@+id/tvMicroResetTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Micro reset ✨"
+                            android:textColor="#1E1E1E"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-medium"/>
+
+                        <TextView
+                            android:id="@+id/tvMicroResetDesc"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Quick one: inhale for 4… hold 2… exhale for 6. Do 3 rounds."
+                            android:textColor="#1E1E1E"
+                            android:textSize="12sp"
+                            android:alpha="0.85"
+                            android:fontFamily="sans-serif"/>
+
+                        <TextView
+                            android:id="@+id/tvMicroResetHint"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Tip: swipe up for Calendar + Wind down"
+                            android:textColor="#1E1E1E"
+                            android:textSize="12sp"
+                            android:alpha="0.65"
+                            android:fontFamily="sans-serif"/>
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
 
                 <View
                     android:id="@+id/swipeHandle"
@@ -351,6 +419,7 @@
                     android:visibility="gone"
                     android:clickable="true"
                     android:focusable="true"
+                    android:elevation="30dp"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -364,7 +433,8 @@
                         android:orientation="vertical"
                         android:gravity="center"
                         android:padding="18dp"
-                        android:background="@drawable/box_rounded">
+                        android:background="@drawable/box_rounded"
+                        android:elevation="31dp">
 
                         <ImageView
                             android:id="@+id/imgFortune"
@@ -381,32 +451,34 @@
                             android:text="Tap to open your fortune"
                             android:textColor="#1E1E1E"
                             android:textSize="13sp"
-                            android:fontFamily="serif" />
+                            android:fontFamily="sans-serif-medium" />
                     </LinearLayout>
 
                 </FrameLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- ===================== PANEL B (unchanged) ===================== -->
+            <!-- ===================== PANEL B ===================== -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/panelB"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:padding="18dp">
 
+                <!-- Greeting -->
                 <TextView
                     android:id="@+id/tvHelloUser"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Hello, User!"
-                    android:textColor="#1E1E1E"
-                    android:textSize="16sp"
-                    android:fontFamily="serif"
+                    android:textColor="#111111"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="16dp"/>
+                    android:layout_marginTop="8dp"/>
 
                 <TextView
                     android:id="@+id/tvIdentity"
@@ -415,71 +487,102 @@
                     android:text="Track your mood, reflect, and reset — one day at a time."
                     android:textColor="#1E1E1E"
                     android:textSize="12sp"
-                    android:alpha="0.75"
-                    android:fontFamily="serif"
+                    android:alpha="0.70"
+                    android:fontFamily="sans-serif"
                     android:gravity="center"
                     android:layout_marginTop="6dp"
                     app:layout_constraintTop_toBottomOf="@id/tvHelloUser"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"/>
 
-                <View
-                    android:id="@+id/topCircle"
-                    android:layout_width="0dp"
-                    android:layout_height="240dp"
-                    android:alpha="0.18"
-                    android:background="@drawable/box_rounded"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
-
-                <TextView
-                    android:id="@+id/tvCenterQuote"
+                <!-- Quote / reflection card -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/quoteCard"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Quote..."
-                    android:textColor="#1E1E1E"
-                    android:textSize="11sp"
-                    android:fontFamily="serif"
-                    android:gravity="center"
-                    android:layout_marginTop="90dp"
-                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="14dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#F6F1FF"
+                    app:layout_constraintTop_toBottomOf="@id/tvIdentity"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintEnd_toEndOf="parent">
 
-                <View
-                    android:id="@+id/smallDot"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
-                    android:background="@drawable/box_rounded"
-                    android:alpha="0.25"
-                    app:layout_constraintTop_toBottomOf="@id/tvCenterQuote"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="18dp"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp"
+                        android:gravity="center_horizontal">
 
-                <TextView
-                    android:id="@+id/tvSubQuote"
-                    android:layout_width="wrap_content"
+                        <TextView
+                            android:id="@+id/tvCenterQuote"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Quote..."
+                            android:textColor="#1E1E1E"
+                            android:textSize="13sp"
+                            android:fontFamily="sans-serif"
+                            android:gravity="center"
+                            android:alpha="0.90"/>
+
+                        <TextView
+                            android:id="@+id/tvSubQuote"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="You are always valid."
+                            android:textColor="#1E1E1E"
+                            android:textSize="12sp"
+                            android:fontFamily="sans-serif-medium"
+                            android:alpha="0.85"/>
+                    </LinearLayout>
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- ✅ NEW: calendar header row (NOT a card) -->
+                <LinearLayout
+                    android:id="@+id/calendarHeaderRow"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="You are always valid."
-                    android:textColor="#1E1E1E"
-                    android:textSize="12sp"
-                    android:fontFamily="serif"
-                    app:layout_constraintTop_toBottomOf="@id/smallDot"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    app:layout_constraintTop_toBottomOf="@id/quoteCard"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="16dp"/>
+                    app:layout_constraintEnd_toEndOf="parent">
 
+                    <TextView
+                        android:id="@+id/tvCalendarHeaderTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="This month"
+                        android:textColor="#1E1E1E"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:fontFamily="sans-serif-medium"/>
+
+                    <TextView
+                        android:id="@+id/tvCalendarHeaderDot"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="•"
+                        android:textColor="#1E1E1E"
+                        android:textSize="14sp"
+                        android:alpha="0.35"/>
+                </LinearLayout>
+
+                <!-- Calendar -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/calendarCardHome"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    app:cardCornerRadius="10dp"
+                    android:layout_marginTop="8dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
                     app:cardBackgroundColor="#F6F6F6"
-                    app:layout_constraintTop_toBottomOf="@id/tvSubQuote"
+                    app:layout_constraintTop_toBottomOf="@id/calendarHeaderRow"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent">
 
@@ -495,11 +598,12 @@
                         android:weekSeparatorLineColor="#E0E0E0"/>
                 </androidx.cardview.widget.CardView>
 
+                <!-- Wind down -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardWindDown"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
+                    android:layout_marginTop="14dp"
                     app:cardCornerRadius="18dp"
                     app:cardElevation="0dp"
                     app:cardBackgroundColor="#F6F1FF"
@@ -521,7 +625,7 @@
                             android:textStyle="bold"
                             android:textColor="#1E1E1E"
                             android:textSize="14sp"
-                            android:fontFamily="serif"/>
+                            android:fontFamily="sans-serif-medium"/>
 
                         <TextView
                             android:id="@+id/tvWindDownDesc"
@@ -531,7 +635,8 @@
                             android:text="If you want to slow down, we’ve got mini activities you can try."
                             android:textColor="#1E1E1E"
                             android:textSize="12sp"
-                            android:fontFamily="serif"/>
+                            android:alpha="0.85"
+                            android:fontFamily="sans-serif"/>
 
                         <TextView
                             android:id="@+id/tvWindDownSuggestion"
@@ -542,7 +647,7 @@
                             android:textColor="#1E1E1E"
                             android:textSize="12sp"
                             android:alpha="0.85"
-                            android:fontFamily="serif"/>
+                            android:fontFamily="sans-serif"/>
 
                         <Button
                             android:id="@+id/btnBrowseActivities"
@@ -558,6 +663,7 @@
 
                 </androidx.cardview.widget.CardView>
 
+                <!-- book overlay include stays -->
                 <include
                     android:id="@+id/includeOpenBook"
                     layout="@layout/overlay_open_book" />

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/overlayRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -60,8 +61,8 @@
                 android:background="@android:color/transparent"
                 android:contentDescription="Switch Profile"
                 android:src="@android:drawable/ic_menu_manage"
-                android:tint="#1E1E1E"
-                android:visibility="gone" />
+                android:visibility="gone"
+                app:tint="#1E1E1E" />
 
             <!-- divider -->
             <View
@@ -98,7 +99,8 @@
                         android:padding="12dp"
                         android:scaleType="centerInside"
                         android:src="@android:drawable/ic_menu_view"
-                        android:tint="#1E1E1E" />
+                        android:tint="#1E1E1E"
+                        tools:ignore="UseAppTint" />
 
                     <TextView
                         android:id="@+id/tvHome"
@@ -130,7 +132,8 @@
                         android:padding="12dp"
                         android:scaleType="centerInside"
                         android:src="@android:drawable/ic_menu_recent_history"
-                        android:tint="#1E1E1E" />
+                        android:tint="#1E1E1E"
+                        tools:ignore="UseAppTint" />
 
                     <TextView
                         android:id="@+id/tvHistory"
@@ -163,7 +166,8 @@
                         android:scaleType="centerInside"
                         android:src="@android:drawable/ic_media_previous"
                         android:tint="#1E1E1E"
-                        android:alpha="0.6" />
+                        android:alpha="0.6"
+                        tools:ignore="UseAppTint" />
 
                     <TextView
                         android:id="@+id/tvBack"
@@ -195,7 +199,8 @@
                         android:padding="12dp"
                         android:scaleType="centerInside"
                         android:src="@android:drawable/ic_menu_edit"
-                        android:tint="#1E1E1E" />
+                        android:tint="#1E1E1E"
+                        tools:ignore="UseAppTint" />
 
                     <TextView
                         android:id="@+id/tvMood"
@@ -234,7 +239,8 @@
                     android:src="@android:drawable/ic_lock_silent_mode_off"
                     android:contentDescription="Volume"
                     android:tint="#1E1E1E"
-                    android:alpha="0.75" />
+                    android:alpha="0.75"
+                    tools:ignore="UseAppTint" />
 
                 <SeekBar
                     android:id="@+id/seekVolume"

@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+═══════════════════════════════════════════════════════════════════════════
+    ZENPATH - IMPROVED FIRST TIME WELCOME SCREEN
+    Clean, modern onboarding with better spacing and visual hierarchy
+═══════════════════════════════════════════════════════════════════════════
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/welcomeRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_blue_gradient_diary"
+    android:padding="24dp">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:fillViewport="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="28dp"
+            android:background="@drawable/box_rounded">
+
+            <!-- ========== WELCOME ICON ========== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🌸"
+                android:textSize="56sp"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- ========== TITLE ========== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Welcome to ZenPath"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="#1E1E1E"
+                android:fontFamily="serif"
+                android:letterSpacing="-0.01"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- ========== SUBTITLE ========== -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Your gentle space to pause, reflect, and reset"
+                android:textSize="15sp"
+                android:textColor="#1E1E1E"
+                android:alpha="0.75"
+                android:fontFamily="serif"
+                android:gravity="center"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- ========== FEATURE 1 ========== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="start|center_vertical"
+                android:layout_marginBottom="14dp">
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:text="📔"
+                    android:textSize="28sp"
+                    android:gravity="center"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Journal Your Thoughts"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#1E1E1E"
+                        android:fontFamily="serif"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Write freely in your private space"
+                        android:textSize="13sp"
+                        android:textColor="#1E1E1E"
+                        android:alpha="0.7"
+                        android:fontFamily="serif"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ========== FEATURE 2 ========== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="start|center_vertical"
+                android:layout_marginBottom="14dp">
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:text="😊"
+                    android:textSize="28sp"
+                    android:gravity="center"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Track Mood &amp; Stress"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#1E1E1E"
+                        android:fontFamily="serif"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Check in daily and see patterns over time"
+                        android:textSize="13sp"
+                        android:textColor="#1E1E1E"
+                        android:alpha="0.7"
+                        android:fontFamily="serif"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ========== FEATURE 3 ========== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="start|center_vertical"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:text="🌙"
+                    android:textSize="28sp"
+                    android:gravity="center"/>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="14dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mini Wind-Down Activities"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#1E1E1E"
+                        android:fontFamily="serif"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Calming games when you need a reset"
+                        android:textSize="13sp"
+                        android:textColor="#1E1E1E"
+                        android:alpha="0.7"
+                        android:fontFamily="serif"
+                        android:layout_marginTop="2dp"/>
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ========== DIVIDER ========== -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#1E1E1E"
+                android:alpha="0.15"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- ========== PRIVACY NOTE ========== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="@drawable/oval_note"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔒"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="8dp"/>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Everything stays on your device. Fully private."
+                    android:textSize="12sp"
+                    android:textColor="#1E1E1E"
+                    android:alpha="0.75"
+                    android:fontFamily="serif"
+                    android:lineSpacingExtra="2dp"/>
+            </LinearLayout>
+
+            <!-- ========== ENCOURAGING MESSAGE ========== -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="No pressure — just small steps 🤍"
+                android:textSize="14sp"
+                android:textColor="#1E1E1E"
+                android:alpha="0.85"
+                android:fontFamily="serif"
+                android:gravity="center"
+                android:layout_marginBottom="18dp"/>
+
+            <!-- ========== START BUTTON ========== -->
+            <Button
+                android:id="@+id/btnStartZenPath"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Let's Begin"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#1E1E1E"
+                android:background="@drawable/button_pill_ripple"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</FrameLayout>

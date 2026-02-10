@@ -10,11 +10,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ZenPath">
 
+        <service
+            android:name=".MusicService"
+            android:exported="false" />
+
+
         <!-- ===== OTHER ACTIVITIES ===== -->
 
         <activity android:name=".HistoryActivity" android:exported="false"/>
         <activity android:name=".ActivityDiary" android:exported="false"/>
-        <activity android:name=".DiaryHistoryActivity" android:exported="false"/>
         <activity android:name=".DiaryEntryReadActivity" android:exported="false"/>
         <activity android:name=".MoodActivity" android:exported="false"/>
         <activity android:name=".MoodHistoryActivity" android:exported="false"/>
@@ -26,6 +30,7 @@
         <activity android:name=".StarSweepActivity" android:exported="false"/>
         <activity android:name=".MainActivity" android:exported="false"/>
         <activity android:name=".AddUserActivity" android:exported="false"/>
+        <activity android:name=".WelcomeActivity" android:exported="false"/>
 
         <!-- ===== LAUNCHER (ONLY ONE) ===== -->
 
