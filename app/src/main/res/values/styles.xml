@@ -11,8 +11,9 @@
         <item name="android:textSize">10sp</item>
         <item name="android:textColor">#6A6A6A</item>
         <item name="android:fontFamily">serif</item>
+        <!-- ✅ FIX: remove extra top/bottom font padding for consistent spacing -->
+        <item name="android:includeFontPadding">false</item>
     </style>
-
 
     <!-- Purple panel label row (M T W T F S S) -->
     <style name="DotLabel">
@@ -23,6 +24,8 @@
         <item name="android:textColor">#FFFFFF</item>
         <item name="android:textSize">12sp</item>
         <item name="android:textStyle">bold</item>
+        <!-- ✅ FIX -->
+        <item name="android:includeFontPadding">false</item>
     </style>
 
     <!-- Slot container for dot alignment -->
@@ -49,8 +52,9 @@
         <item name="android:textSize">22sp</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
+        <!-- ✅ FIX -->
+        <item name="android:includeFontPadding">false</item>
     </style>
-
 
     <!-- mood history -->
     <style name="WeekDot">
@@ -71,6 +75,8 @@
         <item name="android:fontFamily">serif</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
+        <!-- ✅ FIX -->
+        <item name="android:includeFontPadding">false</item>
     </style>
 
     <style name="WeekDotSelected">
@@ -86,6 +92,8 @@
         <item name="android:layout_weight">1</item>
         <item name="android:textSize">26sp</item>
         <item name="android:gravity">center</item>
+        <!-- ✅ FIX -->
+        <item name="android:includeFontPadding">false</item>
     </style>
 
     <style name="HistoryRect">
@@ -102,11 +110,15 @@
     <style name="HomeCalendarWeekText">
         <item name="android:textColor">#000000</item>
         <item name="android:textSize">11sp</item>
+        <!-- ✅ FIX -->
+        <item name="android:includeFontPadding">false</item>
     </style>
 
     <style name="HomeCalendarDateText">
         <item name="android:textColor">#000000</item>
         <item name="android:textSize">12sp</item>
+        <!-- ✅ FIX -->
+        <item name="android:includeFontPadding">false</item>
     </style>
 
     <style name="Swatch">
@@ -115,5 +127,50 @@
         <item name="android:background">@drawable/bg_swatch</item>
     </style>
 
+    <!-- ✅ Shared text styles (kept same, just fixed spacing consistency) -->
+    <style name="TextTitle">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textColor">#1E1E1E</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+        <!-- ✅ FIX -->
+        <item name="android:includeFontPadding">false</item>
+        <!-- small polish; safe to add (doesn’t break anything) -->
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <style name="TextBody">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">#2A2A2A</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+        <!-- ✅ FIX -->
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:letterSpacing">0.00</item>
+    </style>
+
+    <style name="TextSmall">
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">#6A6A6A</item>
+        <!-- ✅ FIX -->
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:letterSpacing">0.00</item>
+    </style>
+
+    <!-- ✅ NEW: optional spacing helpers (DOES NOT change your current UI unless you use them) -->
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_sm">8dp</dimen>
+    <dimen name="space_md">16dp</dimen>
+    <dimen name="space_lg">24dp</dimen>
+    <dimen name="space_xl">32dp</dimen>
+
+    <!-- ✅ NEW: optional text sizes (safe, reusable) -->
+    <dimen name="text_xs">10sp</dimen>
+    <dimen name="text_sm">12sp</dimen>
+    <dimen name="text_md">16sp</dimen>
+    <dimen name="text_lg">20sp</dimen>
+    <dimen name="text_xl">24sp</dimen>
 
 </resources>

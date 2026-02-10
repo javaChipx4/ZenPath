@@ -33,4 +33,8 @@
     <string name="load_state_error">Load state error: %1$s</string>
     <string name="save_error">Save error: %1$s</string>
 
+    <string name="diary_oval_text"><u>Click here to go to</u>\n<u>Virtual Diary</u></string>
+    <string name="home_greeting_underlined"><u>Good Afternoon, User! Today</u>\n<u>is Month Day, Year</u></string>
+    <string name="home_center_quote">Maybe today is a good day to slow down and just breathe for a second.</string>
+
 </resources>

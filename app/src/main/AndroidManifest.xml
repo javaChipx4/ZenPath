@@ -11,7 +11,6 @@
         android:theme="@style/Theme.ZenPath">
 
         <!-- ===== OTHER ACTIVITIES ===== -->
-
         <activity android:name=".HistoryActivity" android:exported="false"/>
         <activity android:name=".ActivityDiary" android:exported="false"/>
         <activity android:name=".DiaryHistoryActivity" android:exported="false"/>
@@ -28,7 +27,6 @@
         <activity android:name=".AddUserActivity" android:exported="false"/>
 
         <!-- ===== LAUNCHER (ONLY ONE) ===== -->
-
         <activity
             android:name=".HomeLoginActivity"
             android:exported="true">
@@ -41,8 +39,6 @@
         </activity>
 
         <!-- ===== LOGIN SCREEN ===== -->
-        <!-- Kept normal (NOT launcher so no crash) -->
-
         <activity
             android:name=".LoginActivity"
             android:exported="true"/>

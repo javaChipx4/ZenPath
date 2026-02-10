@@ -20,9 +20,14 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+// ✅ ADDED (for proper runtime layout/insets)
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Random;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
@@ -107,6 +112,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // ✅ ADDED: Fix “preview correct but run wrong” (status bar / notch / system insets)
+        // This makes the runtime layout match the design preview much more closely.
+        applySystemInsetsFix();
 
         // ✅ Repo
         repo = new ZenPathRepository(this);
@@ -304,7 +313,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // ===== Virtual Diary oval click -> show book =====
-        View ovalCard = findViewById(R.id.ovalCard);
+        View ovalCard = findViewById(R.id.btnDiaryOval);;
         if (ovalCard != null) {
             ovalCard.setOnClickListener(v -> showBookOverlay());
             installPressAnim(ovalCard);
@@ -359,6 +368,30 @@ public class MainActivity extends AppCompatActivity {
         refreshTodayCheckInCard();
         refreshWindDownSuggestion();
         refreshProgressWidgets();
+    }
+
+    // ✅ ADDED: This is the main reason preview != runtime
+    // It applies top padding for status bar/notch on real devices/emulators.
+    private void applySystemInsetsFix() {
+        View panel = findViewById(R.id.panelA);
+        if (panel == null) return;
+
+        final int baseTopPadding = panel.getPaddingTop();
+        final int baseBottomPadding = panel.getPaddingBottom();
+
+        ViewCompat.setOnApplyWindowInsetsListener(panel, (v, insets) -> {
+            int statusBar = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            int navBar = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+
+            // Add system bars without destroying your existing padding
+            v.setPadding(
+                    v.getPaddingLeft(),
+                    baseTopPadding + statusBar,
+                    v.getPaddingRight(),
+                    baseBottomPadding + navBar
+            );
+            return insets;
+        });
     }
 
     // ✅ NEW: avatar logic
